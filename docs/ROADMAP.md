@@ -8,11 +8,20 @@
 - AI 80% / 人間の視覚調整20%
 - Phaser Game Agent中心
 - Vertical Slice完成前に全地域を作らない
+- `DEFINITION_OF_DONE.md` を満たして初めて完成扱いする
 
 ## Phase 1: リポジトリ・仕様基盤
-目標：AIが同じ方針を読める状態にする。
+目標：AIが同じ方針・構造・データ契約を読める状態にする。
 
 - Markdown仕様整備
+- `INDEX.md` の読書順確立
+- `DECISIONS.md` / `TBD_REGISTRY.md` 整備
+- `AI_EXECUTION_PROTOCOL.md` 整備
+- `PHASER_ARCHITECTURE.md` 整備
+- `DATA_CONTRACTS.md` 整備
+- `NAMING_CONVENTIONS.md` 整備
+- `EVENT_SYSTEM_SPEC.md` 整備
+- `DEFINITION_OF_DONE.md` / `QA_SPEC.md` 整備
 - 素材フォルダ整理
 - Phaserプロジェクト初期化
 - Phaser Game Agent接続
@@ -21,6 +30,9 @@
 完了条件：
 - `docs/INDEX.md` から主要仕様へ到達できる
 - `DECISIONS.md` が最新版になっている
+- 未確定値が `TBD_REGISTRY.md` で識別できる
+- Scene / System責務が明文化されている
+- data ID / event / naming方針が明文化されている
 - プロジェクトがブラウザで起動する
 
 ## Phase 2: Vertical Slice v0.1
@@ -44,6 +56,8 @@
 - 新規ゲームからボス撃破まで進行不能なし
 - 正式タイル・正式主人公・正式UIを使用
 - iPhoneで主要操作可能
+- `DEFINITION_OF_DONE.md` のVertical Slice DoDを満たす
+- data参照切れ / イベント二重発火の重大問題がない
 
 ## Phase 3: 基本システム固定
 Vertical Sliceで判明した問題を直す。
@@ -56,21 +70,29 @@ Vertical Sliceで判明した問題を直す。
 - 状態異常
 - マップ遷移
 - イベント管理
-- セーブversion
+- セーブversion / migration
 - BGM / SE
+- タッチUI
+- 性能 / メモリ
 
 この段階以降、基本システムの大規模変更を減らす。
+
+完了条件：
+- 同じ仕組みを地域ごとにコピペしなくても量産できる
+- 新規マップ / NPC / 敵編成 / 宝箱をデータ中心で追加できる
+- セーブ / ロードがイベントflagを維持する
 
 ## Phase 4: 本編量産
 基本システムを再利用して地域を増やす。
 
+確認済み地域：
 - ビーエのむら
 - レインランドのまち
 - レインランドじょう
 - ザボンのむら
 - ポサロ城
-- 必要なダンジョン
 - ふっかつのほこら
+- 必要なダンジョン
 - その他確定地域
 
 地域ごとに：
@@ -83,6 +105,8 @@ Vertical Sliceで判明した問題を直す。
 - 必要な固有素材
 を追加する。
 
+各地域は `DEFINITION_OF_DONE.md` のエリアDoDを満たしてから次へ進む。
+
 ## Phase 5: パーティ・ボス・ストーリー完成
 - タロサ加入
 - ミレイ加入
@@ -92,6 +116,8 @@ Vertical Sliceで判明した問題を直す。
 - 重要イベント
 - デーマス関連イベント
 
+公開GitHubへ重大な終盤ネタバレを追加しない。
+
 ## Phase 6: ジャンカード
 - ガチャ
 - 固定順排出
@@ -99,6 +125,12 @@ Vertical Sliceで判明した問題を直す。
 - 45枚登録
 - セーブ連携
 - 本編から独立して遊べる状態を維持
+
+データの完全性：
+- No.01〜45の重複 / 欠番検出
+- 1回20円
+- 重複なし
+- 45枚取得後の停止
 
 ## Phase 7: 終盤
 公開仕様には詳細を書かない。
@@ -122,6 +154,8 @@ Vertical Sliceで判明した問題を直す。
 - UI余白
 - 演出タイミング
 
+`POLISHED` は原則として人間確認後に `CONTENT_MATRIX.md` へ反映する。
+
 ## Phase 9: Codex QA
 - iPhone Safari
 - PCブラウザ
@@ -130,7 +164,10 @@ Vertical Sliceで判明した問題を直す。
 - 全マップ遷移
 - 全カード
 - イベント二重発火
+- データ参照切れ
+- ID重複
 - 負荷 / メモリ
+- Scene往復 / 連続戦闘回帰
 
 ## Phase 10: リリース候補
 - 最初から最後まで通しプレイ
@@ -138,7 +175,11 @@ Vertical Sliceで判明した問題を直す。
 - ネタバレの公開素材混入確認
 - 不要な仮素材削除
 - README / 仕様更新
+- `DEFINITION_OF_DONE.md` のRelease Candidate条件を満たす
 
 ## Astra投入時期
 基本システムが安定したPhase 4以降を目安とする。
 複数エージェントが同一ファイルを同時編集する運用は避ける。
+
+## 進捗の見方
+素材数ではなく、`CONTENT_MATRIX.md` の状態と「製品版品質で通して遊べる時間」で判断する。
