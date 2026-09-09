@@ -4,10 +4,11 @@
 
 ## 作業開始前
 必ず以下を読む。
-1. `docs/PROJECT_OVERVIEW.md`
-2. `docs/DECISIONS.md`
-3. `docs/DEV_WORKFLOW.md`
-4. 作業対象に関連する専門仕様書
+1. `docs/INDEX.md`
+2. `docs/PROJECT_OVERVIEW.md`
+3. `docs/DECISIONS.md`
+4. `docs/DEV_WORKFLOW.md`
+5. 作業対象に関連する専門仕様書
 
 ## 開発基盤
 - Phaserを使用する
@@ -25,9 +26,16 @@
 - 汎用RPG制作ツール化しない
 - Monster Quest 0を完成させるための最小構成を優先する
 - 既存システムを再利用し、エリアごとの特殊実装を増やしすぎない
+- 会話、敵、アイテム、魔法などは可能な範囲でデータ駆動にする
+
+## 素材
+- `docs/ASSET_MANIFEST.md` を確認する
+- 制作済み素材がGitHub上に実在するか、実装前にパスを確認する
+- 存在しない素材ファイルをある前提でコードを書かない
+- 不足素材はTODOとして明示し、ゲーム全体を仮素材へ置換しない
 
 ## 制作順
-Vertical Sliceを最優先する。
+`docs/ROADMAP.md` に従いVertical Sliceを最優先する。
 
 タイトル
 → はじまりのまち
@@ -42,19 +50,31 @@ Vertical Sliceを最優先する。
 Vertical Slice完成前に大量の新規マップを作らない。
 
 ## モバイル
+- `docs/MOBILE_SPEC.md` に従う
 - iPhone Safariを主要ターゲットとして扱う
 - タッチ操作を後付けにしない
 - UIがSafe Areaや小画面で欠けないようにする
 - hover依存の操作を作らない
 
+## セーブ
+- `docs/SAVE_SPEC.md` に従う
+- セーブデータにはversionを持たせる
+- Phaser内部オブジェクトを直接保存しない
+- 終盤の異常演出で本当のセーブ破損を起こさない
+
 ## アート
 - `docs/IMAGE_SPEC.md` に従う
 - AI生成物を正式素材より優先しない
-- 不足素材は仮素材で全編を埋めず、必要箇所を明示する
+- 不足素材は必要になった時点で追加する
+
+## QA
+- 節目ごとに `docs/QA_SPEC.md` の基本項目を確認する
+- 新機能実装後は関連箇所だけでなく開始→町→フィールド→戦闘→セーブの最低回帰を確認する
 
 ## 変更時
 - 仕様変更が必要な場合はコードだけ変更せず、関連Markdownも更新対象とする
 - 既存仕様と矛盾した場合は `docs/DECISIONS.md` を優先する
+- 新しい確定事項は `docs/DECISIONS.md` へ反映する
 - 公開リポジトリへ重大なネタバレを書かない
 
 ## 完了時
@@ -64,3 +84,4 @@ Vertical Slice完成前に大量の新規マップを作らない。
 - 進行不能がない
 - セーブ / ロードが壊れていない
 - iPhone Safari想定の画面サイズでUIが破綻しない
+- 正式素材を誤って削除・置換していない
