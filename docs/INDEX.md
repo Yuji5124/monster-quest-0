@@ -7,17 +7,19 @@
 ## 0. AIが最初に読む順序
 1. `PROJECT_OVERVIEW.md` — プロジェクト全体像
 2. `DECISIONS.md` — 最新の確定事項。矛盾時は最優先
-3. `AI_EXECUTION_PROTOCOL.md` — AIの作業開始〜完了報告ルール
-4. `DEV_WORKFLOW.md` — 制作方法・AI分担
-5. `PHASER_ARCHITECTURE.md` — Phaser実装責務
-6. `DATA_CONTRACTS.md` — JSON / ID / データ契約
-7. 作業対象の専門仕様書
-8. `DEFINITION_OF_DONE.md` — 完成判定
-9. `QA_SPEC.md` — 検証
+3. `TBD_REGISTRY.md` — AIが勝手に確定してはいけない未確定事項
+4. `AI_EXECUTION_PROTOCOL.md` — AIの作業開始〜完了報告ルール
+5. `DEV_WORKFLOW.md` — 制作方法・AI分担
+6. `PHASER_ARCHITECTURE.md` — Phaser実装責務
+7. `DATA_CONTRACTS.md` — JSON / ID / データ契約
+8. 作業対象の専門仕様書
+9. `DEFINITION_OF_DONE.md` — 完成判定
+10. `QA_SPEC.md` — 検証
 
 ## 1. プロジェクト管理
 - `PROJECT_OVERVIEW.md` — プロジェクト全体像
 - `DECISIONS.md` — 最新確定事項
+- `TBD_REGISTRY.md` — 未確定事項
 - `CHANGE_CONTROL.md` — 仕様変更・旧仕様管理
 - `CONTENT_MATRIX.md` — 確定 / 制作済み / GitHub配置 / 実装 / QA / 視覚調整の状態
 - `ROADMAP.md` — 実装順序
@@ -78,6 +80,7 @@
 ## 8. 未確定値
 `TBD` / `null` / `未確定` は、AIが自由に正式値を埋めてよいという意味ではない。
 実装上の仮値が必要な場合は仮値であることを明示し、確定仕様と混同しない。
+未確定事項の集中管理は `TBD_REGISTRY.md` を使用する。
 
 ## 9. 公開リポジトリ注意
 重大な終盤ネタバレ、真相、謎の答え、隠しボスの真名・姿は記載しない。
