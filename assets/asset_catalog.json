@@ -1,0 +1,32 @@
+{
+  "project": "Monster Quest 0 - 幻の冒険の書",
+  "updated": "2026-09-09",
+  "note": "Catalog only. Files marked ready_to_import are not considered present until the PNG exists at the path.",
+  "assets": [
+    {"key":"title.logo.main","path":"assets/title/logo_main_transparent.png","status":"ready_to_import"},
+    {"key":"title.background","path":"assets/title/title_background.png","status":"needs_review"},
+    {"key":"char.hero.walk","path":"assets/characters/playable/hero_walk.png","status":"ready_to_import"},
+    {"key":"char.tarosa.walk","path":"assets/characters/playable/tarosa_walk.png","status":"ready_to_import"},
+    {"key":"char.mirei.walk","path":"assets/characters/playable/mirei_walk.png","status":"ready_to_import"},
+    {"key":"char.watabe.walk","path":"assets/characters/playable/watabe_walk.png","status":"ready_to_import"},
+    {"key":"tileset.base","path":"assets/maps/tilesets/tileset_base.png","status":"ready_to_import"},
+    {"key":"tileset.extra","path":"assets/maps/tilesets/tileset_extra.png","status":"ready_to_import"},
+    {"key":"map.world.reference","path":"assets/maps/reference/world_map_reference.png","status":"reference"},
+    {"key":"battle.bg.grassland","path":"assets/battle/backgrounds/battle_bg_grassland.png","status":"ready_to_import"},
+    {"key":"battle.bg.forest","path":"assets/battle/backgrounds/battle_bg_forest.png","status":"ready_to_import"},
+    {"key":"battle.bg.cave","path":"assets/battle/backgrounds/battle_bg_cave.png","status":"ready_to_import"},
+    {"key":"battle.bg.castle_town","path":"assets/battle/backgrounds/battle_bg_castle_town.png","status":"ready_to_import"},
+    {"key":"battle.bg.snowfield","path":"assets/battle/backgrounds/battle_bg_snowfield.png","status":"ready_to_import"},
+    {"key":"ui.common","path":"assets/ui/ui_common.png","status":"ready_to_import"},
+    {"key":"ui.card_gacha","path":"assets/ui/ui_card_gacha.png","status":"reference"},
+    {"key":"promo.poster.retro_rpg","path":"assets/promo/poster_retro_rpg.png","status":"reference"},
+    {"key":"promo.package.front","path":"assets/promo/package_front.png","status":"ready_to_import"},
+    {"key":"promo.package.back","path":"assets/promo/package_back.png","status":"ready_to_import"}
+  ],
+  "patterns": {
+    "npc": "assets/characters/npc/npc_{01..10}.png",
+    "monster": "assets/monsters/battle/monster_{01..25}_<name>.png",
+    "card_full": "assets/cards/full/card_{001..045}_<name>.png",
+    "card_art": "assets/cards/art/card_art_{001..045}_<name>.png"
+  }
+}
