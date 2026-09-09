@@ -1,140 +1,74 @@
 # モンスタークエスト0 画像制作仕様
 
-## 1. 全体方針
-- 昔懐かしいドット絵RPG風
-- 2Dピクセルアート
-- 子どもにも見やすい、明るめのレトロファンタジー
-- 通常プレイ中は「普通の昔のRPG」に見えることを優先
-- ネタバレ要素は通常画像に含めない
+最終更新: 2026-09-09
 
-## 2. タイトル画像
-必要素材：
-1. タイトルロゴ
-   - 表記：モンスタークエスト0
-   - キャッチコピー：誰も知らないゲーム、やってみる？
-   - レトロRPG風
-   - 背景透明版を用意
+## 基本方針
+- 実ゲームで使う画像を優先する。
+- レトロRPG感を基礎にしつつ、既存作品の直接模倣は避ける。
+- キャラクター・モンスター・カード中央絵は必要に応じて背景透明PNG。
+- 公開用画像ではネタバレ対象を伏せる。
 
-2. タイトル背景
-   - 村、草原、城、山、洞窟など王道RPGの風景
-   - ドット絵風
-   - 終盤の異常やバグ要素は入れない
+## 正式な管理先
+- 画像の正式ファイル名・配置先・状態: `docs/ASSET_INDEX.md`
+- フォルダ構成・命名ルール: `assets/README.md`
 
-3. 必要に応じて小サイズUI用ロゴ
+## 命名
+- 半角英数字 + `_` の snake_case。
+- 日本語、空白、括弧、`final`、`最新版`、`v2` は使わない。
+- 差し替え時も同用途なら同じファイル名を維持し、履歴はGitで管理する。
 
-## 3. 敵キャラクター画像
-### 基本条件
-- 背景透明PNG
-- 正面またはやや斜め向き
-- 戦闘画面で見やすいシルエット
-- ドット絵風
-- 子ども向けのため怖すぎない
-- 1体ごとに個性を出す
+## 現在の主要画像
+### プレイアブル
+- `assets/characters/playable/hero_walk.png`
+- `assets/characters/playable/tarosa_walk.png`
+- `assets/characters/playable/mirei_walk.png`
+- `assets/characters/playable/watabe_walk.png`
 
-### 数量目安
-- 序盤ザコ敵：3体
-- 中盤ザコ敵：3〜4体
-- 終盤ザコ敵：2〜3体
-- 中ボス：2体
-- ラスボス：1体
-- 特殊・異常敵：1〜2体（後回し可）
+### NPC
+- `assets/characters/npc/npc_01.png` ～ `npc_10.png`
 
-### 合計目安
-- 最低12点前後
-- 余裕をみて15〜18点前後
+### タイル・マップ
+- `assets/maps/tilesets/tileset_base.png`
+- `assets/maps/tilesets/tileset_extra.png`
+- `assets/maps/reference/world_map_reference.png`
 
-## 4. エリア別デザイン方向
-### 序盤
-- 弱そう
-- かわいい
-- レベル上げ相手として分かりやすい
+### 戦闘背景
+- `assets/battle/backgrounds/battle_bg_grassland.png`
+- `assets/battle/backgrounds/battle_bg_forest.png`
+- `assets/battle/backgrounds/battle_bg_cave.png`
+- `assets/battle/backgrounds/battle_bg_castle_town.png`
+- `assets/battle/backgrounds/battle_bg_snowfield.png`
 
-例：
-- スライム系
-- コウモリ系
-- きのこ系
+### UI
+- `assets/ui/ui_common.png`
+- `assets/ui/ui_card_gacha.png`
 
-### 中盤
-- 少し強そう
-- 外見の変化を増やす
+### タイトル・宣伝
+- `assets/title/logo_main_transparent.png`
+- `assets/title/title_background.png`
+- `assets/promo/poster_retro_rpg.png`
+- `assets/promo/package_front.png`
+- `assets/promo/package_back.png`
 
-例：
-- オオカミ系
-- ゴーレム系
-- 鎧系
-- 植物モンスター系
+## モンスター
+- 正式総数は25体。
+- 実装用: `assets/monsters/battle/monster_01_<name>.png` ～ `monster_25_<name>.png`
+- 原資料: `assets/monsters/source/`
 
-### 終盤
-- 少し不穏
-- 異質さを感じさせる
-- ただし通常のRPGの敵として成立する範囲
+## ジャンカード
+- 正式総数は45枚。
+- 完成カード: `assets/cards/full/card_001_<name>.png` ～ `card_045_<name>.png`
+- 中央絵透過素材: `assets/cards/art/card_art_001_<name>.png` ～ `card_art_045_<name>.png`
 
-例：
-- 影系
-- 骨系
-- 仮面系
-- 壊れた兵士系
+## 戦闘背景の現在方針
+単純なFC背景より一段きれいにしつつ、敵とUIを邪魔しないレトロRPG背景とする。草原、森、洞窟、城・城下町周辺、雪原を基本セットとする。
 
-## 5. ボス
-### 中ボス
-- ザコより大きく、強敵と一目で分かる
-- 記憶に残るシルエット
+## 実装
+- Phaserコードへ画像パスを大量に直書きしない。
+- preload/manifestへ集約する。
+- 画像差し替えだけで更新できる構成を優先する。
 
-### ラスボス
-- 王道RPGのラスボス感
-- 世界の異常を象徴できる外見
-- 終盤の真相や解決方法そのものは画像で明かさない
-
-## 6. 画像ファイル案
-assets/title/
-- title_logo.png
-- title_logo_small.png
-- title_bg.png
-
-assets/enemies/early/
-- enemy_01.png
-- enemy_02.png
-- enemy_03.png
-
-assets/enemies/middle/
-- enemy_04.png
-- enemy_05.png
-- enemy_06.png
-- enemy_07.png
-
-assets/enemies/late/
-- enemy_08.png
-- enemy_09.png
-- enemy_10.png
-
-assets/enemies/bosses/
-- midboss_01.png
-- midboss_02.png
-- lastboss_01.png
-
-assets/enemies/special/
-- glitch_enemy_01.png
-- glitch_enemy_02.png
-
-## 7. 生成優先順位
-### 最優先
-1. タイトルロゴ
-2. タイトル背景
-3. 序盤ザコ敵3体
-4. 中盤ザコ敵3体
-5. 中ボス1体
-
-### 次
-6. 中盤追加敵
-7. 終盤ザコ敵
-8. 中ボス2体目
-9. ラスボス
-
-### 後回し
-10. 特殊・異常敵
-11. バグ差分
-12. 図鑑・カード用差分
-
-## 8. AI担当
-- ChatGPT：画像仕様、敵デザイン案、タイトル案、画像生成
-- Claude Code / Codex：画像読み込み、表示、実装側のサイズ調整
+## AI担当
+- ChatGPT: 画像仕様、生成、正式命名。
+- Phaser Game Agent: Phaser実装の基本担当。
+- Codex / Claude Code: 複数ファイル修正、参照パス更新、検証。
