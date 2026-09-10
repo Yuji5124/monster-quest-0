@@ -2,7 +2,7 @@
 
 このディレクトリは『モンスタークエスト0 ～幻の冒険の書～』のゲーム用画像アセット置き場です。
 
-最終更新: 2026-09-09 19:22 JST
+最終更新: 2026-09-10 13:50 JST
 
 ## 命名ルール
 - ファイル名は半角英数字 + `_` の `snake_case`
@@ -44,6 +44,7 @@ assets/
 │  └─ backgrounds/
 │     ├─ battle_bg_grassland.png
 │     ├─ battle_bg_forest.png
+│     ├─ battle_bg_forest_alt.png
 │     ├─ battle_bg_cave.png
 │     ├─ battle_bg_castle_town.png
 │     ├─ battle_bg_snowfield.png
@@ -68,6 +69,11 @@ assets/
 - 主要パーティ: 主人公・タロサ・ミレイ
 - `support/`: 主要パーティ外のイベント参加・特殊参加キャラクター
 - `npc/`: 村人・町人などの通常NPC
+
+## 戦闘背景の方向性
+- キャラクター／フィールドのドット表現とは別に、戦闘背景は高品質な2D JRPG／アニメ背景方向へ移行済み
+- 敵を置く中央域は描き込みを抑える
+- 背景の詳細ルールは `docs/IMAGE_SPEC.md` を正とする
 
 ## ジャンカード命名
 全45枚。番号を必ず3桁で先頭につける。
