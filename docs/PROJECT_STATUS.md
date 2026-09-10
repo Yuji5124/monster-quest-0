@@ -1,6 +1,6 @@
 # Monster Quest 0 Project Status
 
-最終更新: 2026-09-10 23:46 JST
+最終更新: 2026-09-11 JST
 
 このファイルは『モンスタークエスト0 ～幻の冒険の書～』の**現在地点を短時間で把握するための最優先スナップショット**。
 詳細は各SPECを参照する。
@@ -11,6 +11,7 @@
 - 広告コピー: 「誰も知らないゲーム、やってみる？」
 - 目標プレイ時間: 約5時間
 - 主要パーティ: 主人公・タロサ・ミレイ
+- わたべ: 特殊参加 / 終盤重要人物
 - モンスター総数: 25体
 - ジャンカード総数: 45枚
 - ジャンカード料金: 1回20円
@@ -42,6 +43,8 @@
 ## 3. クリエイティブ方針
 - 全編を同じ密度で過剰に作り込まない
 - 特に丁寧に描くのは、物語の始まり、主要人物の人生が交差する場面、終盤 / エンディング
+- 町・村とNPC人数は従来案より全体的に約半分程度へ圧縮する
+- NPC人数を増やすこと自体を「作り込み」としない
 - 『こどもだってつらいよ』由来の設定・資料への敬意を優先する
 - 原資料で確認できる情報はAI独自案より優先する
 - 原作未確定事項とMonster Quest 0独自採用を区別する
@@ -49,7 +52,16 @@
 
 詳細: `docs/CREATIVE_DIRECTION.md`
 
-## 4. 現在のアート方針
+## 4. オープニング最新方針
+- タイトル → 「はじめから」 → 短い導入 → はじまりのまちで操作開始
+- 導入は丁寧に作るが、長いムービーにはしない
+- **ゲーム開始直後のリセット演出は使わない**
+- **ゲーム開始直後の偽「ぼうけんのしょが きえました」は使わない**
+- 世界の本格的な異常は後半へ回す
+
+詳細: `docs/OPENING_SPEC.md`
+
+## 5. 現在のアート方針
 ### レトロ表現を維持
 - フィールドマップ
 - 歩行スプライト
@@ -64,7 +76,7 @@
 戦闘背景は高品質な2D JRPG / アニメ背景方向。
 敵が立つ中央域は情報量を抑え、敵・文字・UIの視認性を優先する。
 
-## 5. 作成済みとして管理している主要画像
+## 6. 作成済みとして管理している主要画像
 ※ChatGPT側で作成済みでも、PNG本体がGitHubの正式パスに存在するまでは `READY_TO_IMPORT`。
 
 ### キャラクター
@@ -100,48 +112,49 @@
 
 正式ファイル名・状態は `docs/ASSET_INDEX.md` と `assets/asset_catalog.json` を正とする。
 
-## 6. NPC制作の現在地点
+## 7. NPC制作の現在地点
 NPC会話は物語順に制作する。
 
-進行順:
-1. はじまりのまち
-2. ビーエのむら
-3. レインランドのまち
-4. レインランドじょう
-5. ザボンのむら
-6. いしのむら
-7. かくれざと
-8. 港町ダコハ
-9. その他の拠点
+会話原案がある地域:
+- はじまりのまち
+- ビーエのむら
+- レインランドのまち
 
-現在、具体化済み:
-- **はじまりのまち: NPC 12人 + 外出後の会話変化まで作成**
-- **ビーエのむら: NPC 15人 + 行方不明の木こり救出事件 + 救出後会話 + レインランドへの誘導まで作成**
-- **レインランドのまち: NPC 20人 + 異変 / 王家 / ミレイ / いしのむらへの伏線まで作成**
+旧設計ではそれぞれ12人 / 15人 / 20人規模だったが、**最新方針では町・村サイズとNPC数を約半分程度へ再編**する。
+作成済み会話案は捨てず、実装する人物を選抜・統合して使う。
 
-次はこの続きから進める。
+会話バランス:
+- 全員を攻略ヒント役にしない
+- 全員を主要人物の説明役にしない
+- タロサ関連地域でも全員がタロサを話題にしない
+- 主要人物に興味がない生活NPCも置く
 
-NPCは基本2パターン程度の短い会話を持たせ、生活感、地域情報、事件、噂、人物関係、攻略ヒントを分散する。
-
+次の制作地域はレインランドじょう。
 詳細: `docs/NPC_SPEC.md`
 
-## 7. ストーリー・終盤の重要固定事項
-- 世界は終盤に向けてバグり始める
-- 起動時に偽「ぼうけんのしょが きえました」演出を入れるが実データは消さない
-- 数秒後に「……まだ おわっていない」
-- 最終戦は画面バグ → フーフーを連想する演出 → OPへ戻る → 「もういちど」
+## 8. ストーリー・終盤の重要固定事項
+- 序盤〜中盤は普通のレトロRPGとして成立させる
+- 世界は**終盤に入ってから**段階的にバグり始める
+- 最終戦は画面バグ → フーフーを連想する演出 → OP / タイトルへ戻るように見せる → 「もういちど」
+- 通常の強さだけでは最終解決できない構造
+- わたべが最終解決に関わる
 - 「ふっかつのじゅもん」は使用せず、正式名称は「たびのあいことば」
 - パッケージ / カセット自体を終盤の攻略情報として使う
 - 公開素材では重大な終盤ネタバレを伏せる
 
-## 8. 戦闘の重要固定事項
+詳細: `docs/STORY_FLOW.md` / `docs/GLITCH_SPEC.md`
+
+## 9. 戦闘の重要固定事項
 - クリティカル表記は「だいヒット」
 - わたべ固有は「とくだいヒット」
 - デーマス戦はダイダインと反射を利用する攻略構造
 - デスタロッサはMonster Quest 0には登場させない
 - 主要ボスはレベルだけでなく少ないヒントから攻略法へ気づく構造を重視
+- デーマス区間はLv15程度、最終地点はLv20前後を一つの目安とするが最終数値ではない
 
-## 9. 主要採用魔法
+詳細: `docs/BATTLE_SPEC.md` / `docs/CHARACTER_GROWTH.md`
+
+## 10. 主要採用魔法
 - ライフ
 - リライフ
 - ヒート
@@ -156,7 +169,7 @@ NPCは基本2パターン程度の短い会話を持たせ、生活感、地域�
 
 `リライフ` はMQ0では復活魔法として採用するが、原作確定情報とは分ける。
 
-## 10. 主要採用アイテム・装備
+## 11. 主要採用アイテム・装備
 ### 武器
 - ぼくとう
 - こんぼう
@@ -177,25 +190,44 @@ NPCは基本2パターン程度の短い会話を持たせ、生活感、地域�
 - ふしぎなかぎ
 - いのちのかがみ
 
-## 11. 音楽
-- ゲームBGMは01〜08構成で制作中
-- A案 / B案を比較できる状態を目指す
-- 音源本体をGitHubへ入れる際は画像と同様に正式名・manifestで管理する
+詳細: `docs/ITEM_EQUIPMENT_SPEC.md`
 
-## 12. 実装契約
+## 12. 音楽
+- ゲームBGMは01〜08構成
+- A案 / B案がある曲は最終採用まで候補として保持する
+- 音源本体をGitHubへ入れる際は正式名・manifestで管理する
+
+詳細: `docs/AUDIO_SPEC.md`
+
+## 13. 新しい内容SPEC
+ゲーム内容の正本として以下を追加済み:
+- `docs/STORY_FLOW.md`
+- `docs/OPENING_SPEC.md`
+- `docs/MAP_FLOW_SPEC.md`
+- `docs/BATTLE_SPEC.md`
+- `docs/CHARACTER_GROWTH.md`
+- `docs/MONSTER_SPEC.md`
+- `docs/ITEM_EQUIPMENT_SPEC.md`
+- `docs/AUDIO_SPEC.md`
+- `docs/SAVE_FLAG_SPEC.md`
+- `docs/UI_INPUT_SPEC.md`
+
+## 14. 実装契約
 Game Agent / Claude Code / Codexは以下に従う。
 - `docs/PHASER_ARCHITECTURE.md`
 - `docs/DATA_CONTRACTS.md`
 - `docs/EVENT_SYSTEM_SPEC.md`
 - `docs/NAMING_CONVENTIONS.md`
+- `docs/SAVE_FLAG_SPEC.md`
+- `docs/UI_INPUT_SPEC.md`
 - `docs/TBD_REGISTRY.md`
 - `docs/DEFINITION_OF_DONE.md`
 - `docs/PERFORMANCE_BUDGET.md`
 - `docs/AI_EXECUTION_PROTOCOL.md`
 
-## 13. 現在の優先作業
-1. GitHub仕様を最新状態に保つ
-2. NPC会話を現在地点の続きから制作
+## 15. 現在の優先作業
+1. GitHub仕様の一貫性確保
+2. NPC会話を最新の小規模方針へ再編集
 3. 作成済みPNGを正式パスへ取り込む
 4. Phaser Game AgentでVertical Sliceを開始
 5. 正式素材でフィールド / NPC / 戦闘の基本ループを作る
@@ -205,22 +237,24 @@ Game Agent / Claude Code / Codexは以下に従う。
 9. Vertical Slice完成後に本編地域を量産
 10. ジャンカード45枚、終盤演出、全体約5時間調整へ進む
 
-## 14. AIが作業開始時に読む順番
+## 16. AIが作業開始時に読む順番
 1. `docs/PROJECT_STATUS.md`
-2. `docs/GAME_SPEC.md`
-3. `docs/CREATIVE_DIRECTION.md`
-4. `docs/AI_EXECUTION_PROTOCOL.md`
-5. `docs/PHASER_ARCHITECTURE.md`
-6. `docs/DATA_CONTRACTS.md`
-7. 作業対象の専門SPEC
-8. `docs/ASSET_INDEX.md`
-9. `assets/asset_catalog.json`
-10. `docs/TBD_REGISTRY.md`
-11. `docs/DEFINITION_OF_DONE.md`
+2. `docs/INDEX.md`
+3. `docs/GAME_SPEC.md`
+4. `docs/CREATIVE_DIRECTION.md`
+5. `docs/STORY_FLOW.md`
+6. 作業対象の専門SPEC
+7. `docs/AI_EXECUTION_PROTOCOL.md`
+8. `docs/PHASER_ARCHITECTURE.md`
+9. `docs/DATA_CONTRACTS.md`
+10. `docs/ASSET_INDEX.md`
+11. `assets/asset_catalog.json`
+12. `docs/TBD_REGISTRY.md`
+13. `docs/DEFINITION_OF_DONE.md`
 
 Claude Codeは `CLAUDE.md`、Codex等は `AGENTS.md` も読む。
 
-## 15. 情報の優先順位
+## 17. 情報の優先順位
 矛盾がある場合:
 1. 日付が新しいユーザー確定仕様
 2. `PROJECT_STATUS.md`
@@ -228,4 +262,4 @@ Claude Codeは `CLAUDE.md`、Codex等は `AGENTS.md` も読む。
 4. 実装コード
 5. 古い試作HTML / 体験版 / コメント
 
-古い「約1時間」「カード20枚」「RPGJS中心」「ふっかつのじゅもん」等は現行仕様として使用しない。
+古い「約1時間」「カード20枚」「RPGJS中心」「ふっかつのじゅもん」「序盤の偽セーブ消失」「大人数NPC案」等は現行仕様として使用しない。
