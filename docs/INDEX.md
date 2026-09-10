@@ -1,26 +1,27 @@
 # モンスタークエスト0 仕様書インデックス
 
-最終更新: 2026-09-11 JST
+最終更新: 2026-09-11 08:31 JST
 
 このファイルはAI・人間が仕様を読むための入口。
 
 ## 最優先
 1. `PROJECT_STATUS.md` — 現在地点と最新固定値
 2. `GAME_SPEC.md` — ゲーム全体仕様
-3. `CREATIVE_DIRECTION.md` — 作品の作り込み密度・元設定への敬意
-4. `STORY_FLOW.md` — 物語の時間軸・前半〜終盤の大枠
-5. `AI_EXECUTION_PROTOCOL.md` — AIの作業手順
+3. `CREATIVE_DIRECTION.md` — 作り込み密度・二重構造・元設定への敬意
+4. **`OPENING_SPEC.md` — 現在の重点区間。約5秒異常→No.18焚き火開始**
+5. `STORY_FLOW.md` — 物語の時間軸・前半〜終盤の大枠
+6. `AI_EXECUTION_PROTOCOL.md` — AIの作業手順
 
 ## ストーリー・世界
-- `OPENING_SPEC.md` — タイトルからはじまりのまちまで
-- `STORY_FLOW.md` — 物語全体の進行
-- `MAP_FLOW_SPEC.md` — 地域・ダンジョン・接続・進行条件
+- `OPENING_SPEC.md` — タイトルからNo.18「はじまりのばしょ」〜通常RPG進行まで
+- `STORY_FLOW.md` — 物語全体の進行 / 別世界主人公 / 複数世界断片の裏構造
+- `MAP_FLOW_SPEC.md` — 地域・ダンジョン・No.18・接続・進行条件
 - `NPC_SPEC.md` — NPC会話方針と地域テーマ
 - `GLITCH_SPEC.md` — 終盤異常演出
 
 ## 戦闘・成長・データ
 - `BATTLE_SPEC.md` — コマンド戦闘、だいヒット、ボス攻略
-- `CHARACTER_GROWTH.md` — 主人公・タロサ・ミレイ・わたべの成長
+- `CHARACTER_GROWTH.md` — **男性主人公 / タロサ / ミレイ / わたべの成長**
 - `MAGIC_SPEC.md` — 魔法名称、効果、原作情報との区別、習得管理
 - `MONSTER_SPEC.md` — 25体モンスターの管理・ネタバレ方針
 - `ITEM_EQUIPMENT_SPEC.md` — アイテム・装備
@@ -31,7 +32,7 @@
 - `UI_INPUT_SPEC.md` — UI、キーボード、タッチ、iPhone操作
 - `AUDIO_SPEC.md` — BGM01〜08、SE、AudioSystem
 - `IMAGE_SPEC.md` — 画像制作方針
-- `ASSET_INDEX.md` — 正式アセット名・状態
+- `ASSET_INDEX.md` — 正式アセット名・状態。**旧女性主人公素材はSUPERSEDED**
 
 ## 実装契約
 - `PHASER_ARCHITECTURE.md` — Scene / System責務
@@ -60,10 +61,13 @@
 
 ## 読み方
 ### Claude Code / Phaser Game Agentで実装
-`PROJECT_STATUS` → `GAME_SPEC` → `CREATIVE_DIRECTION` → `STORY_FLOW` → 作業対象SPEC → `AI_EXECUTION_PROTOCOL` → `PHASER_ARCHITECTURE` → `DATA_CONTRACTS` → `ASSET_INDEX` → `TBD_REGISTRY` → `DEFINITION_OF_DONE`
+`PROJECT_STATUS` → `GAME_SPEC` → `CREATIVE_DIRECTION` → **`OPENING_SPEC`** → `STORY_FLOW` → 作業対象SPEC → `AI_EXECUTION_PROTOCOL` → `PHASER_ARCHITECTURE` → `DATA_CONTRACTS` → `ASSET_INDEX` → `TBD_REGISTRY` → `DEFINITION_OF_DONE`
 
 ### Codexでレビュー
 上記 + `QA_SPEC` + `PERFORMANCE_BUDGET` + `SAVE_FLAG_SPEC`
+
+### オープニング制作
+`PROJECT_STATUS` → `CREATIVE_DIRECTION` → `OPENING_SPEC` → `MAP_FLOW_SPEC` → `CHARACTER_GROWTH` → `ASSET_INDEX` → `TBD_REGISTRY`
 
 ### ストーリー / マップ制作
 `PROJECT_STATUS` → `CREATIVE_DIRECTION` → `STORY_FLOW` → `OPENING_SPEC` または `MAP_FLOW_SPEC` → `TBD_REGISTRY`
@@ -84,4 +88,13 @@
 4. 実装コード
 5. 古い試作HTML / コメント
 
-古い約1時間仕様、ジャンカード20枚、RPGJS中心、ASRS利用、「ふっかつのじゅもん」、序盤の偽セーブ消失、大人数NPC案は現行仕様として使わない。
+現行仕様として使わない:
+- 約1時間仕様
+- ジャンカード20枚
+- RPGJS中心
+- ASRS利用
+- 「ふっかつのじゅもん」
+- 起動直後の偽セーブ消失
+- 旧女性勇者風主人公
+- 「導入には一切異常を使わない」旧方針
+- 旧大人数NPC案をそのまま実装する方針
