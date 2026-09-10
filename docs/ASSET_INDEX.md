@@ -1,6 +1,6 @@
 # Monster Quest 0 Asset Index
 
-最終更新: 2026-09-09 19:22 JST
+最終更新: 2026-09-10 13:50 JST
 
 このファイルを画像アセットの正式台帳とする。Phaser Game Agent / Codex / Claude Code は画像を探す前にこのファイルを確認する。
 
@@ -38,6 +38,7 @@
 | `assets/characters/npc/npc_01.png` ～ `npc_10.png` | NPC基本10体 | READY_TO_IMPORT |
 
 NPCに固有名が付いた時点で `npc_01` 等から意味のある名前へ1回だけ変更してよい。
+地域別会話設計は `docs/NPC_SPEC.md` を参照する。
 
 ## 5. マップ・タイル
 | 正式パス | 内容 | 状態 |
@@ -49,12 +50,13 @@ NPCに固有名が付いた時点で `npc_01` 等から意味のある名前へ1
 確認済み旧ファイル名: `モンスタークエスト0 ワールドマップ.png` → `world_map_reference.png`
 
 ## 6. 戦闘背景
-現在の正式方針は、単純なFC風背景より一段きれいで、敵とUIを邪魔しないレトロRPG背景。実ゲーム組み込み用として扱う。
+現在の正式方針は、**ドットキャラクターと高品質な2D JRPG／アニメ背景を組み合わせる**こと。背景はゲーム組み込み用として、敵・UIの視認性を優先する。
 
 | 正式パス | 内容 | 状態 |
 |---|---|---|
 | `assets/battle/backgrounds/battle_bg_grassland.png` | 草原 | READY_TO_IMPORT |
 | `assets/battle/backgrounds/battle_bg_forest.png` | 森 | READY_TO_IMPORT |
+| `assets/battle/backgrounds/battle_bg_forest_alt.png` | 森・別案 | READY_TO_IMPORT |
 | `assets/battle/backgrounds/battle_bg_cave.png` | 洞窟 | READY_TO_IMPORT |
 | `assets/battle/backgrounds/battle_bg_castle_town.png` | 城・城下町周辺 | READY_TO_IMPORT |
 | `assets/battle/backgrounds/battle_bg_snowfield.png` | 雪原 | READY_TO_IMPORT |
@@ -63,6 +65,8 @@ NPCに固有名が付いた時点で `npc_01` 等から意味のある名前へ1
 | `assets/battle/backgrounds/battle_bg_dungeon_alt.png` | ダンジョン別案 | READY_TO_IMPORT |
 | `assets/battle/backgrounds/battle_bg_boss.png` | ボス戦 | READY_TO_IMPORT |
 | `assets/battle/backgrounds/battle_bg_boss_alt.png` | ボス戦別案 | READY_TO_IMPORT |
+
+背景密度の基準は `docs/IMAGE_SPEC.md` を正とする。
 
 ## 7. UI
 | 正式パス | 内容 | 状態 |
@@ -126,6 +130,8 @@ NPCに固有名が付いた時点で `npc_01` 等から意味のある名前へ1
 - `char.mirei.walk`
 - `char.watabe.walk`
 - `battle.bg.grassland`
+- `battle.bg.forest`
+- `battle.bg.forest_alt`
 - `battle.bg.desert_ruins`
 - `battle.bg.dungeon`
 - `battle.bg.dungeon_alt`
@@ -139,6 +145,7 @@ NPCに固有名が付いた時点で `npc_01` 等から意味のある名前へ1
 2. この台帳で正式パスを決める
 3. PNG本体をそのパスへ配置する
 4. `READY_TO_IMPORT` を `IN_GITHUB` に変更する
-5. Phaser側でパスを直書きせず、asset manifest経由で読み込む
+5. `assets/asset_catalog.json` を同期する
+6. Phaser側でパスを直書きせず、asset manifest経由で読み込む
 
 > 注意: ChatGPTプロジェクト内で生成された画像と、GitHubリポジトリ上のバイナリ画像は別管理。PNG本体がGitHubに入ったことを確認するまで `IN_GITHUB` にしない。
