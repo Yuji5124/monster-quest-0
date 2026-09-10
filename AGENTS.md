@@ -1,6 +1,6 @@
 # AI Agent Instructions - モンスタークエスト0
 
-最終更新: 2026-09-11 JST
+最終更新: 2026-09-11 08:31 JST
 
 このファイルはCodex、Claude Code、その他AIエージェント共通の入口。
 
@@ -9,22 +9,23 @@
 2. `docs/INDEX.md`
 3. `docs/GAME_SPEC.md`
 4. `docs/CREATIVE_DIRECTION.md`
-5. `docs/STORY_FLOW.md`
-6. 作業対象の専門SPEC
-7. `docs/AI_EXECUTION_PROTOCOL.md`
-8. `docs/PHASER_ARCHITECTURE.md`
-9. `docs/DATA_CONTRACTS.md`
-10. `docs/ASSET_INDEX.md`
-11. `assets/asset_catalog.json`
-12. `docs/TBD_REGISTRY.md`
-13. `docs/DEFINITION_OF_DONE.md`
+5. `docs/OPENING_SPEC.md`
+6. `docs/STORY_FLOW.md`
+7. 作業対象の専門SPEC
+8. `docs/AI_EXECUTION_PROTOCOL.md`
+9. `docs/PHASER_ARCHITECTURE.md`
+10. `docs/DATA_CONTRACTS.md`
+11. `docs/ASSET_INDEX.md`
+12. `assets/asset_catalog.json`
+13. `docs/TBD_REGISTRY.md`
+14. `docs/DEFINITION_OF_DONE.md`
 
 ## 共通原則
 - Phaser 3 / Phaser Game Agent中心
 - Claude Codeがメイン実装
 - Codexはレビュー / デバッグ / QA中心
 - ASRS不使用
-- 約5時間の完成を優先
+- 初見約4時間30分 / 寄り道込み約5時間30分の完成を優先
 - AI 80% + 人間20%の視覚・テンポ調整
 - 正式素材優先
 - 未確定事項を勝手に確定しない
@@ -33,19 +34,29 @@
 - iPhone Safariを主要ターゲットとして扱う
 - 重大な終盤ネタバレを公開資料へ露出しない
 
-## 最新スコープ
-- 町・村サイズとNPC人数は旧案より全体的に約半分程度へ圧縮
-- 旧12人 / 15人 / 20人NPC案をそのまま実装しない
-- NPC全員を主要人物・攻略ヒントの説明役にしない
-- タロサ関連地域でもタロサに関心の薄い生活NPCを入れる
-- 序盤 / 起動直後にリセット・偽セーブ消失を使わない
+## 最新オープニング
+- 主人公は男性 / 別世界の元NPC
+- 旧女性勇者風主人公は使用しない
+- 約5秒の短い制御された異常から開始
+- No.18「はじまりのばしょ」夜版で焚き火のそばから開始
+- 同一ロケーションの昼版を用意
+- 直接メタ会話は禁止
+- 開始直後の偽セーブ消失は不採用
 - 本格バグ演出は終盤
+- 始まりは通常区間より密度を高くするが、長い説明・移動距離・NPC人数で水増ししない
+
+## 最新スコープ
+- 全体ワールドマップ・主要地域配置・大枠は維持
+- 町・村・城内部はコンパクト化
+- ダンジョン内部もコンパクト化
+- NPC人数は縮小後マップに合わせて再編集
+- NPC全員を主要人物・攻略ヒントの説明役にしない
 - ジャンカードは45枚 / 1回20円 / No.01→45固定順 / ランダムではない / ダブりなし
 
 ## 作業対象別SPEC
 ### ストーリー / マップ / NPC
-- `docs/STORY_FLOW.md`
 - `docs/OPENING_SPEC.md`
+- `docs/STORY_FLOW.md`
 - `docs/MAP_FLOW_SPEC.md`
 - `docs/NPC_SPEC.md`
 
@@ -89,10 +100,12 @@
 - `PERFORMANCE_BUDGET.md` を守る
 - GitHubに存在しない素材をある前提で使わない
 - 仮値は仮値と明示する
+- `hero_walk.png` を現行主人公へ使用しない
 
 ## 作品方針
 - 全編を過剰に作り込まない
-- 重要場面へ丁寧さを集中する
+- **始まり・主要人物交差・終盤 / EDへ丁寧さを集中**
+- 子どもには普通のRPG、大人には考察できる二重構造を守る
 - 元設定・原資料へ敬意を払う
 - AI独自の長い説明・設定追加を抑える
 - NPC数・マップ面積によるプレイ時間水増しを避ける
