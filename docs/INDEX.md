@@ -21,6 +21,7 @@
 ## 戦闘・成長・データ
 - `BATTLE_SPEC.md` — コマンド戦闘、だいヒット、ボス攻略
 - `CHARACTER_GROWTH.md` — 主人公・タロサ・ミレイ・わたべの成長
+- `MAGIC_SPEC.md` — 魔法名称、効果、原作情報との区別、習得管理
 - `MONSTER_SPEC.md` — 25体モンスターの管理・ネタバレ方針
 - `ITEM_EQUIPMENT_SPEC.md` — アイテム・装備
 - `CARD_SPEC.md` — ジャンカード45枚
@@ -71,7 +72,7 @@
 `PROJECT_STATUS` → `STORY_FLOW` → `MAP_FLOW_SPEC` → `NPC_SPEC` → `TBD_REGISTRY`
 
 ### 戦闘・敵・成長
-`PROJECT_STATUS` → `BATTLE_SPEC` → `CHARACTER_GROWTH` → `MONSTER_SPEC` → `ITEM_EQUIPMENT_SPEC` → `TBD_REGISTRY`
+`PROJECT_STATUS` → `BATTLE_SPEC` → `CHARACTER_GROWTH` → `MAGIC_SPEC` → `MONSTER_SPEC` → `ITEM_EQUIPMENT_SPEC` → `TBD_REGISTRY`
 
 ### 画像追加
 `PROJECT_STATUS` → `IMAGE_SPEC` → `ASSET_INDEX` → `assets/asset_catalog.json`
