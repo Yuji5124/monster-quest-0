@@ -1,6 +1,6 @@
 # Monster Quest 0 Asset Index
 
-最終更新: 2026-09-10 13:50 JST
+最終更新: 2026-09-11 08:31 JST
 
 このファイルを画像アセットの正式台帳とする。Phaser Game Agent / Codex / Claude Code は画像を探す前にこのファイルを確認する。
 
@@ -9,6 +9,7 @@
 - `IN_GITHUB`: GitHubにPNG本体を配置済み。
 - `REFERENCE`: 実装用ではなく資料・参考画像。
 - `NEEDS_REVIEW`: 正式採用前に確認が必要。
+- `SUPERSEDED`: 旧仕様に基づくため現行ゲームではそのまま使用しない。
 
 ## 1. タイトル・ロゴ
 | 正式パス | 内容 | 状態 |
@@ -23,9 +24,15 @@
 
 | 正式パス | 内容 | 状態 |
 |---|---|---|
-| `assets/characters/playable/hero_walk.png` | 主人公 歩行スプライト | READY_TO_IMPORT |
+| `assets/characters/playable/hero_walk.png` | **旧女性勇者風主人公 歩行スプライト** | **SUPERSEDED** |
+| `assets/characters/playable/protagonist_walk.png` | **最新男性主人公 歩行スプライト** | **NEEDS_REVIEW / 新規制作対象** |
 | `assets/characters/playable/tarosa_walk.png` | タロサ 歩行スプライト | READY_TO_IMPORT |
 | `assets/characters/playable/mirei_walk.png` | ミレイ 歩行スプライト | READY_TO_IMPORT |
+
+### 主人公素材の重要注意
+現行主人公は、別のモンスタークエスト作品／別バージョン世界で本来NPCだった男性。
+旧 `hero_walk.png` は女性勇者風デザインに基づくため、現行主人公として実装しない。
+新しい正式主人公素材が確定するまでは、AIが旧素材を自動採用してはいけない。
 
 ## 3. 補助・イベントキャラクター
 | 正式パス | 内容 | 状態 |
@@ -48,6 +55,11 @@ NPCに固有名が付いた時点で `npc_01` 等から意味のある名前へ1
 | `assets/maps/reference/world_map_reference.png` | ワールドマップ参考画像 | REFERENCE |
 
 確認済み旧ファイル名: `モンスタークエスト0 ワールドマップ.png` → `world_map_reference.png`
+
+### はじまりのばしょ
+No.18「はじまりのばしょ」は夜版／昼版を用意する。
+必要素材は実装方式に応じて、既存タイルセット + ライティング／色調差分、または専用マップ差分で管理する。
+焚き火のアニメーション／光表現が不足する場合は追加対象とする。
 
 ## 6. 戦闘背景
 現在の正式方針は、**ドットキャラクターと高品質な2D JRPG／アニメ背景を組み合わせる**こと。背景はゲーム組み込み用として、敵・UIの視認性を優先する。
@@ -125,7 +137,7 @@ NPCに固有名が付いた時点で `npc_01` 等から意味のある名前へ1
 ファイルパスと別にPhaserのasset keyはドット区切りを推奨する。
 
 例:
-- `char.hero.walk`
+- `char.protagonist.walk`
 - `char.tarosa.walk`
 - `char.mirei.walk`
 - `char.watabe.walk`
@@ -139,6 +151,8 @@ NPCに固有名が付いた時点で `npc_01` 等から意味のある名前へ1
 - `battle.bg.boss_alt`
 - `ui.common`
 - `card.002.tamago_ghost`
+
+旧 `char.hero.walk` は現行主人公へ使用しない。
 
 ## 13. 今後の追加手順
 1. 新しい画像を作る
