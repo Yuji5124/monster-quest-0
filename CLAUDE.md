@@ -1,23 +1,26 @@
 # Claude Code Instructions - モンスタークエスト0
 
-最終更新: 2026-09-10 23:46 JST
+最終更新: 2026-09-11 JST
 
 ## 最初に必ず読む
 1. `docs/PROJECT_STATUS.md`
-2. `docs/GAME_SPEC.md`
-3. `docs/CREATIVE_DIRECTION.md`
-4. `docs/AI_EXECUTION_PROTOCOL.md`
-5. `docs/PHASER_ARCHITECTURE.md`
-6. `docs/DATA_CONTRACTS.md`
-7. 作業対象の専門SPEC
-8. `docs/ASSET_INDEX.md`
-9. `assets/asset_catalog.json`
-10. `docs/TBD_REGISTRY.md`
-11. `docs/DEFINITION_OF_DONE.md`
+2. `docs/INDEX.md`
+3. `docs/GAME_SPEC.md`
+4. `docs/CREATIVE_DIRECTION.md`
+5. `docs/STORY_FLOW.md`
+6. 作業対象の専門SPEC
+7. `docs/AI_EXECUTION_PROTOCOL.md`
+8. `docs/PHASER_ARCHITECTURE.md`
+9. `docs/DATA_CONTRACTS.md`
+10. `docs/ASSET_INDEX.md`
+11. `assets/asset_catalog.json`
+12. `docs/TBD_REGISTRY.md`
+13. `docs/DEFINITION_OF_DONE.md`
 
 ## 開発基盤
 - Phaser 3
 - Phaser Game Agent中心
+- Claude Codeがメイン実装
 - ASRSは使用しない
 - 汎用RPGエンジンを作らない
 - 独自マップエディタを作らない
@@ -38,6 +41,34 @@
 - 不要な全面リファクタリングをしない
 - iPhone Safariを後付けにしない
 
+## 最新のスコープ制約
+- 町・村サイズとNPC人数は旧案より全体的に約半分程度へ圧縮
+- 旧12人 / 15人 / 20人のNPC案をそのまま実装しない
+- 主要人物に興味がない普通の住民も入れる
+- タロサ関連地域でも全員がタロサを話題にしない
+- 序盤 / 起動直後にリセット演出・偽セーブ消失を使わない
+- 本格バグ演出は後半
+- ジャンカードは45枚 / 1回20円 / No.01→45固定順 / ランダムではない / ダブりなし
+
+## 作業対象別SPEC
+### ストーリー / マップ
+- `docs/STORY_FLOW.md`
+- `docs/OPENING_SPEC.md`
+- `docs/MAP_FLOW_SPEC.md`
+- `docs/NPC_SPEC.md`
+
+### 戦闘 / 成長
+- `docs/BATTLE_SPEC.md`
+- `docs/CHARACTER_GROWTH.md`
+- `docs/MONSTER_SPEC.md`
+- `docs/ITEM_EQUIPMENT_SPEC.md`
+
+### システム
+- `docs/SAVE_FLAG_SPEC.md`
+- `docs/UI_INPUT_SPEC.md`
+- `docs/AUDIO_SPEC.md`
+- `docs/GLITCH_SPEC.md`
+
 ## クリエイティブ
 - 全編を同じ密度で豪華にしない
 - 物語の始まり、主要人物が交差する場面、終盤・エンディングへ丁寧さを集中
@@ -46,7 +77,8 @@
 
 ## NPC
 NPC会話は `docs/NPC_SPEC.md` に従う。
-はじまりのまち → ビーエのむら → レインランドのまち → レインランドじょう → ザボンのむら → いしのむら → かくれざと → 港町ダコハ → その他、の順を基本とする。
+会話原案は、はじまりのまち / ビーエのむら / レインランドのまちまで存在するが、最新の小規模方針へ選抜・統合してから実装する。
+次の新規制作地域はレインランドじょう。
 
 ## アセット
 - `docs/ASSET_INDEX.md` が正式名の基準
