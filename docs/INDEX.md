@@ -1,6 +1,6 @@
 # モンスタークエスト0 仕様書インデックス
 
-最終更新: 2026-09-10 23:46 JST
+最終更新: 2026-09-11 JST
 
 このファイルはAI・人間が仕様を読むための入口。
 
@@ -8,7 +8,29 @@
 1. `PROJECT_STATUS.md` — 現在地点と最新固定値
 2. `GAME_SPEC.md` — ゲーム全体仕様
 3. `CREATIVE_DIRECTION.md` — 作品の作り込み密度・元設定への敬意
-4. `AI_EXECUTION_PROTOCOL.md` — AIの作業手順
+4. `STORY_FLOW.md` — 物語の時間軸・前半〜終盤の大枠
+5. `AI_EXECUTION_PROTOCOL.md` — AIの作業手順
+
+## ストーリー・世界
+- `OPENING_SPEC.md` — タイトルからはじまりのまちまで
+- `STORY_FLOW.md` — 物語全体の進行
+- `MAP_FLOW_SPEC.md` — 地域・ダンジョン・接続・進行条件
+- `NPC_SPEC.md` — NPC会話方針と地域テーマ
+- `GLITCH_SPEC.md` — 終盤異常演出
+
+## 戦闘・成長・データ
+- `BATTLE_SPEC.md` — コマンド戦闘、だいヒット、ボス攻略
+- `CHARACTER_GROWTH.md` — 主人公・タロサ・ミレイ・わたべの成長
+- `MONSTER_SPEC.md` — 25体モンスターの管理・ネタバレ方針
+- `ITEM_EQUIPMENT_SPEC.md` — アイテム・装備
+- `CARD_SPEC.md` — ジャンカード45枚
+- `SAVE_FLAG_SPEC.md` — セーブ・ストーリー進行フラグ
+
+## UI・音・画像
+- `UI_INPUT_SPEC.md` — UI、キーボード、タッチ、iPhone操作
+- `AUDIO_SPEC.md` — BGM01〜08、SE、AudioSystem
+- `IMAGE_SPEC.md` — 画像制作方針
+- `ASSET_INDEX.md` — 正式アセット名・状態
 
 ## 実装契約
 - `PHASER_ARCHITECTURE.md` — Scene / System責務
@@ -20,15 +42,10 @@
 - `DEFINITION_OF_DONE.md` — 完成判定
 - `QA_SPEC.md` — テスト基準
 - `TBD_REGISTRY.md` — 未確定事項
-
-## ゲーム内容
-- `NPC_SPEC.md` — NPC会話と現在の進捗
-- `CARD_SPEC.md` — ジャンカード45枚
-- `GLITCH_SPEC.md` — 終盤異常演出
-- `IMAGE_SPEC.md` — 画像制作方針
-- `ASSET_INDEX.md` — 正式アセット名・状態
+- `CHANGE_CONTROL.md` — 仕様変更管理
 
 ## 進捗
+- `CURRENT_WORK.md` — 今やる作業
 - `CONTENT_MATRIX.md` — 地域・システムの進捗
 - `ROADMAP.md` — 実装順
 
@@ -42,13 +59,19 @@
 
 ## 読み方
 ### Claude Code / Phaser Game Agentで実装
-`PROJECT_STATUS` → `GAME_SPEC` → `CREATIVE_DIRECTION` → `AI_EXECUTION_PROTOCOL` → `PHASER_ARCHITECTURE` → `DATA_CONTRACTS` → 対象SPEC → `ASSET_INDEX` → `TBD_REGISTRY` → `DEFINITION_OF_DONE`
+`PROJECT_STATUS` → `GAME_SPEC` → `CREATIVE_DIRECTION` → `STORY_FLOW` → 作業対象SPEC → `AI_EXECUTION_PROTOCOL` → `PHASER_ARCHITECTURE` → `DATA_CONTRACTS` → `ASSET_INDEX` → `TBD_REGISTRY` → `DEFINITION_OF_DONE`
 
 ### Codexでレビュー
-上記 + `QA_SPEC` + `PERFORMANCE_BUDGET`
+上記 + `QA_SPEC` + `PERFORMANCE_BUDGET` + `SAVE_FLAG_SPEC`
+
+### ストーリー / マップ制作
+`PROJECT_STATUS` → `CREATIVE_DIRECTION` → `STORY_FLOW` → `OPENING_SPEC` または `MAP_FLOW_SPEC` → `TBD_REGISTRY`
 
 ### NPC会話制作
-`PROJECT_STATUS` → `CREATIVE_DIRECTION` → `NPC_SPEC` → `TBD_REGISTRY`
+`PROJECT_STATUS` → `STORY_FLOW` → `MAP_FLOW_SPEC` → `NPC_SPEC` → `TBD_REGISTRY`
+
+### 戦闘・敵・成長
+`PROJECT_STATUS` → `BATTLE_SPEC` → `CHARACTER_GROWTH` → `MONSTER_SPEC` → `ITEM_EQUIPMENT_SPEC` → `TBD_REGISTRY`
 
 ### 画像追加
 `PROJECT_STATUS` → `IMAGE_SPEC` → `ASSET_INDEX` → `assets/asset_catalog.json`
@@ -60,4 +83,4 @@
 4. 実装コード
 5. 古い試作HTML / コメント
 
-古い約1時間仕様、ジャンカード20枚、RPGJS中心、ASRS利用、「ふっかつのじゅもん」は現行仕様として使わない。
+古い約1時間仕様、ジャンカード20枚、RPGJS中心、ASRS利用、「ふっかつのじゅもん」、序盤の偽セーブ消失、大人数NPC案は現行仕様として使わない。
