@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 1,
+  "parentMapId": "map_02_start_town",
+  "parentMapName": "はじまりのまち",
+  "tileSize": 16,
+  "status": "DESIGN_DATA",
+  "notes": [
+    "Tiled/Phaser実装前の構成データ。実タイルGIDはタイルセット確定後に割り当てる。",
+    "町内部はコンパクトにし、無意味な移動距離を増やさない。",
+    "各建物は入口から主要NPC・機能まで数秒で到達できる構成を基本とする。"
+  ],
+  "interiors": [
+    {
+      "id": "map_02_inn",
+      "name": "はじまりのまち・やどや",
+      "type": "interior_inn",
+      "size": {"width": 14, "height": 10},
+      "bgm": "bgm_town",
+      "exit": {"x": 7, "y": 9, "to": "map_02_start_town", "spawnId": "spawn_inn_front"},
+      "zones": [
+        {"id": "counter", "rect": {"x": 2, "y": 2, "w": 5, "h": 2}},
+        {"id": "guest_room", "rect": {"x": 8, "y": 2, "w": 4, "h": 5}},
+        {"id": "entrance", "rect": {"x": 5, "y": 7, "w": 4, "h": 3}}
+      ],
+      "objects": [
+        {"type": "counter", "x": 2, "y": 3, "w": 5, "h": 1},
+        {"type": "bed", "x": 9, "y": 3},
+        {"type": "bed", "x": 11, "y": 3},
+        {"type": "table", "x": 9, "y": 6},
+        {"type": "stool", "x": 8, "y": 6},
+        {"type": "stool", "x": 10, "y": 6},
+        {"type": "cabinet", "x": 2, "y": 6},
+        {"type": "plant", "x": 12, "y": 7}
+      ],
+      "npcs": [
+        {"id": "npc_02_innkeeper", "role": "innkeeper", "position": {"x": 4, "y": 2}, "dialogueId": null}
+      ],
+      "events": [
+        {"id": "event_02_inn_service", "type": "inn", "position": {"x": 4, "y": 3}, "price": null}
+      ]
+    },
+    {
+      "id": "map_02_item_shop",
+      "name": "はじまりのまち・どうぐや",
+      "type": "interior_shop",
+      "size": {"width": 12, "height": 9},
+      "bgm": "bgm_town",
+      "exit": {"x": 6, "y": 8, "to": "map_02_start_town", "spawnId": "spawn_item_shop_front"},
+      "zones": [
+        {"id": "counter", "rect": {"x": 2, "y": 2, "w": 8, "h": 2}},
+        {"id": "sales_floor", "rect": {"x": 2, "y": 4, "w": 8, "h": 3}},
+        {"id": "entrance", "rect": {"x": 5, "y": 7, "w": 3, "h": 2}}
+      ],
+      "objects": [
+        {"type": "counter", "x": 2, "y": 3, "w": 8, "h": 1},
+        {"type": "shelf", "x": 2, "y": 1},
+        {"type": "shelf", "x": 4, "y": 1},
+        {"type": "shelf", "x": 8, "y": 1},
+        {"type": "crate", "x": 9, "y": 6},
+        {"type": "barrel", "x": 2, "y": 6}
+      ],
+      "npcs": [
+        {"id": "npc_02_item_shopkeeper", "role": "shopkeeper", "position": {"x": 6, "y": 2}, "dialogueId": null}
+      ],
+      "events": [
+        {"id": "event_02_item_shop", "type": "shop", "shopType": "item", "position": {"x": 6, "y": 3}, "inventoryId": null}
+      ]
+    },
+    {
+      "id": "map_02_weapon_shop",
+      "name": "はじまりのまち・ぶきや",
+      "type": "interior_shop",
+      "size": {"width": 12, "height": 9},
+      "bgm": "bgm_town",
+      "exit": {"x": 6, "y": 8, "to": "map_02_start_town", "spawnId": "spawn_weapon_shop_front"},
+      "zones": [
+        {"id": "counter", "rect": {"x": 2, "y": 2, "w": 8, "h": 2}},
+        {"id": "display", "rect": {"x": 2, "y": 4, "w": 8, "h": 3}},
+        {"id": "entrance", "rect": {"x": 5, "y": 7, "w": 3, "h": 2}}
+      ],
+      "objects": [
+        {"type": "counter", "x": 2, "y": 3, "w": 8, "h": 1},
+        {"type": "weapon_rack", "x": 2, "y": 1},
+        {"type": "weapon_rack", "x": 8, "y": 1},
+        {"type": "shield_display", "x": 5, "y": 1},
+        {"type": "crate", "x": 9, "y": 6},
+        {"type": "barrel", "x": 2, "y": 6}
+      ],
+      "npcs": [
+        {"id": "npc_02_weapon_shopkeeper", "role": "shopkeeper", "position": {"x": 6, "y": 2}, "dialogueId": null}
+      ],
+      "events": [
+        {"id": "event_02_weapon_shop", "type": "shop", "shopType": "weapon", "position": {"x": 6, "y": 3}, "inventoryId": null}
+      ]
+    },
+    {
+      "id": "map_02_church",
+      "name": "はじまりのまち・きょうかい",
+      "type": "interior_church",
+      "size": {"width": 14, "height": 11},
+      "bgm": "bgm_town",
+      "exit": {"x": 7, "y": 10, "to": "map_02_start_town", "spawnId": "spawn_church_front"},
+      "zones": [
+        {"id": "altar", "rect": {"x": 4, "y": 1, "w": 6, "h": 3}},
+        {"id": "pews", "rect": {"x": 3, "y": 4, "w": 8, "h": 4}},
+        {"id": "entrance", "rect": {"x": 6, "y": 8, "w": 3, "h": 3}}
+      ],
+      "objects": [
+        {"type": "altar", "x": 6, "y": 2},
+        {"type": "pew", "x": 3, "y": 5, "w": 3, "h": 1},
+        {"type": "pew", "x": 8, "y": 5, "w": 3, "h": 1},
+        {"type": "pew", "x": 3, "y": 7, "w": 3, "h": 1},
+        {"type": "pew", "x": 8, "y": 7, "w": 3, "h": 1},
+        {"type": "candle", "x": 4, "y": 2},
+        {"type": "candle", "x": 9, "y": 2}
+      ],
+      "npcs": [
+        {"id": "npc_02_church_keeper", "role": "church_keeper", "position": {"x": 7, "y": 3}, "dialogueId": null}
+      ],
+      "events": []
+    },
+    {
+      "id": "map_02_house_a",
+      "name": "はじまりのまち・民家A",
+      "type": "interior_house",
+      "size": {"width": 10, "height": 8},
+      "bgm": "bgm_town",
+      "exit": {"x": 5, "y": 7, "to": "map_02_start_town", "spawnId": "spawn_house_a_front"},
+      "zones": [
+        {"id": "living", "rect": {"x": 2, "y": 2, "w": 6, "h": 4}},
+        {"id": "entrance", "rect": {"x": 4, "y": 6, "w": 3, "h": 2}}
+      ],
+      "objects": [
+        {"type": "table", "x": 4, "y": 4},
+        {"type": "chair", "x": 3, "y": 4},
+        {"type": "chair", "x": 5, "y": 4},
+        {"type": "bed", "x": 7, "y": 2},
+        {"type": "cabinet", "x": 2, "y": 2},
+        {"type": "fireplace", "x": 4, "y": 1}
+      ],
+      "npcs": [],
+      "events": []
+    },
+    {
+      "id": "map_02_house_b",
+      "name": "はじまりのまち・民家B",
+      "type": "interior_house",
+      "size": {"width": 10, "height": 8},
+      "bgm": "bgm_town",
+      "exit": {"x": 5, "y": 7, "to": "map_02_start_town", "spawnId": "spawn_house_b_front"},
+      "zones": [
+        {"id": "living", "rect": {"x": 2, "y": 2, "w": 6, "h": 4}},
+        {"id": "entrance", "rect": {"x": 4, "y": 6, "w": 3, "h": 2}}
+      ],
+      "objects": [
+        {"type": "table", "x": 5, "y": 4},
+        {"type": "chair", "x": 4, "y": 4},
+        {"type": "chair", "x": 6, "y": 4},
+        {"type": "bed", "x": 2, "y": 2},
+        {"type": "shelf", "x": 7, "y": 2},
+        {"type": "pot", "x": 2, "y": 6}
+      ],
+      "npcs": [],
+      "events": []
+    }
+  ],
+  "implementationRules": {
+    "layers": ["ground", "walls", "furniture", "collision", "objects", "above"],
+    "collision": "walls/furnitureの通行不可タイルをTiled propertyで管理",
+    "playerRender": "家具や壁上部はaboveレイヤーで主人公より前に描画可能",
+    "doorTransfer": "親マップと各内部マップをtransferイベントで接続",
+    "unknownValues": "価格・商品一覧・台詞・タイルGIDは正式確定までnull"
+  }
+}
