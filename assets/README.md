@@ -2,7 +2,7 @@
 
 このディレクトリは『モンスタークエスト0 ～幻の冒険の書～』のゲーム用画像アセット置き場です。
 
-最終更新: 2026-09-10 13:50 JST
+最終更新: 2026-09-12 12:25 JST
 
 ## 命名ルール
 - ファイル名は半角英数字 + `_` の `snake_case`
@@ -11,12 +11,16 @@
 - バージョン管理はGitで行い、同用途のファイル名は原則固定
 - 透過が必要な素材はPNG
 - Phaser側ではこのパスを正として参照する
+- UUID、`IMG_####`、`ChatGPT Image ...`、1文字名、連番名は正式名として採用しない
+- 内容未確認の画像には意味のある名前を推測で付けず、`assets/_inbox/raw/` に安定名で保留する
 
 ## 正式フォルダ構成
 
 ```text
 assets/
 ├─ _inbox/
+│  ├─ raw/             # 内容未判定。ref_YYYYMMDD_<sha8>.<ext>
+│  └─ normalized/      # GitHub-safe名だが正式カテゴリ未確定
 ├─ title/
 │  ├─ logo_main_transparent.png
 │  └─ title_background.png
@@ -88,11 +92,28 @@ assets/
 - 実装用: `monsters/battle/monster_01_<name>.png` ～ `monster_25_<name>.png`
 - 原資料・カード抽出元など: `monsters/source/`
 
+## Library画像の取り込み
+ChatGPT Library `/Monster Quest 0` から画像をGitHubへ持ち込むときは、ファイル名を直接採用せず、先に監査する。
+
+```bash
+python tools/asset_intake.py <Libraryから保存した画像フォルダ>
+```
+
+- `assets/rename_overrides.json`: 確認済み旧名 → GitHub正式/参考パス
+- `tools/asset_intake.py`: SHA-256で完全重複を検出し、CSVの取り込み表を生成
+- `docs/LIBRARY_IMAGE_NAMING.md`: 詳細な命名・取り込み規則
+- `duplicate`: GitHubへ入れない
+- `mapped`: overrideで確定済みのパスを使う
+- `needs_review`: `assets/_inbox/raw/` に安定名で保留する
+
+実際にコピーする場合のみ `--apply` を付ける。元画像は削除せず、異なる内容の既存ファイルも上書きしない。
+
 ## 運用
 1. 新規画像は必要に応じて `assets/_inbox/` に仮置きする
-2. `docs/ASSET_INDEX.md` で正式名を確認する
-3. 正式フォルダへ配置する
-4. `assets/asset_catalog.json` を同期する
-5. PNG本体の存在確認後に `IN_GITHUB` とする
+2. Library由来画像は `tools/asset_intake.py` で重複・名前を監査する
+3. `docs/ASSET_INDEX.md` で正式名を確認する
+4. 正式フォルダへ配置する
+5. `assets/asset_catalog.json` を同期する
+6. PNG本体の存在確認後に `IN_GITHUB` とする
 
-AI実装時は、まず `docs/ASSET_INDEX.md` と `docs/IMAGE_SPEC.md` を読む。
+AI実装時は、まず `docs/ASSET_INDEX.md` と `docs/IMAGE_SPEC.md`、Library画像を扱う場合は `docs/LIBRARY_IMAGE_NAMING.md` を読む。
