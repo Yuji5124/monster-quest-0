@@ -1,0 +1,10 @@
+Monster Quest 0 - 03 Village / Town - B Version
+Tempo: 110 BPM / G major / 4/4
+Length: 61.091 sec
+Loop: full file
+Concept: A案より明るく、親しみやすく、村に入った瞬間に安心できる方向。中盤のみ少し郷愁を入れ、最後は明るく戻る。
+Use: ビーエの村、ザボンの村など。
+Master: 32-bit float / 96kHz / Stereo / peak -4 dBFS
+Game: 24-bit PCM / 48kHz / Stereo
+MIDI: Type 1 multitrack
+No compressor/limiter.

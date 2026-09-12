@@ -139,3 +139,8 @@ python tools/asset_intake.py <Libraryから保存した画像フォルダ>
 7. 実ファイルの存在確認後に `IN_GITHUB` とする
 
 AI実装時は、まず `docs/ASSET_INDEX.md` と `docs/IMAGE_SPEC.md`、Library画像を扱う場合は `docs/LIBRARY_IMAGE_NAMING.md` を読む。
+
+## Image master snapshot
+
+Imageから取り込んだ425件は、内容に応じて`characters`、`monsters`、`cards`、`maps`、`battle`、`audio`、`promo`、`ui`、`misc`へ割り振っています。
+元ライブラリの監査台帳は [`assets/misc/reference/monster_quest0_image_library_20260912/`](../assets/misc/reference/monster_quest0_image_library_20260912/) に残しています。

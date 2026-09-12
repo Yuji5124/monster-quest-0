@@ -1,0 +1,10 @@
+Monster Quest 0 - 02 Field / World Map
+Original composition derived from MQ0 main motif without copying track 01 verbatim.
+Tempo: 112 BPM / 4/4
+Length: 68.571 sec
+Loop: entire file, sample 0 -> end (32 bars). Circular ambience is used so the boundary remains loop-compatible.
+Inherited motif: E-G-A-B-D-B, rhythmically expanded and reharmonized.
+Master: 32-bit float / 96 kHz / Stereo / peak -4 dBFS
+Game: 24-bit PCM / 48 kHz / Stereo
+MIDI: Type 1 multitrack
+No compressor/limiter.

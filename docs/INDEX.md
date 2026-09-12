@@ -91,3 +91,12 @@
 - 旧女性勇者風主人公
 - 旧マップ番号（旧No.18 はじまりのばしょ等）
 - ジャンカードの秘密を序盤から本編へ前面化する旧案
+
+## Phase別の実装・検証記録
+- [Phase 1 起動基盤](PHASE1_BOOTSTRAP.md)
+- [Phase 2 タイトル画面](PHASE2_TITLE.md)
+- [Phase 3 冒頭異常演出](PHASE3_OPENING_GLITCH.md)
+- [Phase 4 No.01夜の場面表示](PHASE4_STARTING_PLACE.md)
+
+- [Phase 5 歩行・当たり判定](PHASE5_PLAYER_MOVEMENT.md)
+- [Phase 5.5 ビジュアル基準](PHASE5_5_VISUAL_BASELINE.md)

@@ -1,0 +1,11 @@
+Monster Quest 0 - 04 Dungeon - B Version
+Tempo: 94 BPM / E minor-modal / 4/4
+Length: 61.277 sec
+Loop: full file
+Concept: A案より探索の前進感を強化。怖さは抑えつつ、奥に何かある気配を維持。
+Use: 洞窟 / 古城 / 砦 共通
+Sound: low ostinato, short pulse cells, sparse counterline, distant echo, light noise percussion.
+Master: 32-bit float / 96kHz / Stereo / peak -5 dBFS
+Game: 24-bit PCM / 48kHz / Stereo
+MIDI: Type 1 multitrack
+No compressor/limiter.

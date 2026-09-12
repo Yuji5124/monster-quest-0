@@ -1,0 +1,10 @@
+Monster Quest 0 - 08 Ending - B Version
+Tempo: 96 BPM / 4/4
+Length: 90.000 sec
+Concept: A案より旅を終えた達成感と、01のテーマへ帰ってくる感覚を強化。
+Main motif: E-G-A-B-D-B
+Ending is linear, not looped.
+Master: 32-bit float / 96kHz / Stereo / peak -4 dBFS
+Game: 24-bit PCM / 48kHz / Stereo
+MIDI: Type 1
+No compressor/limiter.

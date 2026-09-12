@@ -1,6 +1,6 @@
 # Monster Quest 0 Project Status
 
-最終更新: 2026-09-12 JST
+最終更新: 2026-09-13 JST
 
 このファイルは『モンスタークエスト0 ～幻の冒険の書～』の**現在地点を短時間で把握するための最優先スナップショット**。
 詳細は各SPECを参照する。
@@ -29,7 +29,16 @@
 - 町・村・城内部、ダンジョン内部をコンパクト化。
 - 2026-09-11、採用済み地域を **No.01〜No.20** へ正式に振り直した。
 - No.02「はじまりのまち」の内部設計データをGitHubへ追加済み。
-- Phaser本格実装前に、正本同士の不一致を解消している段階。
+- 2026-09-12のユーザー指定Phase 1として、Phaser 3.90.0 / Vite / TypeScriptの起動基盤を追加。
+- Phase 1ではBootSceneの診断画面、仮の320×240表示、キー入力の共通action変換を実装。以後の追加内容は以下を参照。
+- PCの起動・入力・リサイズ・型チェック・ビルド・入力テストを確認。正式解像度とiPhone Safari実機確認は未完了。
+- 続くPhase 2として、TitleScene（正式ロゴ + 6項目メニューの選択・決定）を追加。BootSceneはTitleSceneへ引き渡すのみに整理。
+- Phase 2ではpromo_026を採用。Phase 5.5のCURRENTタイトルは `assets/title/ChatGPT Image 2026年9月13日 05_31_34.png`（旧promo_026はSUPERSEDEDとして保持）。「はじめから」は冒頭演出へ接続。「つづきから」はdisabled。他4項目は決定入力の取得のみで本体未接続。
+- 続くPhase 3として、「はじめから」直後の約5秒異常演出（`OpeningGlitchScene`）を追加。FC〜初期SFC風のデータ破損演出のみで、フェイク「ぼうけんのしょ」文言は使用していない。Phase 3単体では演出終了後に黒画面で停止する。
+- 2026-09-13、未コミットのPhase 1〜3を保持して再検証後、Phase 4として演出終了先を `StartingPlaceScene` へ接続。No.01夜の地面・焚き火をGraphicsのPLACEHOLDERで静止表示する。正式素材・配置・主人公・台詞はTBD、昼版や操作は未実装。詳細は `PHASE4_STARTING_PLACE.md`。
+- Phase 5で、No.01夜内のDEV_PLACEHOLDERによる4方向連続移動と当たり判定を追加。仮速度60px/秒、向きを保持、既存InputSystem/input lockを使用。正式主人公素材・配置・移動方式はTBD。No.01外への遷移やPhase 6は未実装。詳細は `PHASE5_PLAYER_MOVEMENT.md`。
+- Phase 5.5でタイトル正式画像を差し替え、No.01の構図REFERENCEを3枚保存。左にキャンプ/焚き火、中央に山側への小道、中央〜右に小橋、右に水辺、奥に山/岩壁/滝/森を感じる構図を基準とする。開始時は夜、正式ゲーム背景はTBD。今回は仮配置・移動・Collisionを変更せず、昼版とPhase 6は未実装。詳細は `PHASE5_5_VISUAL_BASELINE.md`。
+- 正本同士の既知の不一致は別作業として残る。詳細は `PHASE1_BOOTSTRAP.md` / `PHASE2_TITLE.md` / `PHASE3_OPENING_GLITCH.md`。
 
 ## 3. 最新主人公設定
 - 主人公は男性。

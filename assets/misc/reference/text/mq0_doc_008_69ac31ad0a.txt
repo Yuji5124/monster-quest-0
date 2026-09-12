@@ -1,0 +1,18 @@
+Monster Quest 0 - 07 Final Battle - B Version
+Tempo: 154 BPM / 4/4
+Total length: 99.740 sec
+
+Stage 1 - Orochi Maou: 0.000 - 37.403 sec
+A案より王道の最終決戦感を強化。01のテーマ E-G-A-B-D-B を明確に使用。
+
+Stage 2 - Orochi Zombie: 37.403 - 68.571 sec
+低域・半音進行・ノイズを強め、生命ではないものと戦っている感覚へ。
+
+Stage 3 - World Corruption: 68.571 - 99.740 sec
+誤音、音欠け、同音連打、瞬間無音、ノイズ暴走、微妙なピッチ揺れ、スタッターを作曲上のイベントとして配置。
+A案より「正常な最終決戦→異常化」の落差を強くしたB案。
+
+Master: 32-bit float / 96kHz / Stereo / peak -4 dBFS
+Game: 24-bit PCM / 48kHz / Stereo
+MIDI: Type 1 multitrack with stage markers
+No compressor/limiter.

@@ -1,10 +1,11 @@
 # Monster Quest 0 Asset Index
 
-最終更新: 2026-09-11 08:31 JST
+最終更新: 2026-09-13 JST
 
 このファイルを画像アセットの正式台帳とする。Phaser Game Agent / Codex / Claude Code は画像を探す前にこのファイルを確認する。
 
 ## ステータス
+- `CURRENT`: 現在ユーザーが正式採用した素材。Git追跡・コミット済みかは別途確認する。
 - `READY_TO_IMPORT`: ChatGPTプロジェクト側で作成済み。GitHubへPNG本体を入れる対象。
 - `IN_GITHUB`: GitHubにPNG本体を配置済み。
 - `REFERENCE`: 実装用ではなく資料・参考画像。
@@ -14,7 +15,10 @@
 ## 1. タイトル・ロゴ
 | 正式パス | 内容 | 状態 |
 |---|---|---|
-| `assets/title/logo_main_transparent.png` | 「モンスタークエスト0 ～幻の冒険の書～」透明背景ロゴ | READY_TO_IMPORT |
+| `assets/title/ChatGPT Image 2026年9月13日 05_31_34.png` | Phase 5.5でユーザー正式採用。1672×941 / RGBA透過。元画像を保持 | CURRENT |
+| `assets/promo/reference/mq0_promo_026_6d80d17943.png` | Phase 2で採用した旧ロゴ（1983×793）。Phase 5.5で差し替え、元画像を保持 | SUPERSEDED |
+| `public/assets/ui/title/mq0_title_logo.png` | 新CURRENTタイトルの配信用コピー。既存の相対参照パスを維持 | CURRENT |
+| `assets/title/logo_main_transparent.png` | 旧予定パス。ファイル未作成のため上記promo_026を正式採用に切り替え | SUPERSEDED |
 | `assets/title/title_background.png` | タイトル背景 | NEEDS_REVIEW |
 
 ※「誰も知らないゲーム、やってみる？」はサブタイトルではなく広告・紹介用コピーとして扱う。
@@ -57,9 +61,21 @@ NPCに固有名が付いた時点で `npc_01` 等から意味のある名前へ1
 確認済み旧ファイル名: `モンスタークエスト0 ワールドマップ.png` → `world_map_reference.png`
 
 ### はじまりのばしょ
-No.18「はじまりのばしょ」は夜版／昼版を用意する。
+No.01「はじまりのばしょ」は夜版／昼版を用意する。
 必要素材は実装方式に応じて、既存タイルセット + ライティング／色調差分、または専用マップ差分で管理する。
 焚き火のアニメーション／光表現が不足する場合は追加対象とする。
+
+2026-09-13 Phase 4監査: No.01夜版・焚き火の正式画像は未確定。夜のキャンプ場参考画像 `assets/maps/reference/world/mq0_world_map_011_a3fa47cf82.png` はREFERENCEのまま不使用。表示確認はPhaser GraphicsのPLACEHOLDERで行い、正式素材台帳には登録しない。詳細: `PHASE4_STARTING_PLACE.md`。
+
+### Phase 5.5 No.01構図REFERENCE
+
+| パス | 用途 | 状態 |
+|---|---|---|
+| `assets/maps/reference/starting_place/no01_location_reference_9d4209d80a.png` | 添付1: フォトリアルなロケーション・空間構成 | REFERENCE |
+| `assets/maps/reference/starting_place/no01_night_reference_1b51bbe29b.png` | 添付2: 夜のドット風マップイメージ | REFERENCE |
+| `assets/maps/reference/starting_place/no01_day_reference_6398a59b13.png` | 添付3: 同一構図の昼のドット風マップイメージ | REFERENCE |
+
+正式ゲーム背景は引き続きTBD。3枚とも背景としてロードせず、FC〜初期SFC風へ再設計する際の参考資料とする。現行表示はDEV_PLACEHOLDER、昼版は未実装。構図基準は `OPENING_SPEC.md` §5、作業記録は `PHASE5_5_VISUAL_BASELINE.md`。
 
 ## 6. 戦闘背景
 現在の正式方針は、**ドットキャラクターと高品質な2D JRPG／アニメ背景を組み合わせる**こと。背景はゲーム組み込み用として、敵・UIの視認性を優先する。
@@ -163,3 +179,20 @@ No.18「はじまりのばしょ」は夜版／昼版を用意する。
 6. Phaser側でパスを直書きせず、asset manifest経由で読み込む
 
 > 注意: ChatGPTプロジェクト内で生成された画像と、GitHubリポジトリ上のバイナリ画像は別管理。PNG本体がGitHubに入ったことを確認するまで `IN_GITHUB` にしない。
+
+## 14. Image library allocation
+
+2026-09-12時点のImage本体425件は、内容に応じて以下へ割り振り済みです。
+
+- `assets/characters/reference/`
+- `assets/monsters/source/`
+- `assets/cards/source/`
+- `assets/maps/reference/`
+- `assets/battle/backgrounds/reference/`
+- `assets/audio/source/`
+- `assets/promo/reference/`
+- `assets/ui/reference/`
+- `assets/misc/reference/`
+
+元ライブラリの監査台帳は `assets/misc/reference/monster_quest0_image_library_20260912/` に残しています。
+重複予備はデスクトップのImageマスター側`duplicates/`に保持しています。

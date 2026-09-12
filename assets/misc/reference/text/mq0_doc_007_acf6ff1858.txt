@@ -1,0 +1,10 @@
+Monster Quest 0 - 06 Boss Battle - B Version
+Tempo: 148 BPM / E minor with chromatic tension / 4/4
+Length: 51.892 sec
+Loop: full file
+Bosses: まじん / デーマス / バトラス
+Concept: A案より格上感・ドラマ性・反撃感を強化。中盤の上昇フレーズは主人公側の勇気を明確に表現し、デーマス戦の重要イベントにも対応。
+Master: 32-bit float / 96kHz / Stereo / peak -4 dBFS
+Game: 24-bit PCM / 48kHz / Stereo
+MIDI: Type 1 multitrack
+No compressor/limiter.

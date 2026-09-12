@@ -2,7 +2,34 @@
 
 **モンスタークエスト0 ～幻の冒険の書～**
 
-最終更新: 2026-09-12 JST
+最終更新: 2026-09-13 JST
+
+## Phase 1-5.5 起動・タイトル・No.01歩行 / ビジュアル基準
+
+Node.js 22.18以上を使用する。
+
+```bash
+npm install
+npm run dev
+```
+
+ブラウザで `http://127.0.0.1:5173/` を開く。`BootScene` → `TitleScene`（正式ロゴ + 6項目メニュー）→「はじめから」決定で `OpeningGlitchScene`（約5秒のFC風異常演出）→ 暗転 → `StartingPlaceScene`（No.01夜の地面と焚き火のPLACEHOLDER表示）、まで遷移する。
+No.01夜で方向キーによるDEV_PLACEHOLDERの4方向移動・当たり判定を確認できる。正式マップ・正式主人公素材・戦闘・NPCは未実装。No.01からのマップ遷移はない。タイトルの「はじめから」以外の5項目は決定入力を取得するのみで本体機能へは未接続。
+
+- Phaser **3.90.0**を完全固定。既存の依存指定がなかったため今回初回導入した。
+- 内部解像度は確認用の仮値 **320×240**。`src/config/display.ts` で管理し、正式解像度のTBDは維持する。
+- 仮キー配列: 方向キー、Z/Enter（confirm）、X/Escape（cancel）、C（menu）。配列は `src/config/input.ts` に分離。
+- タイトルロゴCURRENT: `assets/title/ChatGPT Image 2026年9月13日 05_31_34.png`。配信先 `public/assets/ui/title/mq0_title_logo.png` を更新。旧promo_026はSUPERSEDEDとして保持。
+- Phase 5.5: No.01構図REFERENCEを3枚保存。正式背景TBD / 実行中はDEV_PLACEHOLDER。構図は `docs/OPENING_SPEC.md` §5に記録し、仮配置・移動・CollisionはPhase 5のまま維持する。
+- タイトルメニュー6項目は `src/config/menu.ts` で管理。「つづきから」はSaveSystem未実装のためdisabled。
+- 冒頭約5秒異常演出は `src/scenes/OpeningGlitchScene.ts` / `src/config/openingGlitch.ts`。新規画像素材は使わず`Graphics`/`Text`/`Camera`のみで構成。演出終了時のみNo.01夜の `StartingPlaceScene` へ接続する。
+- No.01夜の仮配置・色は `src/config/startingPlace.ts` に分離。地面・焚き火はPhase 4の仮表示を維持。Phase 5では単色のDEV_PLACEHOLDERを追加し、正式主人公素材と台詞はTBDのままとする。
+- 移動は仮の連続4方向・60px/秒。`src/config/player.ts`でサイズと速度を調整する。同時押しは縦優先、逆方向は相殺。焚き火・地面より上・画面端には進入できない。
+- `npm test`: 入力処理・メニュー構成・異常演出ステージ設定・4方向移動のテスト。
+- `npm run build`: 型チェックと本番ビルド。出力先は `dist/`。
+- `npm run preview`: 本番ビルドを `http://127.0.0.1:4173/` で確認。
+
+詳しい範囲・構成・検証結果は [Phase 1起動基盤](docs/PHASE1_BOOTSTRAP.md) / [Phase 2タイトル画面](docs/PHASE2_TITLE.md) / [Phase 3冒頭異常演出](docs/PHASE3_OPENING_GLITCH.md) / [Phase 4 No.01夜表示](docs/PHASE4_STARTING_PLACE.md) / [Phase 5 歩行・当たり判定](docs/PHASE5_PLAYER_MOVEMENT.md) / [Phase 5.5 ビジュアル基準](docs/PHASE5_5_VISUAL_BASELINE.md) を参照。
 
 ## 現在の正式方針
 - 目標プレイ時間: **初見約4時間30分 / 寄り道込み約5時間30分**
@@ -84,11 +111,11 @@ Monster Quest 0には、異なるモンスタークエスト作品／バージ�
 - No.02「はじまりのまち」は内部マップ設計データもGitHubで管理する
 
 ## 今の開発段階
-仕様・素材整理とマップ設計データ作成が先行しており、本格Phaser実装前。
+Phaserの起動・表示・キー入力基盤、タイトル画面、冒頭約5秒異常演出、No.01夜のPLACEHOLDER表示とDEV_PLACEHOLDERの歩行・当たり判定を追加済み。本編は仕様・素材整理とマップ設計の段階。
 
-最初の実装目標:
+今後の本編実装目標（今回のPhase 5.5には含めない）:
 
-**タイトル → 約5秒異常 → No.01夜 → 主人公歩行 → No.02はじまりのまち → フィールド → ザコ戦 → レベルアップ → 小ダンジョン → ボス → セーブ / ロード → iPhone Safari確認**
+**No.01夜 → 主人公歩行 → No.02はじまりのまち → フィールド → ザコ戦 → レベルアップ → 小ダンジョン → ボス → セーブ / ロード → iPhone Safari確認**
 
 ## 制作思想
 全編を同じ密度で過剰に作り込まない。

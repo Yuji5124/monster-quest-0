@@ -1,0 +1,10 @@
+Monster Quest 0 - 03 Village / Town
+Direction: slightly brighter than the initial brief; warm, rustic, reassuring.
+Tempo: 104 BPM / G major / 4/4
+Length: 64.615 sec
+Loop: entire file, sample 0 -> end (28 bars)
+Character: sunny village life, wooden homes, herbs/forest/mountains; bars 21-24 introduce a mild wistful color before returning to G major.
+Master: WAV 32-bit float / 96 kHz / Stereo / peak -4 dBFS
+Game: WAV 24-bit PCM / 48 kHz / Stereo
+MIDI: Type 1 multitrack
+No compressor/limiter.

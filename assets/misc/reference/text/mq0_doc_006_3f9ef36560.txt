@@ -1,0 +1,10 @@
+Monster Quest 0 - 04 Dungeon
+Use: caves, old castles, forts.
+Tempo: 88 BPM / E minor-modal / 4/4
+Length: 65.455 sec
+Loop: entire file, sample 0 -> end (24 bars)
+Direction: mysterious and tense but not frightening. Melody is deliberately restrained; low ostinato, drones, short pulse cells and distant echoes carry the exploration mood.
+Master: 32-bit float / 96 kHz / Stereo / peak -5 dBFS
+Game: 24-bit PCM / 48 kHz / Stereo
+MIDI: Type 1 multitrack
+No compressor/limiter.

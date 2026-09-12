@@ -1,0 +1,8 @@
+Monster Quest 0 - 01 Title / Opening B
+Length: 53.33s / 108 BPM
+Concept: A案より冒頭のロゴフレーズと冒険感を強化したB案。
+Main motif: E-G-A-B-D-B（既存の02/07/08との統一性を維持）
+Master: 32-bit float / 96kHz / Stereo / peak -4 dBFS
+Game: 24-bit PCM / 48kHz / Stereo
+MIDI: Type 1
+No compressor/limiter.
