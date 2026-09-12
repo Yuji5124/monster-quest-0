@@ -163,3 +163,9 @@ No.18「はじまりのばしょ」は夜版／昼版を用意する。
 6. Phaser側でパスを直書きせず、asset manifest経由で読み込む
 
 > 注意: ChatGPTプロジェクト内で生成された画像と、GitHubリポジトリ上のバイナリ画像は別管理。PNG本体がGitHubに入ったことを確認するまで `IN_GITHUB` にしない。
+
+## 14. Image library snapshot
+
+2026-09-12時点の目視整理済み参考ライブラリは `assets/misc/reference/monster_quest0_image_library_20260912/` にあります。
+重複予備はデスクトップのImageマスター側 `duplicates/` に保持し、GitHub側のスナップショットには重複本体を入れていません。
+

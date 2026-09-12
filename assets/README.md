@@ -139,3 +139,9 @@ python tools/asset_intake.py <Libraryから保存した画像フォルダ>
 7. 実ファイルの存在確認後に `IN_GITHUB` とする
 
 AI実装時は、まず `docs/ASSET_INDEX.md` と `docs/IMAGE_SPEC.md`、Library画像を扱う場合は `docs/LIBRARY_IMAGE_NAMING.md` を読む。
+
+## Image master snapshot
+
+目視整理済みのImage参考ライブラリは [`assets/misc/reference/monster_quest0_image_library_20260912/`](../assets/misc/reference/monster_quest0_image_library_20260912/) に収録しています。
+デスクトップのImageマスターは保持したまま、GitHub側には重複を除いた本体と監査マニフェストを追加しています。
+
