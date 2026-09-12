@@ -1,8 +1,8 @@
 # Monster Quest 0 Assets
 
-このディレクトリは『モンスタークエスト0 ～幻の冒険の書～』のゲーム用画像アセット置き場です。
+このディレクトリは『モンスタークエスト0 ～幻の冒険の書～』のゲーム用画像・音楽・効果音アセット置き場です。
 
-最終更新: 2026-09-12 12:25 JST
+最終更新: 2026-09-12 16:11 JST
 
 ## 命名ルール
 - ファイル名は半角英数字 + `_` の `snake_case`
@@ -12,7 +12,8 @@
 - 透過が必要な素材はPNG
 - Phaser側ではこのパスを正として参照する
 - UUID、`IMG_####`、`ChatGPT Image ...`、1文字名、連番名は正式名として採用しない
-- 内容未確認の画像には意味のある名前を推測で付けず、`assets/_inbox/raw/` に安定名で保留する
+- 内容未確認の素材には意味のある名前を推測で付けず、`assets/_inbox/raw/` に安定名で保留する
+- 内容確認済みだが既存カテゴリに分類できない素材は `assets/misc/` に保管する
 
 ## 正式フォルダ構成
 
@@ -63,11 +64,24 @@ assets/
 ├─ cards/
 │  ├─ full/
 │  └─ art/
-└─ promo/
-   ├─ poster_retro_rpg.png
-   ├─ package_front.png
-   └─ package_back.png
+├─ promo/
+│  ├─ poster_retro_rpg.png
+│  ├─ package_front.png
+│  └─ package_back.png
+├─ audio/
+│  ├─ music/           # BGM・ジングル
+│  ├─ sfx/             # 効果音
+│  └─ source/          # 元データ・書き出し前素材・参考音源
+└─ misc/
+   ├─ reference/       # 確認済み参考資料
+   ├─ concept/         # 分類困難なコンセプト素材
+   └─ archive/         # 残す価値がある旧案・保管資料
 ```
+
+## _inbox と misc の使い分け
+- `_inbox/`: 内容未確認・用途未判定。正式名をまだ付けない
+- `misc/`: 内容確認済みだが、既存カテゴリへ自然に分類できない
+- 実装に使うことが決まった素材は `misc/` に留めず正式カテゴリへ移す
 
 ## キャラクター区分
 - 主要パーティ: 主人公・タロサ・ミレイ
@@ -92,6 +106,13 @@ assets/
 - 実装用: `monsters/battle/monster_01_<name>.png` ～ `monster_25_<name>.png`
 - 原資料・カード抽出元など: `monsters/source/`
 
+## 音楽・効果音命名
+- BGM: `audio/music/bgm_<scene>.<ext>`
+- 効果音: `audio/sfx/sfx_<action>.<ext>`
+- ジングル: `audio/music/jingle_<event>.<ext>`
+- 元データ・参考音源: `audio/source/`
+- 例: `bgm_title.ogg`, `bgm_field.ogg`, `sfx_menu_confirm.wav`
+
 ## Library画像の取り込み
 ChatGPT Library `/Monster Quest 0` から画像をGitHubへ持ち込むときは、ファイル名を直接採用せず、先に監査する。
 
@@ -109,11 +130,12 @@ python tools/asset_intake.py <Libraryから保存した画像フォルダ>
 実際にコピーする場合のみ `--apply` を付ける。元画像は削除せず、異なる内容の既存ファイルも上書きしない。
 
 ## 運用
-1. 新規画像は必要に応じて `assets/_inbox/` に仮置きする
+1. 新規素材は必要に応じて `assets/_inbox/` に仮置きする
 2. Library由来画像は `tools/asset_intake.py` で重複・名前を監査する
 3. `docs/ASSET_INDEX.md` で正式名を確認する
 4. 正式フォルダへ配置する
-5. `assets/asset_catalog.json` を同期する
-6. PNG本体の存在確認後に `IN_GITHUB` とする
+5. 分類不能だが保管対象の確認済み素材は `assets/misc/` に移す
+6. `assets/asset_catalog.json` を同期する
+7. 実ファイルの存在確認後に `IN_GITHUB` とする
 
 AI実装時は、まず `docs/ASSET_INDEX.md` と `docs/IMAGE_SPEC.md`、Library画像を扱う場合は `docs/LIBRARY_IMAGE_NAMING.md` を読む。
