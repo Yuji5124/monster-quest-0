@@ -1,0 +1,797 @@
+{
+ "columns": 8,
+ "image": "../../assets/maps/tilesets/mq0_terrain_forest_v2.png",
+ "imageheight": 288,
+ "imagewidth": 256,
+ "margin": 0,
+ "name": "mq0_terrain_forest_v2",
+ "spacing": 0,
+ "tilecount": 72,
+ "tiledversion": "1.12.2",
+ "tileheight": 32,
+ "tilewidth": 32,
+ "tiles": [
+  {
+   "id": 0,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "grass_base"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 1,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "grass_variant_a"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "grass_variant_b"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "sparse_grass"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "grass_flower_white"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "grass_flower_yellow"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "dirt_full"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 7,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "dirt_edge_n"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 8,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "path_straight_v"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 9,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "path_straight_h"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 10,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "path_cross"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 11,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "path_corner_ne"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 12,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "path_corner_se"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 13,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "path_corner_sw"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 14,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "path_corner_nw"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 15,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "path_end_n"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 16,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "path_end_e"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 17,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "path_end_w"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 18,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "path_end_s"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 19,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "path_patch_a"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 20,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "path_patch_b"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 21,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "dirt_edge_s"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 22,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "dirt_edge_e"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 23,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "dirt_edge_w"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 24,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "water_a"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 25,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "water_b"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 26,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "water_lily_a"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 27,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "water_lily_b"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 28,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "water_foam_ring"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 29,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "dirt_corner_ne"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 30,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "dirt_corner_nw"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 31,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "dirt_corner_se"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 32,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "shore_n"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 33,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "shore_s"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 34,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "shore_e"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 35,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "shore_w"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 36,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "dirt_corner_sw"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 37,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "dirt_inner_ne"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 38,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "dirt_inner_nw"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 39,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "dirt_inner_se"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 40,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "shore_corner_a"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 41,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "shore_corner_b"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 42,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "dirt_inner_sw"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 43,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "dirt_variant_01"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 44,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "dirt_variant_02"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 56,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "cliff_face"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 57,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "cliff_face_vertical"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 58,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "cliff_top_cap"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 64,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "waterfall_top"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 65,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "waterfall_middle"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 66,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "waterfall_bottom"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 67,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "waterfall_foam"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  }
+ ],
+ "type": "tileset",
+ "version": "1.11"
+}

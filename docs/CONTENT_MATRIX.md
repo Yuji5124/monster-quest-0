@@ -1,6 +1,11 @@
 # モンスタークエスト0 コンテンツ進捗表
 
-最終更新: 2026-09-13 JST
+最終更新: 2026-09-18 JST
+
+> 2026-09-18以降、新規ローカルマップの正式方針は `MAP_SYSTEM.md`（背景画像正本 + Collision / Event / Object）である。本表にあるTiled / ROUGH_FIELD / FieldSceneの項目は既存実装の進捗記録として保持し、新規制作の標準とはしない。
+
+## Phase 8.6 既存到達点（legacy prototype）
+Phase 8.6では既存世界地図REFERENCEを背景にしたROUGH_FIELDを追加。内部960×720、Field 1920×1440、180px/秒、即時追従CameraとMapTransitionを維持。No.01／No.02の位置はDEV_PLACEHOLDER_WORLD_POSITIONで、南西の橋を通る徒歩往復を確認。建物退出直後の再入場を再現し、6棟の帰還座標だけを修正。正式地理・正式Collision・Tiled・Phase 9は未着手。詳細: `PHASE8_6_ROUGH_FIELD.md`。
 
 この表は「設定済み」「会話原案あり」「素材制作済み」「GitHub配置済み」「Phaser実装済み」を混同しないための進捗管理表。
 
@@ -29,8 +34,8 @@
 ## 地域
 | No. | 地域 | 設定 | NPC会話 | Phaser実装 | 備考 |
 |---:|---|---|---|---|---|
-| 01 | **はじまりのばしょ** | **CONFIRMED** | - | PARTIAL: 夜の仮表示・DEV_PLACEHOLDER歩行/衝突 | **Phase 5。正式素材・会話・昼版・マップ遷移は未実装** |
-| 02 | はじまりのまち | CONFIRMED | DIALOGUE_DRAFT | 未実装 | 会話原案あり。縮小後マップに合わせ再編集 |
+| 01 | **はじまりのばしょ** | **CONFIRMED** | - | PARTIAL: 夜の仮表示・DEV_PLACEHOLDER歩行/衝突。Phase 8.5でNo.02への導線をフィールド(仮)経由へ変更 | **Phase 5。正式素材・会話・昼版は未実装** |
+| 02 | はじまりのまち | CONFIRMED | DIALOGUE_DRAFT | PARTIAL: Phase 8-Aで建物6棟の外観+Collision・NPC1体(DEV_PLACEHOLDER)・MapTransitionまで実装。Phase 8-Bで建物内部6室(DEV_PLACEHOLDER_INTERIOR)＋出入り(入口→暗転→内部→出口→暗転→建物前)を実装。店/宿/教会機能・内部NPC・正式NPC・正式会話は未実装 | 会話原案あり。人数・配置はNPC_SPEC.mdで再検討中 |
 | 03 | ビーエのむら | CONFIRMED | DIALOGUE_DRAFT | 未実装 | 木こり救出事件あり。縮小後マップに合わせ再編集 |
 | 04 | レインランドのまち | CONFIRMED | DIALOGUE_DRAFT | 未実装 | 王家・ミレイ等の伏線あり |
 | 05 | レインランドじょう | CONFIRMED | DIALOGUE_DRAFT | 未実装 | 王家・政治の中心 |
@@ -119,13 +124,16 @@ GitHub実ファイル状態は `ASSET_INDEX.md` を確認する。
 | システム | 仕様 | Phaser実装 | QA |
 |---|---|---|---|
 | Phaser起動基盤 | Phase 1限定 | IMPLEMENTED: BootSceneからTitleSceneへ起動 | PC起動 / 型チェック / ビルド確認 |
-| 解像度・画面追従 | 正式値TBD | 仮320×240 / FIT | PC縦長・横長表示確認 / iPhone実機未確認 |
+| 解像度・画面追従 | 正式値TBD | 仮960×720(旧320×240の3倍,4:3) / FIT | PC表示確認 / iPhone実機未確認 |
 | キー入力基盤 | 共通action / 配列は仮 | IMPLEMENTED: InputSystem | 単体5件 / PCキー操作確認 |
 | タイトル | CONFIRMED | IMPLEMENTED: TitleScene（ロゴ + 6項目メニュー選択/決定。はじめからのみ冒頭演出へ接続） | PC起動 / 型チェック / ビルド / リサイズ確認 |
 | オープニング(約5秒異常) | **最新仕様あり** | IMPLEMENTED: OpeningGlitchScene（黒→横線→ズレ→強い乱れ→暗転。Phase 4でNo.01夜の仮表示へ接続） | PC起動 / 型チェック / ビルド / タイミング・入力確認 |
 | はじまりのばしょ夜／昼 | **仕様あり** | PARTIAL: 夜の仮表示と歩行のみ。昼版未実装 | Chrome表示・衝突確認 |
 | フィールド歩行 | 最終方式TBD | PARTIAL: No.01内のDEV_PLACEHOLDERで4方向移動・Arcade Physics | 入力・停止・同時押し・壁抜け・再入場確認 |
-| NPC会話 | 仕様あり / 再編集中 | 未実装 | - |
+| マップ遷移(No.01⇔フィールド⇔No.02) | 出入口座標TBD | PARTIAL: config駆動のexit/spawnでDEV_PLACEHOLDER往復。Phase 8.5でNo.01⇔No.02の直接接続をSUPERSEDEDにし、フィールド(仮)経由へ変更。No.02正式内容は未実装 | 自動テスト20件+13件(Phase 8.5) / Chrome・Edge実機で往復確認済み(Phase 6.1、旧経路) |
+| フィールド(仮、No.01-No.02間) | 正式名称・地形TBD | PARTIAL: Phase 8.5でDEV_PLACEHOLDER_FIELD(仮mapId `field_starting_region`)を追加。960×720より大きい仮空間+主人公追従Camera+仮Collision(山/水辺) | 自動テスト13件 / ブラウザ実機は今回未完了(Scene状態検証+実キーイベントで代替) |
+| NPC会話 | 仕様あり / 再編集中 | PARTIAL: DEV_PLACEHOLDER_NPC1体+DEV_PLACEHOLDER_DIALOGUEで会話システム基盤のみ実装。正式NPC/台詞は未着手 | 自動テスト10件 / ブラウザ実機は今回未完了(下記参照) |
+| 建物内部＋出入り(No.02) | 内部機能TBD | PARTIAL: Phase 8-Bで共通InteriorScene+interiorIdデータ駆動により6室(DEV_PLACEHOLDER_INTERIOR)の入退室を実装。店/宿/教会機能・内部NPCは未実装 | 自動テスト9件 / ブラウザ実機は今回未完了(Scene状態検証で代替) |
 | EventSystem | 仕様あり | 未実装 | - |
 | ランダムエンカウント | 仕様あり | 未実装 | - |
 | コマンド戦闘 | 仕様あり | 未実装 | - |

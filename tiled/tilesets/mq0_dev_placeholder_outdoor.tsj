@@ -1,0 +1,272 @@
+{
+ "columns": 6,
+ "image": "../../assets/maps/tilesets/dev_placeholder_outdoor_tileset.png",
+ "imageheight": 96,
+ "imagewidth": 192,
+ "margin": 0,
+ "name": "mq0_dev_placeholder_outdoor",
+ "spacing": 0,
+ "tilecount": 18,
+ "tiledversion": "1.12.2",
+ "tileheight": 32,
+ "tilewidth": 32,
+ "tiles": [
+  {
+   "id": 0,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "grass_base"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 1,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "grass_variant"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "path_dirt"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "path_dirt_edge"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "tree_canopy"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "bush_low"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "rock_boulder"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 7,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "cliff_face"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 8,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "water"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 9,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "water_edge"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 10,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "bridge_wood"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 11,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "waterfall"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 12,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "campfire_marker"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 13,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "flower_patch"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 14,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "log_stump"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 15,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "torch_marker"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 16,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "collision_solid_marker"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  }
+ ],
+ "type": "tileset",
+ "version": "1.11"
+}

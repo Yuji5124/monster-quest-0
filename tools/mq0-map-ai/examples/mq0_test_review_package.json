@@ -1,0 +1,738 @@
+{
+  "schemaVersion": "0.2.0",
+  "generatedAt": "2026-09-13T11:21:05.483Z",
+  "project": {
+    "id": "MQ0",
+    "title": "Monster Quest 0"
+  },
+  "map": {
+    "id": "TEST",
+    "name": "mq0_test_map",
+    "type": "test",
+    "chapter": "development",
+    "width": 20,
+    "height": 15,
+    "tileWidth": 16,
+    "tileHeight": 16,
+    "sourcePath": "tiled/maps/mq0_test_map.tmj"
+  },
+  "layers": [
+    {
+      "name": "Reference",
+      "kind": "image",
+      "visible": true
+    },
+    {
+      "name": "Ground",
+      "kind": "tile",
+      "visible": true
+    },
+    {
+      "name": "Terrain",
+      "kind": "tile",
+      "visible": true
+    },
+    {
+      "name": "Buildings",
+      "kind": "tile",
+      "visible": true
+    },
+    {
+      "name": "Collision",
+      "kind": "tile",
+      "visible": true
+    },
+    {
+      "name": "Events",
+      "kind": "object",
+      "visible": true
+    }
+  ],
+  "objects": [
+    {
+      "name": "spawn_main",
+      "class": "playerSpawn",
+      "x": 32,
+      "y": 208,
+      "width": 16,
+      "height": 16,
+      "properties": {
+        "id": "spawn_main"
+      }
+    },
+    {
+      "name": "exit_east",
+      "class": "exit",
+      "x": 304,
+      "y": 104,
+      "width": 16,
+      "height": 32,
+      "properties": {
+        "id": "exit_east",
+        "targetMap": "",
+        "targetSpawn": ""
+      }
+    },
+    {
+      "name": "npc_test",
+      "class": "npc",
+      "x": 96,
+      "y": 112,
+      "width": 16,
+      "height": 16,
+      "properties": {
+        "npcId": "npc_test"
+      }
+    },
+    {
+      "name": "event_test",
+      "class": "event",
+      "x": 160,
+      "y": 112,
+      "width": 16,
+      "height": 16,
+      "properties": {
+        "eventId": "event_test"
+      }
+    },
+    {
+      "name": "treasure_test",
+      "class": "treasure",
+      "x": 224,
+      "y": 112,
+      "width": 16,
+      "height": 16,
+      "properties": {
+        "id": "treasure_test"
+      }
+    }
+  ],
+  "tilesets": [],
+  "properties": {
+    "mq0MapId": "TEST",
+    "mq0MapName": "mq0_test_map",
+    "mq0MapType": "test",
+    "mq0Chapter": "development",
+    "mq0RequirementFile": ""
+  },
+  "requirements": {
+    "primary": {
+      "path": "docs/MAP_FLOW_SPEC.md",
+      "sourcePath": "docs/MAP_FLOW_SPEC.md",
+      "category": "map-flow",
+      "priority": 80,
+      "reason": "category:map-flow",
+      "exists": true
+    },
+    "selected": [
+      {
+        "path": "docs/MAP_FLOW_SPEC.md",
+        "sourcePath": "docs/MAP_FLOW_SPEC.md",
+        "category": "map-flow",
+        "priority": 80,
+        "reason": "category:map-flow",
+        "exists": true
+      },
+      {
+        "path": "docs/OPENING_SPEC.md",
+        "sourcePath": "docs/OPENING_SPEC.md",
+        "category": "story",
+        "priority": 60,
+        "reason": "category:story",
+        "exists": true
+      },
+      {
+        "path": "docs/STORY_FLOW.md",
+        "sourcePath": "docs/STORY_FLOW.md",
+        "category": "story",
+        "priority": 60,
+        "reason": "category:story",
+        "exists": true
+      },
+      {
+        "path": "docs/GLITCH_SPEC.md",
+        "sourcePath": "docs/GLITCH_SPEC.md",
+        "category": "story",
+        "priority": 60,
+        "reason": "category:story",
+        "exists": true
+      },
+      {
+        "path": "docs/NPC_SPEC.md",
+        "sourcePath": "docs/NPC_SPEC.md",
+        "category": "common",
+        "priority": 40,
+        "reason": "category:common",
+        "exists": true
+      }
+    ],
+    "candidates": [
+      {
+        "path": "docs/BATTLE_SPEC.md",
+        "sourcePath": "docs/BATTLE_SPEC.md",
+        "category": "common",
+        "priority": 40,
+        "reason": "category:common",
+        "exists": true
+      },
+      {
+        "path": "docs/CHARACTER_GROWTH.md",
+        "sourcePath": "docs/CHARACTER_GROWTH.md",
+        "category": "common",
+        "priority": 40,
+        "reason": "category:common",
+        "exists": true
+      },
+      {
+        "path": "docs/MAGIC_SPEC.md",
+        "sourcePath": "docs/MAGIC_SPEC.md",
+        "category": "common",
+        "priority": 40,
+        "reason": "category:common",
+        "exists": true
+      },
+      {
+        "path": "docs/MONSTER_SPEC.md",
+        "sourcePath": "docs/MONSTER_SPEC.md",
+        "category": "common",
+        "priority": 40,
+        "reason": "category:common",
+        "exists": true
+      },
+      {
+        "path": "docs/ITEM_EQUIPMENT_SPEC.md",
+        "sourcePath": "docs/ITEM_EQUIPMENT_SPEC.md",
+        "category": "common",
+        "priority": 40,
+        "reason": "category:common",
+        "exists": true
+      },
+      {
+        "path": "docs/CARD_SPEC.md",
+        "sourcePath": "docs/CARD_SPEC.md",
+        "category": "common",
+        "priority": 40,
+        "reason": "category:common",
+        "exists": true
+      },
+      {
+        "path": "docs/SAVE_FLAG_SPEC.md",
+        "sourcePath": "docs/SAVE_FLAG_SPEC.md",
+        "category": "common",
+        "priority": 40,
+        "reason": "category:common",
+        "exists": true
+      },
+      {
+        "path": "docs/UI_INPUT_SPEC.md",
+        "sourcePath": "docs/UI_INPUT_SPEC.md",
+        "category": "system",
+        "priority": 20,
+        "reason": "category:system",
+        "exists": true
+      },
+      {
+        "path": "docs/AUDIO_SPEC.md",
+        "sourcePath": "docs/AUDIO_SPEC.md",
+        "category": "system",
+        "priority": 20,
+        "reason": "category:system",
+        "exists": true
+      },
+      {
+        "path": "docs/IMAGE_SPEC.md",
+        "sourcePath": "docs/IMAGE_SPEC.md",
+        "category": "system",
+        "priority": 20,
+        "reason": "category:system",
+        "exists": true
+      },
+      {
+        "path": "docs/ASSET_INDEX.md",
+        "sourcePath": "docs/ASSET_INDEX.md",
+        "category": "system",
+        "priority": 20,
+        "reason": "category:system",
+        "exists": true
+      },
+      {
+        "path": "docs/PHASER_ARCHITECTURE.md",
+        "sourcePath": "docs/PHASER_ARCHITECTURE.md",
+        "category": "system",
+        "priority": 20,
+        "reason": "category:system",
+        "exists": true
+      },
+      {
+        "path": "docs/DATA_CONTRACTS.md",
+        "sourcePath": "docs/DATA_CONTRACTS.md",
+        "category": "system",
+        "priority": 20,
+        "reason": "category:system",
+        "exists": true
+      },
+      {
+        "path": "docs/EVENT_SYSTEM_SPEC.md",
+        "sourcePath": "docs/EVENT_SYSTEM_SPEC.md",
+        "category": "system",
+        "priority": 20,
+        "reason": "category:system",
+        "exists": true
+      },
+      {
+        "path": "docs/NAMING_CONVENTIONS.md",
+        "sourcePath": "docs/NAMING_CONVENTIONS.md",
+        "category": "system",
+        "priority": 20,
+        "reason": "category:system",
+        "exists": true
+      },
+      {
+        "path": "docs/REPO_STRUCTURE.md",
+        "sourcePath": "docs/REPO_STRUCTURE.md",
+        "category": "system",
+        "priority": 20,
+        "reason": "category:system",
+        "exists": true
+      },
+      {
+        "path": "docs/PERFORMANCE_BUDGET.md",
+        "sourcePath": "docs/PERFORMANCE_BUDGET.md",
+        "category": "system",
+        "priority": 20,
+        "reason": "category:system",
+        "exists": true
+      },
+      {
+        "path": "docs/DEFINITION_OF_DONE.md",
+        "sourcePath": "docs/DEFINITION_OF_DONE.md",
+        "category": "system",
+        "priority": 20,
+        "reason": "category:system",
+        "exists": true
+      },
+      {
+        "path": "docs/QA_SPEC.md",
+        "sourcePath": "docs/QA_SPEC.md",
+        "category": "system",
+        "priority": 20,
+        "reason": "category:system",
+        "exists": true
+      },
+      {
+        "path": "docs/TBD_REGISTRY.md",
+        "sourcePath": "docs/TBD_REGISTRY.md",
+        "category": "system",
+        "priority": 20,
+        "reason": "category:system",
+        "exists": true
+      },
+      {
+        "path": "docs/CHANGE_CONTROL.md",
+        "sourcePath": "docs/CHANGE_CONTROL.md",
+        "category": "system",
+        "priority": 20,
+        "reason": "category:system",
+        "exists": true
+      },
+      {
+        "path": "docs/LIBRARY_IMAGE_NAMING.md",
+        "sourcePath": "docs/LIBRARY_IMAGE_NAMING.md",
+        "category": "system",
+        "priority": 20,
+        "reason": "category:system",
+        "exists": true
+      },
+      {
+        "path": "docs/NPC/01_hajimari_no_machi.md",
+        "sourcePath": "docs/NPC/01_hajimari_no_machi.md",
+        "category": "system",
+        "priority": 20,
+        "reason": "category:system",
+        "exists": true
+      },
+      {
+        "path": "docs/NPC/02_bie_no_mura.md",
+        "sourcePath": "docs/NPC/02_bie_no_mura.md",
+        "category": "system",
+        "priority": 20,
+        "reason": "category:system",
+        "exists": true
+      },
+      {
+        "path": "docs/NPC/03_rainland_no_machi.md",
+        "sourcePath": "docs/NPC/03_rainland_no_machi.md",
+        "category": "system",
+        "priority": 20,
+        "reason": "category:system",
+        "exists": true
+      },
+      {
+        "path": "docs/NPC/04_rainland_castle.md",
+        "sourcePath": "docs/NPC/04_rainland_castle.md",
+        "category": "system",
+        "priority": 20,
+        "reason": "category:system",
+        "exists": true
+      },
+      {
+        "path": "docs/RESOLUTION_MIGRATION_960x720.md",
+        "sourcePath": "docs/RESOLUTION_MIGRATION_960x720.md",
+        "category": "system",
+        "priority": 20,
+        "reason": "category:system",
+        "exists": true
+      },
+      {
+        "path": "README.md",
+        "sourcePath": "README.md",
+        "category": "root",
+        "priority": 15,
+        "reason": "category:root",
+        "exists": true
+      },
+      {
+        "path": "CLAUDE.md",
+        "sourcePath": "CLAUDE.md",
+        "category": "root",
+        "priority": 15,
+        "reason": "category:root",
+        "exists": true
+      },
+      {
+        "path": "docs/NPC/README.md",
+        "sourcePath": "docs/NPC/README.md",
+        "category": "root",
+        "priority": 15,
+        "reason": "category:root",
+        "exists": true
+      },
+      {
+        "path": "docs/README.md",
+        "sourcePath": "docs/README.md",
+        "category": "root",
+        "priority": 15,
+        "reason": "category:root",
+        "exists": true
+      },
+      {
+        "path": "AGENTS.md",
+        "sourcePath": "AGENTS.md",
+        "category": "root",
+        "priority": 15,
+        "reason": "category:root",
+        "exists": true
+      },
+      {
+        "path": "docs/PROJECT_STATUS.md",
+        "sourcePath": "docs/PROJECT_STATUS.md",
+        "category": "meta",
+        "priority": 10,
+        "reason": "category:meta",
+        "exists": true
+      },
+      {
+        "path": "docs/INDEX.md",
+        "sourcePath": "docs/INDEX.md",
+        "category": "meta",
+        "priority": 10,
+        "reason": "category:meta",
+        "exists": true
+      },
+      {
+        "path": "docs/GAME_SPEC.md",
+        "sourcePath": "docs/GAME_SPEC.md",
+        "category": "meta",
+        "priority": 10,
+        "reason": "category:meta",
+        "exists": true
+      },
+      {
+        "path": "docs/CREATIVE_DIRECTION.md",
+        "sourcePath": "docs/CREATIVE_DIRECTION.md",
+        "category": "meta",
+        "priority": 10,
+        "reason": "category:meta",
+        "exists": true
+      },
+      {
+        "path": "docs/CURRENT_WORK.md",
+        "sourcePath": "docs/CURRENT_WORK.md",
+        "category": "meta",
+        "priority": 10,
+        "reason": "category:meta",
+        "exists": true
+      },
+      {
+        "path": "docs/CONTENT_MATRIX.md",
+        "sourcePath": "docs/CONTENT_MATRIX.md",
+        "category": "meta",
+        "priority": 10,
+        "reason": "category:meta",
+        "exists": true
+      },
+      {
+        "path": "docs/ROADMAP.md",
+        "sourcePath": "docs/ROADMAP.md",
+        "category": "meta",
+        "priority": 10,
+        "reason": "category:meta",
+        "exists": true
+      },
+      {
+        "path": "docs/AI_EXECUTION_PROTOCOL.md",
+        "sourcePath": "docs/AI_EXECUTION_PROTOCOL.md",
+        "category": "meta",
+        "priority": 10,
+        "reason": "category:meta",
+        "exists": true
+      },
+      {
+        "path": "docs/PHASE1_BOOTSTRAP.md",
+        "sourcePath": "docs/PHASE1_BOOTSTRAP.md",
+        "category": "phase-log",
+        "priority": 5,
+        "reason": "category:phase-log",
+        "exists": true
+      },
+      {
+        "path": "docs/PHASE2_TITLE.md",
+        "sourcePath": "docs/PHASE2_TITLE.md",
+        "category": "phase-log",
+        "priority": 5,
+        "reason": "category:phase-log",
+        "exists": true
+      },
+      {
+        "path": "docs/PHASE3_OPENING_GLITCH.md",
+        "sourcePath": "docs/PHASE3_OPENING_GLITCH.md",
+        "category": "phase-log",
+        "priority": 5,
+        "reason": "category:phase-log",
+        "exists": true
+      },
+      {
+        "path": "docs/PHASE4_STARTING_PLACE.md",
+        "sourcePath": "docs/PHASE4_STARTING_PLACE.md",
+        "category": "phase-log",
+        "priority": 5,
+        "reason": "category:phase-log",
+        "exists": true
+      },
+      {
+        "path": "docs/PHASE5_5_VISUAL_BASELINE.md",
+        "sourcePath": "docs/PHASE5_5_VISUAL_BASELINE.md",
+        "category": "phase-log",
+        "priority": 5,
+        "reason": "category:phase-log",
+        "exists": true
+      },
+      {
+        "path": "docs/PHASE5_PLAYER_MOVEMENT.md",
+        "sourcePath": "docs/PHASE5_PLAYER_MOVEMENT.md",
+        "category": "phase-log",
+        "priority": 5,
+        "reason": "category:phase-log",
+        "exists": true
+      },
+      {
+        "path": "docs/PHASE6_MAP_TRANSITIONS.md",
+        "sourcePath": "docs/PHASE6_MAP_TRANSITIONS.md",
+        "category": "phase-log",
+        "priority": 5,
+        "reason": "category:phase-log",
+        "exists": true
+      },
+      {
+        "path": "docs/PHASE7_NPC_DIALOGUE.md",
+        "sourcePath": "docs/PHASE7_NPC_DIALOGUE.md",
+        "category": "phase-log",
+        "priority": 5,
+        "reason": "category:phase-log",
+        "exists": true
+      },
+      {
+        "path": "docs/PHASE8A_STARTING_TOWN_EXTERIOR.md",
+        "sourcePath": "docs/PHASE8A_STARTING_TOWN_EXTERIOR.md",
+        "category": "phase-log",
+        "priority": 5,
+        "reason": "category:phase-log",
+        "exists": true
+      },
+      {
+        "path": "docs/PHASE8B_STARTING_TOWN_INTERIORS.md",
+        "sourcePath": "docs/PHASE8B_STARTING_TOWN_INTERIORS.md",
+        "category": "phase-log",
+        "priority": 5,
+        "reason": "category:phase-log",
+        "exists": true
+      },
+      {
+        "path": "docs/PHASE8_5_FIELD_CAMERA.md",
+        "sourcePath": "docs/PHASE8_5_FIELD_CAMERA.md",
+        "category": "phase-log",
+        "priority": 5,
+        "reason": "category:phase-log",
+        "exists": true
+      },
+      {
+        "path": "docs/PHASE8_6_ROUGH_FIELD.md",
+        "sourcePath": "docs/PHASE8_6_ROUGH_FIELD.md",
+        "category": "phase-log",
+        "priority": 5,
+        "reason": "category:phase-log",
+        "exists": true
+      }
+    ]
+  },
+  "reference": {
+    "configured": false,
+    "layer": "Reference",
+    "path": null,
+    "opacity": 0.5,
+    "visible": true,
+    "offset": {
+      "x": 0,
+      "y": 0
+    },
+    "size": null,
+    "analysis": null
+  },
+  "validation": {
+    "errors": [],
+    "warnings": [
+      {
+        "level": "WARN",
+        "code": "MQ0_NO_TILESET",
+        "message": "タイルセットが1つも参照されていません(実タイルセット未確定の間は問題ありません)。",
+        "target": "map"
+      },
+      {
+        "level": "WARN",
+        "code": "MQ0_REQUIREMENT_FILE_MISSING",
+        "message": "mq0RequirementFile missing",
+        "target": "property:mq0RequirementFile"
+      }
+    ],
+    "info": [
+      {
+        "level": "PASS",
+        "code": "MQ0_MAP_LOADED",
+        "message": "マップを読み込みました: mq0_test_map.tmj",
+        "target": "map"
+      },
+      {
+        "level": "PASS",
+        "code": "MQ0_MAP_SIZE_OK",
+        "message": "マップサイズ読み込みOK: 20 x 15",
+        "target": "map"
+      },
+      {
+        "level": "PASS",
+        "code": "MQ0_TILE_SIZE_OK",
+        "message": "タイルサイズ読み込みOK: 16 x 16",
+        "target": "map"
+      },
+      {
+        "level": "PASS",
+        "code": "MQ0_MAP_NOT_EMPTY",
+        "message": "マップにタイルまたはオブジェクトを検出しました。",
+        "target": "map"
+      },
+      {
+        "level": "PASS",
+        "code": "MQ0_REQUIRED_LAYER_OK",
+        "message": "Ground Layer OK",
+        "target": "layer:Ground"
+      },
+      {
+        "level": "PASS",
+        "code": "MQ0_REQUIRED_LAYER_OK",
+        "message": "Collision Layer OK",
+        "target": "layer:Collision"
+      },
+      {
+        "level": "PASS",
+        "code": "MQ0_REQUIRED_LAYER_OK",
+        "message": "Events Layer OK",
+        "target": "layer:Events"
+      },
+      {
+        "level": "PASS",
+        "code": "MQ0_RECOMMENDED_LAYER_OK",
+        "message": "Terrain Layer OK",
+        "target": "layer:Terrain"
+      },
+      {
+        "level": "PASS",
+        "code": "MQ0_RECOMMENDED_LAYER_OK",
+        "message": "Buildings Layer OK",
+        "target": "layer:Buildings"
+      },
+      {
+        "level": "INFO",
+        "code": "MQ0_INFO_LAYER_STATUS",
+        "message": "Reference layer detected: Reference",
+        "target": "layer:Reference"
+      },
+      {
+        "level": "PASS",
+        "code": "MQ0_REQUIRED_OBJECT_OK",
+        "message": "playerSpawn object OK: 1件",
+        "target": "object:playerSpawn"
+      },
+      {
+        "level": "PASS",
+        "code": "MQ0_REQUIRED_OBJECT_OK",
+        "message": "exit object OK: 1件",
+        "target": "object:exit"
+      },
+      {
+        "level": "PASS",
+        "code": "MQ0_RECOMMENDED_OBJECT_OK",
+        "message": "npc object OK: 1件",
+        "target": "object:npc"
+      },
+      {
+        "level": "PASS",
+        "code": "MQ0_RECOMMENDED_OBJECT_OK",
+        "message": "treasure object OK: 1件",
+        "target": "object:treasure"
+      },
+      {
+        "level": "INFO",
+        "code": "MQ0_INFO_OBJECT_STATUS",
+        "message": "event object detected: 1件",
+        "target": "object:event"
+      },
+      {
+        "level": "PASS",
+        "code": "MQ0_REQUIRED_PROPERTY_OK",
+        "message": "mq0MapId = TEST",
+        "target": "property:mq0MapId"
+      },
+      {
+        "level": "PASS",
+        "code": "MQ0_REQUIRED_PROPERTY_OK",
+        "message": "mq0MapName = mq0_test_map",
+        "target": "property:mq0MapName"
+      },
+      {
+        "level": "PASS",
+        "code": "MQ0_REQUIRED_PROPERTY_OK",
+        "message": "mq0MapType = test",
+        "target": "property:mq0MapType"
+      },
+      {
+        "level": "PASS",
+        "code": "MQ0_RECOMMENDED_PROPERTY_OK",
+        "message": "mq0Chapter = development",
+        "target": "property:mq0Chapter"
+      }
+    ]
+  },
+  "extensionPoints": {
+    "tileData": "Full tile GID grids are intentionally omitted from this package - read the .tmj/.tmx itself for that.",
+    "aiSuggestions": null
+  }
+}

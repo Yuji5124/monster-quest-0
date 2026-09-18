@@ -1,6 +1,6 @@
 # モンスタークエスト0 仕様書インデックス
 
-最終更新: 2026-09-12 JST
+最終更新: 2026-09-18 JST
 
 このファイルはAI・人間が仕様を読むための入口。
 
@@ -11,12 +11,14 @@
 4. `OPENING_SPEC.md` — 約5秒異常 → **No.01 はじまりのばしょ**
 5. `STORY_FLOW.md` — 物語全体 / 「もういちど」 / 真エンディング
 6. `MAP_FLOW_SPEC.md` — **正式No.01〜No.20**
-7. `AI_EXECUTION_PROTOCOL.md` — AIの作業手順
+7. `MAP_SYSTEM.md` — **背景画像正本 / Collision生成 / 4レイヤー / ワールドマップ**
+8. `AI_EXECUTION_PROTOCOL.md` — AIの作業手順
 
 ## ストーリー・世界
 - `OPENING_SPEC.md` — タイトルからNo.01〜No.02への導入
 - `STORY_FLOW.md` — 元NPC主人公 / 複数世界断片 / 裏ワザ / エンディング
 - `MAP_FLOW_SPEC.md` — No.01〜20、No.01再訪、No.20再戦
+- `MAP_SYSTEM.md` — 新規ローカルマップとワールドマップの制作・データ方針
 - `NPC_SPEC.md` — NPC会話方針
 - `GLITCH_SPEC.md` — 導入異常 / 終盤 / 「もういちど」
 
@@ -34,6 +36,7 @@
 - `AUDIO_SPEC.md`
 - `IMAGE_SPEC.md`
 - `ASSET_INDEX.md`
+- `MAP_SYSTEM.md`
 
 ## 実装契約
 - `PHASER_ARCHITECTURE.md`
@@ -48,6 +51,9 @@
 - `CHANGE_CONTROL.md`
 
 ## 進捗
+- `PHASE_WORLD_MAP_POINT_SELECTION.md` — 高解像度背景 / 目的地選択 / 拡大 / ローカルマップ遷移（DEV）
+- `PHASE_IMAGE_MAP_MINIMUM.md` — 背景画像 + Collision + Event + ObjectのNo.01最小検証（DEV）
+- `PHASE_DEMAS_BATTLE.md` — デーマス実戦 / 反射フック / Battle Test / NPC復帰の検証
 - `CURRENT_WORK.md`
 - `CONTENT_MATRIX.md`
 - `ROADMAP.md`
@@ -63,7 +69,7 @@
 
 ## 読み方
 ### Claude Code / Phaser Game Agent
-`PROJECT_STATUS` → `GAME_SPEC` → `CREATIVE_DIRECTION` → `OPENING_SPEC` → `STORY_FLOW` → `MAP_FLOW_SPEC` → 対象SPEC → `SAVE_FLAG_SPEC`（進行に関係する場合）→ `TBD_REGISTRY` → `DEFINITION_OF_DONE`
+`PROJECT_STATUS` → `GAME_SPEC` → `CREATIVE_DIRECTION` → `OPENING_SPEC` → `STORY_FLOW` → `MAP_FLOW_SPEC` → `MAP_SYSTEM`（マップ作業時は必須）→ 対象SPEC → `SAVE_FLAG_SPEC`（進行に関係する場合）→ `TBD_REGISTRY` → `DEFINITION_OF_DONE`
 
 ### Codex
 上記 + `QA_SPEC` + `PERFORMANCE_BUDGET`
@@ -91,6 +97,8 @@
 - 旧女性勇者風主人公
 - 旧マップ番号（旧No.18 はじまりのばしょ等）
 - ジャンカードの秘密を序盤から本編へ前面化する旧案
+- Tiledを新規マップの正本とする方式
+- ワールドマップを全面徒歩フィールドとして作る方式
 
 ## Phase別の実装・検証記録
 - [Phase 1 起動基盤](PHASE1_BOOTSTRAP.md)
@@ -100,3 +108,12 @@
 
 - [Phase 5 歩行・当たり判定](PHASE5_PLAYER_MOVEMENT.md)
 - [Phase 5.5 ビジュアル基準](PHASE5_5_VISUAL_BASELINE.md)
+- [Phase 6 マップ遷移](PHASE6_MAP_TRANSITIONS.md)
+- [Phase 7 NPC + 会話システム](PHASE7_NPC_DIALOGUE.md)
+- [Phase 8-A No.02外観](PHASE8A_STARTING_TOWN_EXTERIOR.md)
+- [Phase 8-B No.02建物内部＋出入り](PHASE8B_STARTING_TOWN_INTERIORS.md)
+- [Phase 8.5 フィールド導入＋主人公追従カメラ](PHASE8_5_FIELD_CAMERA.md)
+- [内部解像度移行 320×240→960×720](RESOLUTION_MIGRATION_960x720.md)
+
+- `PHASE8_6_ROUGH_FIELD.md` — 世界地図REFERENCEによる荒フィールド、仮座標・徒歩往復・Collision・回帰検証
+- `PHASE_BATTLE_TEST.md` — 2体の独立DEV_BATTLE_TEST、戦闘状態・ダメージ・QA

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "0.1.0",
+  "generatedAt": "2026-09-13T11:46:29.100Z",
+  "mode": "mock",
+  "provider": "mock",
+  "map": {
+    "id": "TEST",
+    "name": "mq0_test_map"
+  },
+  "summary": "No structural errors from Validate Map. No AI design review was performed (mock mode).",
+  "issues": [
+    {
+      "id": "ISSUE-001",
+      "severity": "INFO",
+      "category": "other",
+      "message": "Mock mode: no real visual or design judgment was performed.",
+      "evidence": [],
+      "suggestion": null,
+      "confidence": 0
+    }
+  ],
+  "suggestions": [],
+  "referenceAnalysis": null,
+  "requirementsUsed": [
+    "docs/MAP_FLOW_SPEC.md",
+    "docs/OPENING_SPEC.md",
+    "docs/STORY_FLOW.md",
+    "docs/GLITCH_SPEC.md",
+    "docs/NPC_SPEC.md"
+  ],
+  "limitations": [
+    "Mock mode: results are synthesized locally from validation data only; no AI model was called."
+  ]
+}

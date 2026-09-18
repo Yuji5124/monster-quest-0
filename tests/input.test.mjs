@@ -79,3 +79,17 @@ test("browser shortcuts pass through and destroy detaches listeners", (t) => {
   assert.equal(key("keydown", "ArrowLeft").defaultPrevented, false);
   assert.equal(input.isDown("moveLeft"), false);
 });
+
+test("pointer and keyboard actions share deduplication and transition locking", (t) => {
+  const { input, key } = setup(t);
+  input.queuePressed("confirm");
+  key("keydown", "KeyZ");
+  assert.equal(input.consumePressed("confirm"), true);
+  assert.equal(input.consumePressed("confirm"), false);
+  input.setLocked(true);
+  input.queuePressed("confirm");
+  assert.equal(input.consumePressed("confirm"), false);
+  input.setLocked(false);
+  input.queuePressed("cancel");
+  assert.equal(input.consumePressed("cancel"), true);
+});

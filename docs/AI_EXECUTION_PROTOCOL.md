@@ -1,6 +1,6 @@
 # モンスタークエスト0 AI実行プロトコル
 
-最終更新: 2026-09-11 JST
+最終更新: 2026-09-18 JST
 
 ## 1. 目的
 Claude Code / Codex / Phaser Game Agentが、同じ順序・同じ判断基準で安全に作業するための手順。
@@ -11,19 +11,21 @@ Claude Code / Codex / Phaser Game Agentが、同じ順序・同じ判断基準�
 3. `docs/GAME_SPEC.md`
 4. `docs/CREATIVE_DIRECTION.md`
 5. `docs/STORY_FLOW.md`
-6. 作業対象の専門SPEC
-7. `docs/PHASER_ARCHITECTURE.md`
-8. `docs/DATA_CONTRACTS.md`
-9. `docs/ASSET_INDEX.md`
-10. `assets/asset_catalog.json`
-11. `docs/TBD_REGISTRY.md`
-12. `docs/DEFINITION_OF_DONE.md`
+6. `docs/MAP_SYSTEM.md`
+7. 作業対象の専門SPEC
+8. `docs/PHASER_ARCHITECTURE.md`
+9. `docs/DATA_CONTRACTS.md`
+10. `docs/ASSET_INDEX.md`
+11. `assets/asset_catalog.json`
+12. `docs/TBD_REGISTRY.md`
+13. `docs/DEFINITION_OF_DONE.md`
 
 ## 3. 作業別の専門SPEC
 ### ストーリー / 導入
 - `STORY_FLOW.md`
 - `OPENING_SPEC.md`
 - `MAP_FLOW_SPEC.md`
+- `MAP_SYSTEM.md`
 - `NPC_SPEC.md`
 
 ### 戦闘 / 成長
@@ -52,6 +54,8 @@ AIは実装前に次を確認する。
 - iPhoneへの影響
 - ストーリー順 / ネタバレへの影響
 - 町 / NPC規模を不要に増やしていないか
+- 新規マップが背景画像正本 / 生成済みCollision / 4レイヤー方針に従うか
+- 既存Tiled実装を必要なく削除・変更していないか
 
 ## 5. 実装単位
 一度に大きく作りすぎない。
@@ -105,7 +109,7 @@ AIは実装前に次を確認する。
 ## 10. 実装後の最低確認
 - 起動
 - 変更機能
-- タイトル→導入→町→フィールドの最低回帰
+- タイトル→導入→町→ワールドマップ目的地選択の最低回帰（既存`FieldScene`に触れる変更ではその徒歩往復も回帰）
 - 関係する場合は戦闘
 - 関係する場合はセーブ / ロード
 - iPhone想定レイアウト / タッチ

@@ -1,0 +1,27 @@
+{
+  "formatVersion": 1,
+  "destinations": [
+    {
+      "id": "destination_starting_place",
+      "name": "はじまりのばしょ",
+      "targetMapId": "map_01_starting_place",
+      "targetSpawnId": "fromWorldMap",
+      "x": 522,
+      "y": 496,
+      "visible": true,
+      "unlockFlag": null,
+      "positionStatus": "DEV_PLACEHOLDER_POSITION"
+    },
+    {
+      "id": "destination_starting_town",
+      "name": "はじまりのまち",
+      "targetMapId": "map_02_starting_town",
+      "targetSpawnId": "fromWorldMap",
+      "x": 786,
+      "y": 648,
+      "visible": true,
+      "unlockFlag": null,
+      "positionStatus": "DEV_PLACEHOLDER_POSITION"
+    }
+  ]
+}

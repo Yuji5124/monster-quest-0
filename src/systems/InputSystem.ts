@@ -33,6 +33,11 @@ export class InputSystem {
     return this.pressed.delete(action);
   }
 
+  /** Touch/pointer adapters share the same per-frame deduplication and lock. */
+  queuePressed(action: InputAction): void {
+    if (!this.locked) this.pressed.add(action);
+  }
+
   setLocked(locked: boolean): void {
     this.locked = locked;
     this.reset();

@@ -1,0 +1,17 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_no01_north_gate",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 650, "y": 112, "width": 220, "height": 84 },
+      "commands": [
+        {
+          "type": "world-map",
+          "worldMapEntryId": "from_starting_place"
+        }
+      ]
+    }
+  ]
+}

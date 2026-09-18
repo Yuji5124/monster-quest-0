@@ -4,3 +4,17 @@ dist/
 *.tsbuildinfo
 npm-debug.log*
 .qa/
+
+# Tiled Map Editor local cache/session (not project data)
+*.tiled-session
+tiled/extensions/mq0/node_modules/
+
+# MQ0 Review Package output: regenerated locally from a .tmj at any time
+# (via the MQ0 > Build Review Package menu action or tools/mq0-map-ai/build-review-package.js),
+# so it is a build artifact, not source data.
+tools/mq0-map-ai/review-packages/
+
+# MQ0 AI Review Result output: regenerated locally at any time via
+# tools/mq0-map-ai/review-map.js (or MQ0 > AI Review reading a cached one), so it
+# is a build artifact too. Committed reference examples live under examples/ instead.
+tools/mq0-map-ai/reviews/

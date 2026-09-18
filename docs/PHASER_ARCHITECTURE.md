@@ -1,6 +1,6 @@
 # モンスタークエスト0 Phaser実装アーキテクチャ
 
-最終更新: 2026-09-10 23:46 JST
+最終更新: 2026-09-18 JST
 
 ## 1. 目的
 Claude Code / Codex / Phaser Game Agentが、同じ責務分離で実装するための基準。
@@ -10,7 +10,7 @@ Claude Code / Codex / Phaser Game Agentが、同じ責務分離で実装する�
 - Phaser 3 / Phaser Game Agentを基本制作基盤とする
 - ASRSは使用しない
 - 汎用RPGエンジンを新規開発しない
-- 独自マップエディタを作らない
+- 汎用RPGエンジンや汎用マップエディタを作らない。将来のMQ0 Map Editorは、`BACKGROUND` / `COLLISION` / `EVENT` / `OBJECT`だけを扱う小さな制作補助ツールに限定する
 - 約5時間の本編完成を最優先する
 - AI 80% + 人間の視覚・テンポ調整20%
 - iPhone Safariを後付け対応にしない
@@ -33,12 +33,14 @@ Claude Code / Codex / Phaser Game Agentが、同じ責務分離で実装する�
 - 設定
 
 ### WorldScene
-- フィールド / 町 / 村 / ダンジョン移動
+- 町 / 村 / 城 / ダンジョン等のローカルマップ移動
 - プレイヤー移動
 - NPC / オブジェクト
 - 衝突
 - イベント起動
 - エンカウント要求
+
+ワールドマップは目的地ポイントを選択する専用画面として扱う。巨大な徒歩フィールドをWorldSceneの標準責務にしない。既存`FieldScene`はlegacy実装として保持する。
 
 戦闘計算そのものは持たせない。
 
@@ -80,6 +82,12 @@ BGM / SE / 音量 / Scene切替時の二重再生防止を管理する。
 ### InputSystem
 キーボード / タッチ / iPhone Safari入力を統一する。
 
+### Camera(2026-09-13 Phase 8.5追加)
+通常の歩行ローカルマップ(町/村/ダンジョン/城等)では、主人公をCameraが追従する方式を基本とする。
+マップサイズがViewport(960×720)以内の場合はCamera boundsとViewportが一致し、実質固定画面のままでよい。小規模Interiorは固定Cameraのままでよい。
+CameraはPlayerより遅れてふわっと追従させず、原則lerp=1の即時追従とする。
+巨大なCameraManagerクラスは作らず、`src/systems/MapCamera.ts`の`configureMapCamera(scene, target, bounds)`程度の小さな共通関数に留める。Player側(移動・向き・Body)とCamera側(Scene or 小さなCamera helper)の責務を分離し、`Player.ts`へカメラ処理を追加しない。
+
 ## 5. データ駆動
 以下は原則コードへ直書きしない。
 - モンスター基本値
@@ -113,9 +121,11 @@ BGM / SE / 音量 / Scene切替時の二重再生防止を管理する。
 
 ## 8. マップ
 - マップごとの専用コードを増やしすぎない
-- Ground / Object / Collision / Event / Foreground等の責務を統一する
-- 実タイルサイズはGitHub上の正式素材を確認してから決定する
-- AIで80%を作り、人間が道・木・建物・余白・装飾を20%調整する
+- [MAP_SYSTEM.md](MAP_SYSTEM.md) を正とし、`BACKGROUND` / `COLLISION` / `EVENT` / `OBJECT`の4レイヤーを統一する
+- 高解像度背景画像を正本とし、Phaserは制作時に生成・人間修正済みのCollisionデータだけを読み込む。実行中のAI画像解析は禁止する
+- 背景の元画像座標をCollision、Event、Objectの共通座標系とし、Sceneへ座標を散在させない
+- 新規ローカルマップをTiled / 32×32タイル背景前提で実装しない。既存Tiled runtimeは互換性のため保持する
+- AIで初期マスク・下案を作り、人間が道・木・建物・余白・Collisionを調整する
 
 ## 9. アセット
 - `ASSET_INDEX.md` と `assets/asset_catalog.json` を確認する

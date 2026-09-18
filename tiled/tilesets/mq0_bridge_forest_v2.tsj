@@ -1,0 +1,197 @@
+{
+ "columns": 8,
+ "image": "../../assets/maps/tilesets/mq0_bridge_forest_v2.png",
+ "imageheight": 128,
+ "imagewidth": 256,
+ "margin": 0,
+ "name": "mq0_bridge_forest_v2",
+ "spacing": 0,
+ "tilecount": 32,
+ "tiledversion": "1.12.2",
+ "tileheight": 32,
+ "tilewidth": 32,
+ "tiles": [
+  {
+   "id": 0,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "bridge_h_left"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 1,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "bridge_h_right"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "bridge_h_center_01"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "bridge_h_center_02"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 8,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "bridge_h_left"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 9,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "bridge_h_right"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 10,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "bridge_h_center_01"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 11,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "bridge_h_center_02"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 16,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "bridge_post_01"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 17,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "bridge_post_02"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": false
+    }
+   ]
+  },
+  {
+   "id": 24,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "bridge_post_01"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  },
+  {
+   "id": 25,
+   "properties": [
+    {
+     "name": "mq0Label",
+     "type": "string",
+     "value": "bridge_post_02"
+    },
+    {
+     "name": "mq0Blocking",
+     "type": "bool",
+     "value": true
+    }
+   ]
+  }
+ ],
+ "type": "tileset",
+ "version": "1.11"
+}

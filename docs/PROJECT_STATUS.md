@@ -1,6 +1,35 @@
 # Monster Quest 0 Project Status
 
-最終更新: 2026-09-13 JST
+最終更新: 2026-09-18 JST
+
+## 正式マップシステムの変更（2026-09-18）
+
+新規の町・村・城・ダンジョン・イベント地点は、**高解像度の背景画像を正本**とし、制作時に画像解析で作成して人間が修正したCollision Mask、Event、Objectを同一座標で管理する方式へ変更した。Phaserは生成済みの軽量データだけを読み込み、実行中にAI画像認識を行わない。ワールドマップは目的地ポイントを選択する方式とし、巨大フィールドの徒歩Collisionは新規制作しない。詳細は [MAP_SYSTEM.md](MAP_SYSTEM.md) を正とする。
+
+No.01「はじまりのばしょ」は、背景画像マップを通常の `StartingPlaceScene` へ統合した最初の移行例である。既存No.01のTiled実装、`FieldScene`、関連テスト・アセット・ツールは動作中のlegacy実装として保持し、削除しない。No.02以降の旧Tiled実装は新方式へ自動移行しない。
+
+## ポイント選択式ワールドマップ = PARTIAL（通常導線統合、2026-09-18）
+
+CURRENT高解像度背景を表示し、目的地ポイントを選択→拡大→暗転→ローカルマップへ移動する `WorldMapScene` を通常導線へ登録した。No.01画像マップの北門Event／No.02西端から世界地図へ入り、No.01 / No.02の2地点を選んで安全な `fromWorldMap` spawnへ戻れる。`visible` / `unlockFlag` から未解放地点を`？？？`としてロック表示できる。地点座標は `DEV_PLACEHOLDER_POSITION` であり、SaveSystem接続とNo.03以降は未実装。徒歩 `FieldScene` はlegacyとして保持し、通常導線から外した。詳細は [PHASE_WORLD_MAP_POINT_SELECTION.md](PHASE_WORLD_MAP_POINT_SELECTION.md)。
+
+## No.01 背景画像マップ = PARTIAL（通常導線統合、2026-09-18）
+
+No.01は、`background.png` をCURRENTの景観正本、`collision.png` を同寸法の二値Collision、`events.json` を北門→`WorldMapScene`、`objects.json` をOBJECTレイヤーとして読む通常Sceneへ移行した。実行中の画像意味解析は行わず、黒マスクだけを16pxセル単位で静的Bodyへ変換する。`?mapTest=image-no01` は同じ正式パッケージの単体確認URLであり、`D` でDEV Collision表示を切り替えられる。No.01夜版、正式Object、iPhone Safari実機確認は未完了のためPARTIAL。詳細は [PHASE_IMAGE_MAP_MINIMUM.md](PHASE_IMAGE_MAP_MINIMUM.md)。
+
+## 既存No.01 Tiled実装 = COMPLETE（legacy runtime、2026-09-17）
+```
+NO.01 TILED VISUAL = COMPLETE
+NO.01 PHASER DEV = COMPLETE
+NO.01 STARTING PLACE TILED LEGACY = COMPLETE
+```
+No.01「はじまりのばしょ」昼のTiledマップ(`tiled/maps/mq0_map01_starting_place_day.tmj`)は、Terrain v2/Trees v2/Props v2/Bridge v2/Path v2の全カテゴリが正式化され、視覚DEV_PLACEHOLDERは0件(Collision層の非表示マーカーのみ残存、対象外)。`?mapTest=no01` のDEV専用URLでのPhaser実表示・歩行・Collision・Events検出(4種)を維持する。Tiled読み込みは `TiledMapRuntime.ts`、通常の画像方式とは独立した `LegacyTiledStartingPlaceScene.ts`、`MapTestNo01Scene.ts` に保持する。通常の `StartingPlaceScene` はTiledを読まない。詳細: `PHASE_NO01_OUTDOOR_TILESET_SPEC.md`、`PHASE_NO01_TILED_PHASER_INTEGRATION.md`、`PHASE_NO01_STARTING_PLACE_TILED_PRODUCTION.md`。
+
+## 既存Phase 8.6 ROUGH_FIELD（legacy prototype）
+2026-09-15 No.01昼Tiledマップ: 「はじまりのばしょ」昼版を、既存Tiled規約(Layer/Object/Property)に沿った実マップ(48×36、32px)として新規作成。屋外用の正式タイルセットが未着手(実ファイル無し)と判明したためDEV_PLACEHOLDERタイルセットを新規用意。歩行可能性は自動BFSで検証済み、Local Bridge CLIでのValidateはErrors 0。Phaser側の読み込みは未実装(既存No.01夜版・通常起動は無変更)。詳細: `PHASE_NO01_DAY_TILED_MAP.md`。
+
+2026-09-14 デーマス戦: 既存BattleSceneとNPC会話後イベントを拡張し、`?battleTest=demas`とNo.02のDEV NPCから開始可能。敵データの行動巡回、MP、汎用ミラー反射、逃走不可、上部HP/MPと縦コマンドを追加。最終数値・習得・No.16配置・保存は未確定。詳細: `PHASE_DEMAS_BATTLE.md`。
+
+Phase 8.6では既存世界地図REFERENCEを背景にしたROUGH_FIELDを追加。内部960×720、Field 1920×1440、180px/秒、即時追従CameraとMapTransitionを維持。No.01／No.02の位置はDEV_PLACEHOLDER_WORLD_POSITIONで、南西の橋を通る徒歩往復を確認。建物退出直後の再入場を再現し、6棟の帰還座標だけを修正。正式地理・正式Collision・Tiled・Phase 9は未着手。詳細: `PHASE8_6_ROUGH_FIELD.md`。
 
 このファイルは『モンスタークエスト0 ～幻の冒険の書～』の**現在地点を短時間で把握するための最優先スナップショット**。
 詳細は各SPECを参照する。
@@ -38,6 +67,13 @@
 - 2026-09-13、未コミットのPhase 1〜3を保持して再検証後、Phase 4として演出終了先を `StartingPlaceScene` へ接続。No.01夜の地面・焚き火をGraphicsのPLACEHOLDERで静止表示する。正式素材・配置・主人公・台詞はTBD、昼版や操作は未実装。詳細は `PHASE4_STARTING_PLACE.md`。
 - Phase 5で、No.01夜内のDEV_PLACEHOLDERによる4方向連続移動と当たり判定を追加。仮速度60px/秒、向きを保持、既存InputSystem/input lockを使用。正式主人公素材・配置・移動方式はTBD。No.01外への遷移やPhase 6は未実装。詳細は `PHASE5_PLAYER_MOVEMENT.md`。
 - Phase 5.5でタイトル正式画像を差し替え、No.01の構図REFERENCEを3枚保存。左にキャンプ/焚き火、中央に山側への小道、中央〜右に小橋、右に水辺、奥に山/岩壁/滝/森を感じる構図を基準とする。開始時は夜、正式ゲーム背景はTBD。今回は仮配置・移動・Collisionを変更せず、昼版とPhase 6は未実装。詳細は `PHASE5_5_VISUAL_BASELINE.md`。
+- Phase 6で、No.01⇔No.02のマップ遷移基盤を追加。`src/config/maps.ts`にmapId/spawn/出口をまとめ、`StartingTownScene`（No.02のDEV_PLACEHOLDER: 地面+主人公+No.01への入口のみ）を新規追加。Phase 5のPlayer/InputSystem/Collisionは無変更。Phase 6.1でユーザーが通常のChrome/Edgeで往復動作を実機確認しPASS。詳細は `PHASE6_MAP_TRANSITIONS.md`。
+- Phase 7で、No.02 DEV_PLACEHOLDERへ確認用NPC1体を追加し、正面判定→会話開始→複数ページ送り→終了までの基本会話システムを実装。会話データは`src/data/dialogues.ts`へ分離し、正式台詞はDEV_PLACEHOLDER_DIALOGUEのみ。ブラウザでの実機操作確認はBrowserペインが非表示のセッションのため未完了（Phase 6と同様の制約）。詳細は `PHASE7_NPC_DIALOGUE.md`。
+- 2026-09-13、内部解像度を仮320×240から仮960×720（3倍、4:3維持）へ移行。`src/config/display.ts`の`BASE_WIDTH`/`BASE_HEIGHT`/`SCALE_FACTOR`を一元管理の基準とし、既存の座標・サイズ・速度は`* SCALE_FACTOR`で追従させた。タイトルロゴは元画像(1672×941)のまま読み込み、ロゴ専用にLINEARフィルタを適用して高精細表示、ゲーム本編のドット絵はNEAREST/pixelArtを維持。タイトルメニューはユーザーフィードバックを踏まえ、単純な3倍よりさらに縮小（旧サイズの約70%相当）。詳細は `RESOLUTION_MIGRATION_960x720.md`。
+- 2026-09-13、タイトル画面をドラクエ風の「プッシュエニーボタン」構成へ変更。起動時はロゴ+背景+点滅プロンプト「なにか　ボタンを　おしてください」のみを表示し、既存action(confirm/cancel/方向)のいずれかを押すと6項目メニューが現れる二段階構成にした。背景はユーザー提示の城門前の絵（元は世界地図REFERENCE`mq0_world_map_022_94f19bddfe.png`）を正式採用し、ロゴ同様LINEARフィルタで高精細表示。メニュー/プロンプト文字には黒縁取りを追加し、写真調の背景に重なっても視認性を確保した。会話システム・マップ遷移・移動ロジックは無変更。
+- Phase 8-Aで、No.02「はじまりのまち」を正式に存在が確認できる建物6棟（やどや/どうぐや/ぶきや/きょうかい/民家A/民家B、`no02_start_town_interiors.json`のDESIGN_DATAに基づく）の外観+Collisionへ拡張。建物データは`src/config/maps.ts`へ集約し、`interiorId`でPhase 8-B接続用に対応関係だけ記録(遷移は未実装)。正式NPC人数・会話は`NPC_SPEC.md`で再検討中のため、Phase 7のDEV_PLACEHOLDER_NPCを再配置するに留めた。No.01⇄No.02のMapTransition・Player・DialogueBox(22px)・960×720・タイトル画面は無変更。詳細は `PHASE8A_STARTING_TOWN_EXTERIOR.md`。
+- Phase 8-Bで、町→建物入口→暗転→建物内部→出口→暗転→町という出入りの流れを実装。6棟分を複製せず共通`InteriorScene`（`src/scenes/InteriorScene.ts`）+ `interiorId`で内部レイアウトを引く`src/config/interiors.ts`のデータ駆動構成にした。建物の外観`mapId`側と内部`interiorId`側を明確に分離し、内部から出た際は各建物の`frontSpawnId`（建物前スポーン6件を新設）で戻すため、どの建物から出ても正しい建物前に戻る。壁は`Building.ts`の`computeWallSegments`でドア位置だけ通行可能な帯を残す形にCollisionを分割。店・宿泊・教会機能、内部NPC・大規模会話、宝箱、戦闘、セーブ、音は未実装のまま。詳細は `PHASE8B_STARTING_TOWN_INTERIORS.md`。
+- Phase 8.5で、No.01→`FieldScene`→No.02の徒歩往復を既存実装として追加した。これは当時のDEV_PLACEHOLDER_FIELD（仮ID`field_starting_region`）の検証結果であり、2026-09-18以降の新規制作ではポイント選択式ワールドマップ方針に置き換える。既存Scene・テストは削除しない。詳細は `PHASE8_5_FIELD_CAMERA.md` と `MAP_SYSTEM.md`。
 - 正本同士の既知の不一致は別作業として残る。詳細は `PHASE1_BOOTSTRAP.md` / `PHASE2_TITLE.md` / `PHASE3_OPENING_GLITCH.md`。
 
 ## 3. 最新主人公設定

@@ -1,0 +1,10 @@
+{
+  "name": "mq0-map-ai",
+  "private": true,
+  "type": "commonjs",
+  "version": "0.2.0",
+  "description": "Local-only bridge that turns a saved MQ0 .tmj into a Review Package JSON bundle, reusing tiled/extensions/mq0's own logic (no OpenAI/Anthropic/ChatGPT calls). See README.md.",
+  "bin": {
+    "mq0-review-package": "./build-review-package.js"
+  }
+}

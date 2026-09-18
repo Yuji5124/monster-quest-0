@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
     "preview": "vite preview",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "sync:maps": "node tools/mq0-map-ai/sync-map-for-phaser.js"
   },
   "dependencies": {
     "phaser": "3.90.0"

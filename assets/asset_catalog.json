@@ -1,41 +1,287 @@
 {
   "project": "Monster Quest 0 - 幻の冒険の書",
-  "updated": "2026-09-13T05:56:27+09:00",
+  "updated": "2026-09-18T00:00:00+09:00",
   "note": "Catalog only. Files marked ready_to_import are not considered present until the file exists at the path. Old female protagonist asset is superseded by the current male protagonist setting.",
   "assets": [
-    {"key":"title.logo.main","path":"assets/title/ChatGPT Image 2026年9月13日 05_31_34.png","status":"current","sha256":"babc31412ffa7527cc466e158f06e6039a1e74a6d9e699b2274e139fa708713b","note":"CURRENT title adopted by user 2026-09-13 Phase 5.5; original retained. Runtime copy: public/assets/ui/title/mq0_title_logo.png."},
-    {"key":"title.logo.promo_026","path":"assets/promo/reference/mq0_promo_026_6d80d17943.png","status":"superseded","note":"Adopted in Phase 2 (2026-09-12); superseded by title.logo.main in Phase 5.5 (2026-09-13). Original retained, do not delete."},
-    {"key":"map.starting_place.reference.location","path":"assets/maps/reference/starting_place/no01_location_reference_9d4209d80a.png","status":"reference","sha256":"9d4209d80a23a1a72fdb18a15b1bf0051815ef84c2b31d7431b7192dfc6d7261","note":"User attachment #1, 2026-09-13 Phase 5.5. Composition/time-of-day reference only; not a CURRENT game background. Redesign for FC/early-SFC presentation."},
-    {"key":"map.starting_place.reference.night","path":"assets/maps/reference/starting_place/no01_night_reference_1b51bbe29b.png","status":"reference","sha256":"1b51bbe29be8f16d8cb36bbc7437849ce06082bdf2084aeef09ab1d64962789e","note":"User attachment #2, 2026-09-13 Phase 5.5. Composition/time-of-day reference only; not a CURRENT game background. Redesign for FC/early-SFC presentation."},
-    {"key":"map.starting_place.reference.day","path":"assets/maps/reference/starting_place/no01_day_reference_6398a59b13.png","status":"reference","sha256":"6398a59b137f8e0ca110880565b2b69f10a6c8256b846bb0262c0566b904dc6b","note":"User attachment #3, 2026-09-13 Phase 5.5. Composition/time-of-day reference only; not a CURRENT game background. Redesign for FC/early-SFC presentation."},
-    {"key":"title.background","path":"assets/title/title_background.png","status":"needs_review"},
-    {"key":"char.hero.walk","path":"assets/characters/playable/hero_walk.png","status":"superseded","note":"Old female hero-style protagonist. Do not use for current protagonist."},
-    {"key":"char.protagonist.walk","path":"assets/characters/playable/protagonist_walk.png","status":"needs_review","note":"Current male protagonist asset must be created/approved."},
-    {"key":"char.tarosa.walk","path":"assets/characters/playable/tarosa_walk.png","status":"ready_to_import"},
-    {"key":"char.mirei.walk","path":"assets/characters/playable/mirei_walk.png","status":"ready_to_import"},
-    {"key":"char.watabe.walk","path":"assets/characters/support/watabe_walk.png","status":"ready_to_import"},
-    {"key":"tileset.base","path":"assets/maps/tilesets/tileset_base.png","status":"ready_to_import"},
-    {"key":"tileset.extra","path":"assets/maps/tilesets/tileset_extra.png","status":"ready_to_import"},
-    {"key":"map.world.reference","path":"assets/maps/reference/world_map_reference.png","status":"reference"},
-    {"key":"map.starting_place.night","path":null,"status":"needs_review","note":"No.01 はじまりのばしょ night version. Implementation may reuse tiles with lighting."},
-    {"key":"map.starting_place.day","path":null,"status":"needs_review","note":"No.01 はじまりのばしょ day version."},
-    {"key":"effect.campfire","path":null,"status":"needs_review","note":"Campfire animation/light for opening if not covered by tiles/effects."},
-    {"key":"battle.bg.grassland","path":"assets/battle/backgrounds/battle_bg_grassland.png","status":"ready_to_import"},
-    {"key":"battle.bg.forest","path":"assets/battle/backgrounds/battle_bg_forest.png","status":"ready_to_import"},
-    {"key":"battle.bg.forest_alt","path":"assets/battle/backgrounds/battle_bg_forest_alt.png","status":"ready_to_import"},
-    {"key":"battle.bg.cave","path":"assets/battle/backgrounds/battle_bg_cave.png","status":"ready_to_import"},
-    {"key":"battle.bg.castle_town","path":"assets/battle/backgrounds/battle_bg_castle_town.png","status":"ready_to_import"},
-    {"key":"battle.bg.snowfield","path":"assets/battle/backgrounds/battle_bg_snowfield.png","status":"ready_to_import"},
-    {"key":"battle.bg.desert_ruins","path":"assets/battle/backgrounds/battle_bg_desert_ruins.png","status":"ready_to_import"},
-    {"key":"battle.bg.dungeon","path":"assets/battle/backgrounds/battle_bg_dungeon.png","status":"ready_to_import"},
-    {"key":"battle.bg.dungeon_alt","path":"assets/battle/backgrounds/battle_bg_dungeon_alt.png","status":"ready_to_import"},
-    {"key":"battle.bg.boss","path":"assets/battle/backgrounds/battle_bg_boss.png","status":"ready_to_import"},
-    {"key":"battle.bg.boss_alt","path":"assets/battle/backgrounds/battle_bg_boss_alt.png","status":"ready_to_import"},
-    {"key":"ui.common","path":"assets/ui/ui_common.png","status":"ready_to_import"},
-    {"key":"ui.card_gacha","path":"assets/ui/ui_card_gacha.png","status":"reference"},
-    {"key":"promo.poster.retro_rpg","path":"assets/promo/poster_retro_rpg.png","status":"reference"},
-    {"key":"promo.package.front","path":"assets/promo/package_front.png","status":"ready_to_import"},
-    {"key":"promo.package.back","path":"assets/promo/package_back.png","status":"ready_to_import"}
+    {
+      "key": "map.world_map.background",
+      "path": "assets/maps/world_map/background.png",
+      "status": "current",
+      "note": "2026-09-18: CURRENT original 1448x1086 high-resolution 4:3 world-map background. It is displayed with LINEAR filtering for point selection and zoom. Destination positions remain separately tracked as DEV_PLACEHOLDER_POSITION."
+    },
+    {
+      "key": "map.starting_place.image_test.background",
+      "path": "assets/maps/starting_place/background.png",
+      "status": "placeholder",
+      "note": "2026-09-18: 1536x1024 original high-resolution background for the isolated ImageMapTestNo01Scene. DEV_PLACEHOLDER only; not an official No.01 day/night background and does not replace the legacy Tiled map."
+    },
+    {
+      "key": "map.starting_place.image_test.collision",
+      "path": "assets/maps/starting_place/collision.png",
+      "status": "placeholder",
+      "note": "2026-09-18: human-editable 1536x1024 binary collision mask for the ImageMapTestNo01Scene (white=walkable, black=blocked). DEV_PLACEHOLDER authored for runtime validation; future production flow may generate its initial version from background analysis."
+    },
+    {
+      "key": "map.tileset.dev_placeholder_outdoor",
+      "path": "assets/maps/tilesets/dev_placeholder_outdoor_tileset.png",
+      "status": "placeholder",
+      "note": "2026-09-15, generated for tiled/maps/mq0_map01_starting_place_day.tmj. Flat-color/simple-icon DEV_PLACEHOLDER tiles only (17 types, 32px, 192x96 sheet); not a substitute for the still-missing tileset_base.png/tileset_extra.png. Trees/bushes/rocks/flowers/logs/torches/campfire/signpost/bridge still use this tileset after the v2 terrain trial below."
+    },
+    {
+      "key": "map.tileset.terrain_forest_v2_source",
+      "path": "assets/maps/tilesets/source/mq0_terrain_forest_v2_source.png",
+      "status": "source",
+      "note": "2026-09-15, raw AI-generated terrain sheet ('MQ0 Terrain Forest v2'). 1448x1086 RGB, precisely measured 16x12 grid at 90.5x90.5px/cell (not a 32px multiple). SOURCE ONLY -- never edit directly; normalized per-tile into mq0_terrain_forest_v2.png below. Also delivered alongside (not used for this terrain atlas): a trees/bushes source sheet and a labelled preview sheet, both left at assets/maps/tilesets/ under their generated UUID filenames."
+    },
+    {
+      "key": "map.tileset.terrain_forest_v2",
+      "path": "assets/maps/tilesets/mq0_terrain_forest_v2.png",
+      "status": "current",
+      "note": "2026-09-15, normalized 32x32 import-ready terrain atlas built by individually cropping/resizing 37 tiles from mq0_terrain_forest_v2_source.png (grass/water/shore/cliff/waterfall; RGBA, 256x288, clean 32px multiples). Directional variants (path end/corner, shore N/S/E/W, vertical cliff face) are geometric rotations/mirrors of captured art, documented per-tile via mq0Label. 2026-09-17: appended 15 new 'wide dirt road' blob-autotile tiles (dirt_full, dirt_edge_n/s/e/w, dirt_corner_ne/nw/se/sw, dirt_inner_ne/nw/se/sw, dirt_variant_01/02) into previously-unused atlas slots -- synthesized by masked-blending the existing grass_base texture with a dirt sample lifted from the existing path_cross tile (soft, noise-perturbed borders, no new source art), so the atlas stays 256x288 with 52 total tiles and every pre-existing GID is unchanged. Fully applied to tiled/maps/mq0_map01_starting_place_day.tmj: grass/water/shore/cliff/waterfall AND the dirt road are now formal (old thin 1-tile connector tiles path_straight_*/path_corner_*/path_cross/path_end_*/path_patch_* remain in the atlas unused). All props (trees, bushes, rocks, flowers, logs, torches, campfire, signpost, bridge) are formalized on their own dedicated tilesets (trees/props/bridge v2). See docs/PHASE_NO01_OUTDOOR_TILESET_SPEC.md for the full pipeline."
+    },
+    {
+      "key": "map.tileset.trees_forest_v2_source",
+      "path": "assets/maps/tilesets/source/mq0_trees_forest_v2_source.png",
+      "status": "source",
+      "note": "2026-09-15, raw chroma-key trees/bushes/stumps sheet (1448x1086 RGBA, green-screen background with residual green at low alpha). Found at a malformed path (assetsmapstilesetsmq0_terrain_forest_v3.png) and moved here after hash/size investigation confirmed it matched the previously-viewed trees sheet. NOT used for the final atlas below (the organized source had cleaner alpha and layout); kept as a backup source."
+    },
+    {
+      "key": "map.tileset.trees_forest_v2_organized_source",
+      "path": "assets/maps/tilesets/source/mq0_trees_forest_v2_organized_source.png",
+      "status": "source",
+      "note": "2026-09-15, second trees/bushes/stumps candidate sheet found already sitting at the mq0_trees_forest_v2.png target path (unexpected -- not mentioned in the request). 1448x1086 RGBA with genuine (non-chroma-key) alpha and a cleaner large/medium/small tree + stump + flower-bush layout. Chosen as the actual SOURCE for the normalized atlas below."
+    },
+    {
+      "key": "map.tileset.trees_forest_v2",
+      "path": "assets/maps/tilesets/mq0_trees_forest_v2.png",
+      "status": "current",
+      "note": "2026-09-15, normalized 32x32-cell import-ready trees atlas (256x384 RGBA) built from mq0_trees_forest_v2_organized_source.png: 14 sprites (2 large 3x4-cell conifers, 2 medium 2x3, 2 small 2x2, 2 stumps 1x1, 6 bushes 1x1/2x2) individually cropped, denoised (largest-connected-component only), and resized with premultiplied alpha + alpha-gated green-spill suppression to remove chroma-key residue. Tile properties reuse the existing mq0Label/mq0Blocking schema; each tree's bottom row only is mq0Blocking=true. Trialled into tiled/maps/mq0_map01_starting_place_day.tmj replacing DEV_PLACEHOLDER tree_canopy/bush_low (log/campfire/signpost/torch/bridge/flower/rock props untouched at that phase; props were normalized and applied in the next phase, see below). See docs/PHASE_NO01_OUTDOOR_TILESET_SPEC.md."
+    },
+    {
+      "key": "map.tileset.props_forest_v2_source",
+      "path": "assets/maps/tilesets/source/mq0_props_forest_v2_source.png",
+      "status": "source",
+      "note": "2026-09-16, raw props sheet ('MQ0 Props Forest v2'): 1448x1086 RGBA with genuine (non-chroma-key) transparency, 54 well-separated sprites (campfire, logs, signposts, torches, stumps, rocks, flowers, weeds) detected via connected-component analysis. SOURCE only -- never registered directly as a Tiled tileset."
+    },
+    {
+      "key": "map.tileset.props_forest_v2",
+      "path": "assets/maps/tilesets/mq0_props_forest_v2.png",
+      "status": "current",
+      "note": "2026-09-16, normalized 32x32-cell import-ready props atlas (256x608 RGBA) built from mq0_props_forest_v2_source.png: 27 sprites (campfire lit/unlit 2x2, torch lit/unlit 1x2 plus a 1x1 'torch_lit_01_compact' fallback for tight spots, 4 logs 2x1/1x2, 2 signposts 1x2, 2 stumps 2x2, 7 rocks 1x1-3x2, 3 flowers 1x1, 4 weeds 1x1), individually cropped, largest-connected-component denoised, and resized with premultiplied alpha. Collision follows a per-prop footprint policy (campfire/stump: base row only; log: full footprint; signpost/torch: base cell only; large/medium rock: full footprint; small rock/stones/flower/weed: none). Applied to tiled/maps/mq0_map01_starting_place_day.tmj replacing DEV_PLACEHOLDER campfire_marker/log_stump/torch_marker/rock_boulder/flower_patch with a hand-composed asymmetric campfire plaza and two north-gate torches. See docs/PHASE_NO01_OUTDOOR_TILESET_SPEC.md."
+    },
+    {
+      "key": "map.tileset.bridge_forest_v2_source",
+      "path": "assets/maps/tilesets/source/mq0_bridge_forest_v2_source.png",
+      "status": "source",
+      "note": "2026-09-16, raw bridge sheet ('MQ0 Bridge Forest v2'): 1448x1086 RGBA with genuine (non-chroma-key) transparency, 30 sprites (horizontal railing end-caps and repeatable center panels, freestanding posts, unused vertical bridge deck pieces with no matching end-caps). SOURCE only -- never registered directly as a Tiled tileset."
+    },
+    {
+      "key": "map.tileset.bridge_forest_v2",
+      "path": "assets/maps/tilesets/mq0_bridge_forest_v2.png",
+      "status": "current",
+      "note": "2026-09-16, normalized 32x32-cell modular horizontal-bridge atlas (256x128 RGBA) built from mq0_bridge_forest_v2_source.png: bridge_h_left/right (1x2, end caps with a diagonal support strut) + bridge_h_center_01/02 (1x2, a plank-width slice of a railing panel, verified to tile seamlessly against itself and the other variant in any order) + bridge_post_01/02 (1x2, base cell blocking). Any bridge length >= 2 tiles is reachable in 1-tile steps via center repeats; verified with 3/5/7-tile test bridges. Deck tiles carry no collision (river Collision is untouched elsewhere); applied to tiled/maps/mq0_map01_starting_place_day.tmj replacing the 7-tile DEV_PLACEHOLDER bridge_wood at its existing position/width. See docs/PHASE_NO01_OUTDOOR_TILESET_SPEC.md."
+    },
+    {
+      "key": "map.tileset.outdoor_forest_v1",
+      "path": "assets/maps/tilesets/mq0_outdoor_forest_v1.png",
+      "status": "reference",
+      "note": "2026-09-15, first pass at a real outdoor tileset (1448x1086 RGB). Measured native cell pitch is ~71-72px, not 32px or a clean multiple of it; no alpha channel; cliff/long-bridge art is drawn as one continuous mural rather than independent repeatable tiles. Good style/color/tree-size direction, but not sliceable into a production .tsj as-is. See docs/PHASE_NO01_OUTDOOR_TILESET_SPEC.md for the full evaluation and the regeneration checklist. Do not treat as ready_to_import until re-exported at a clean 32px multiple with transparency and modular cliff/bridge pieces."
+    },
+    {
+      "key": "battle.monster.demas",
+      "path": "assets/monsters/source/portraits/mq0_monster_030_54c4041dec.png",
+      "status": "reference",
+      "note": "Existing transparent game portrait selected for the 2026-09-14 Demas battle. Appearance matched to the named card_125 and promo_019; not the card's source-reference balance values."
+    },
+    {
+      "key": "battle.bg.demas_test",
+      "path": "assets/battle/backgrounds/reference/mq0_battle_bg_008_c44a414baf.png",
+      "status": "reference",
+      "note": "Existing boss arena reused for DEV Demas battle, per user request 2026-09-14. Not a finalized No.16 tower interior/background."
+    },
+    {
+      "key": "title.logo.main",
+      "path": "assets/title/ChatGPT Image 2026年9月13日 05_31_34.png",
+      "status": "current",
+      "sha256": "babc31412ffa7527cc466e158f06e6039a1e74a6d9e699b2274e139fa708713b",
+      "note": "CURRENT title adopted by user 2026-09-13 Phase 5.5; original retained. Runtime copy: public/assets/ui/title/mq0_title_logo.png."
+    },
+    {
+      "key": "title.logo.promo_026",
+      "path": "assets/promo/reference/mq0_promo_026_6d80d17943.png",
+      "status": "superseded",
+      "note": "Adopted in Phase 2 (2026-09-12); superseded by title.logo.main in Phase 5.5 (2026-09-13). Original retained, do not delete."
+    },
+    {
+      "key": "map.starting_place.reference.location",
+      "path": "assets/maps/reference/starting_place/no01_location_reference_9d4209d80a.png",
+      "status": "reference",
+      "sha256": "9d4209d80a23a1a72fdb18a15b1bf0051815ef84c2b31d7431b7192dfc6d7261",
+      "note": "User attachment #1, 2026-09-13 Phase 5.5. Composition/time-of-day reference only; not a CURRENT game background. Redesign for FC/early-SFC presentation."
+    },
+    {
+      "key": "map.starting_place.reference.night",
+      "path": "assets/maps/reference/starting_place/no01_night_reference_1b51bbe29b.png",
+      "status": "reference",
+      "sha256": "1b51bbe29be8f16d8cb36bbc7437849ce06082bdf2084aeef09ab1d64962789e",
+      "note": "User attachment #2, 2026-09-13 Phase 5.5. Composition/time-of-day reference only; not a CURRENT game background. Redesign for FC/early-SFC presentation."
+    },
+    {
+      "key": "map.starting_place.reference.day",
+      "path": "assets/maps/reference/starting_place/no01_day_reference_6398a59b13.png",
+      "status": "reference",
+      "sha256": "6398a59b137f8e0ca110880565b2b69f10a6c8256b846bb0262c0566b904dc6b",
+      "note": "User attachment #3, 2026-09-13 Phase 5.5. Composition/time-of-day reference only; not a CURRENT game background. Redesign for FC/early-SFC presentation."
+    },
+    {
+      "key": "title.background",
+      "path": "assets/maps/reference/world/mq0_world_map_022_94f19bddfe.png",
+      "status": "current",
+      "sha256": "94f19bddfe637ae746b0abf6f070661767791cbdd9d2a610db4757526986013d",
+      "note": "CURRENT title background adopted by user 2026-09-13; originally cataloged as a world map REFERENCE image, repurposed behind the title logo. Original retained, do not delete. Runtime copy: public/assets/ui/title/mq0_title_background.png. Old placeholder path assets/title/title_background.png was never created."
+    },
+    {
+      "key": "char.hero.walk",
+      "path": "assets/characters/playable/hero_walk.png",
+      "status": "superseded",
+      "note": "Old female hero-style protagonist. Do not use for current protagonist."
+    },
+    {
+      "key": "char.protagonist.walk",
+      "path": "assets/characters/playable/protagonist_walk.png",
+      "status": "needs_review",
+      "note": "Current male protagonist asset must be created/approved."
+    },
+    {
+      "key": "char.tarosa.walk",
+      "path": "assets/characters/playable/tarosa_walk.png",
+      "status": "ready_to_import"
+    },
+    {
+      "key": "char.mirei.walk",
+      "path": "assets/characters/playable/mirei_walk.png",
+      "status": "ready_to_import"
+    },
+    {
+      "key": "char.watabe.walk",
+      "path": "assets/characters/support/watabe_walk.png",
+      "status": "ready_to_import"
+    },
+    {
+      "key": "tileset.base",
+      "path": "assets/maps/tilesets/tileset_base.png",
+      "status": "ready_to_import"
+    },
+    {
+      "key": "tileset.extra",
+      "path": "assets/maps/tilesets/tileset_extra.png",
+      "status": "ready_to_import"
+    },
+    {
+      "key": "map.world.reference",
+      "path": "assets/maps/reference/world/mq0_world_map_001_4813475e07.png",
+      "status": "reference",
+      "sha256": "4813475e0740357aed595f54d6e04fa038bbfced1e79d59523844178dcd781da",
+      "note": "Phase 8.6 user-specified REFERENCE; 1448x1086 RGB. Used directly via Vite as DEV_REFERENCE_BACKGROUND, not CURRENT. Previous world_map_reference.png catalog path was absent; original reference retained without duplication."
+    },
+    {
+      "key": "map.starting_place.night",
+      "path": null,
+      "status": "needs_review",
+      "note": "No.01 はじまりのばしょ night version. Implementation may reuse tiles with lighting."
+    },
+    {
+      "key": "map.starting_place.day",
+      "path": null,
+      "status": "needs_review",
+      "note": "No.01 はじまりのばしょ day version."
+    },
+    {
+      "key": "effect.campfire",
+      "path": null,
+      "status": "needs_review",
+      "note": "Campfire animation/light for opening if not covered by tiles/effects."
+    },
+    {
+      "key": "battle.bg.grassland",
+      "path": "assets/battle/backgrounds/battle_bg_grassland.png",
+      "status": "ready_to_import"
+    },
+    {
+      "key": "battle.bg.forest",
+      "path": "assets/battle/backgrounds/battle_bg_forest.png",
+      "status": "ready_to_import"
+    },
+    {
+      "key": "battle.bg.forest_alt",
+      "path": "assets/battle/backgrounds/battle_bg_forest_alt.png",
+      "status": "ready_to_import"
+    },
+    {
+      "key": "battle.bg.cave",
+      "path": "assets/battle/backgrounds/battle_bg_cave.png",
+      "status": "ready_to_import"
+    },
+    {
+      "key": "battle.bg.castle_town",
+      "path": "assets/battle/backgrounds/battle_bg_castle_town.png",
+      "status": "ready_to_import"
+    },
+    {
+      "key": "battle.bg.snowfield",
+      "path": "assets/battle/backgrounds/battle_bg_snowfield.png",
+      "status": "ready_to_import"
+    },
+    {
+      "key": "battle.bg.desert_ruins",
+      "path": "assets/battle/backgrounds/battle_bg_desert_ruins.png",
+      "status": "ready_to_import"
+    },
+    {
+      "key": "battle.bg.dungeon",
+      "path": "assets/battle/backgrounds/battle_bg_dungeon.png",
+      "status": "ready_to_import"
+    },
+    {
+      "key": "battle.bg.dungeon_alt",
+      "path": "assets/battle/backgrounds/battle_bg_dungeon_alt.png",
+      "status": "ready_to_import"
+    },
+    {
+      "key": "battle.bg.boss",
+      "path": "assets/battle/backgrounds/battle_bg_boss.png",
+      "status": "ready_to_import"
+    },
+    {
+      "key": "battle.bg.boss_alt",
+      "path": "assets/battle/backgrounds/battle_bg_boss_alt.png",
+      "status": "ready_to_import"
+    },
+    {
+      "key": "ui.common",
+      "path": "assets/ui/ui_common.png",
+      "status": "ready_to_import"
+    },
+    {
+      "key": "ui.card_gacha",
+      "path": "assets/ui/ui_card_gacha.png",
+      "status": "reference"
+    },
+    {
+      "key": "promo.poster.retro_rpg",
+      "path": "assets/promo/poster_retro_rpg.png",
+      "status": "reference"
+    },
+    {
+      "key": "promo.package.front",
+      "path": "assets/promo/package_front.png",
+      "status": "ready_to_import"
+    },
+    {
+      "key": "promo.package.back",
+      "path": "assets/promo/package_back.png",
+      "status": "ready_to_import"
+    }
   ],
   "patterns": {
     "npc": "assets/characters/npc/npc_{01..10}.png",

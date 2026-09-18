@@ -47,17 +47,13 @@ AI・人間・Phaser Game Agentで名前の揺れを防ぎ、検索・差し替�
 別案は `_alt01`, `_alt02` とする。
 
 ## 6. マップレイヤー
-原則として全マップで共通名を使う。
-- `Ground`
-- `GroundDetail`
-- `Road`
-- `Building`
-- `Object`
-- `Collision`
-- `Event`
-- `Foreground`
+新規ローカルマップでは `MAP_SYSTEM.md` に従い、次の4レイヤー名を使用する。
+- `BACKGROUND`
+- `COLLISION`
+- `EVENT`
+- `OBJECT`
 
-不要なレイヤーは省略可だが、同じ意味に別名を作らない。
+不要な補助データは省略可だが、同じ意味に別名を作らない。`Ground`、`Road`、`Building`、`Foreground`等は既存Tiled方式のlegacyレイヤー名として保持し、新規方式では正本レイヤーにしない。
 
 ## 7. Scene / Class
 TypeScriptではPascalCase。

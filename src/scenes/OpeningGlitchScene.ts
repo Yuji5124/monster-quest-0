@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { DISPLAY } from "../config/display.ts";
+import { DISPLAY, SCALE_FACTOR } from "../config/display.ts";
 import {
   GLITCH_FLICKER_INTERVAL_MS,
   GLITCH_MAX_FRAME_DELTA_MS,
@@ -14,6 +14,16 @@ const GLITCH_TEXT_POOL_SIZE = 3;
 const GLITCH_CHARS = "█▓▒░#%&@*■□▲▼◆◇0123456789ｱｲｳｴｵｶｷｸｹｺﾊﾞｸﾞ";
 const SCANLINE_COLORS = [0xffffff, 0x66e0ff, 0xff5ecb, 0x8888aa];
 const FLASH_COLORS = [0xff2255, 0x22ffee, 0xffee22];
+
+// 以下は旧320×240基準のpx値 * SCALE_FACTOR。演出の見た目の比率を解像度移行前と揃える。
+const GLITCH_TEXT_FONT_SIZE = 10 * SCALE_FACTOR;
+const GLITCH_TEXT_MARGIN_X = 40 * SCALE_FACTOR;
+const GLITCH_TEXT_MARGIN_Y = 16 * SCALE_FACTOR;
+const SHIFT_OFFSET_SHIFT_MIN = 2 * SCALE_FACTOR;
+const SHIFT_OFFSET_SHIFT_MAX = 6 * SCALE_FACTOR;
+const SHIFT_OFFSET_INTENSE_MIN = 3 * SCALE_FACTOR;
+const SHIFT_OFFSET_INTENSE_MAX = 10 * SCALE_FACTOR;
+const SHIFT_OFFSET_Y = 2 * SCALE_FACTOR;
 
 /**
  * 「はじめから」直後の約5秒異常演出。FC〜初期SFC時代のデータ破損風を狙い、
@@ -43,7 +53,7 @@ export class OpeningGlitchScene extends Phaser.Scene {
     this.graphics = this.add.graphics();
     this.glitchTexts = Array.from({ length: GLITCH_TEXT_POOL_SIZE }, () =>
       this.add
-        .text(0, 0, "", { fontFamily: "monospace", fontSize: "10px", color: "#ffffff" })
+        .text(0, 0, "", { fontFamily: "monospace", fontSize: `${GLITCH_TEXT_FONT_SIZE}px`, color: "#ffffff" })
         .setVisible(false)
     );
   }
@@ -73,11 +83,13 @@ export class OpeningGlitchScene extends Phaser.Scene {
         break;
       case "shift":
         this.renderScanlines(elapsedMs);
-        this.renderShift(elapsedMs, GLITCH_SHIFT_INTERVAL_MS, 2, 6);
+        this.renderShift(elapsedMs, GLITCH_SHIFT_INTERVAL_MS, SHIFT_OFFSET_SHIFT_MIN, SHIFT_OFFSET_SHIFT_MAX);
         break;
       case "intense":
         this.renderScanlines(elapsedMs);
-        this.renderShift(elapsedMs, GLITCH_SHIFT_INTERVAL_MS * 0.7, 3, 10);
+        this.renderShift(
+          elapsedMs, GLITCH_SHIFT_INTERVAL_MS * 0.7, SHIFT_OFFSET_INTENSE_MIN, SHIFT_OFFSET_INTENSE_MAX,
+        );
         this.renderColorFlash(elapsedMs);
         break;
       case "blackOut":
@@ -102,7 +114,7 @@ export class OpeningGlitchScene extends Phaser.Scene {
     const barCount = 2 + Math.floor(Math.random() * 3);
     for (let i = 0; i < barCount; i += 1) {
       const y = Math.random() * DISPLAY.height;
-      const h = 1 + Math.random() * 2;
+      const h = (1 + Math.random() * 2) * SCALE_FACTOR;
       const color = SCANLINE_COLORS[Math.floor(Math.random() * SCANLINE_COLORS.length)];
       this.graphics.fillStyle(color, 0.5 + Math.random() * 0.3);
       this.graphics.fillRect(0, y, DISPLAY.width, h);
@@ -114,7 +126,7 @@ export class OpeningGlitchScene extends Phaser.Scene {
     if (this.isOnBeat(elapsedMs, intervalMs)) {
       const magnitude = minOffset + Math.floor(Math.random() * (maxOffset - minOffset + 1));
       const offsetX = (Math.random() < 0.5 ? -1 : 1) * magnitude;
-      const offsetY = Math.random() < 0.3 ? (Math.random() < 0.5 ? -1 : 1) * 2 : 0;
+      const offsetY = Math.random() < 0.3 ? (Math.random() < 0.5 ? -1 : 1) * SHIFT_OFFSET_Y : 0;
       this.cameras.main.setScroll(offsetX, offsetY);
       this.showGlitchText();
     } else {
@@ -144,7 +156,10 @@ export class OpeningGlitchScene extends Phaser.Scene {
   private showGlitchText(): void {
     const text = this.glitchTexts[Math.floor(Math.random() * this.glitchTexts.length)];
     text.setText(this.randomGlitchString());
-    text.setPosition(Math.random() * (DISPLAY.width - 40), Math.random() * (DISPLAY.height - 16));
+    text.setPosition(
+      Math.random() * (DISPLAY.width - GLITCH_TEXT_MARGIN_X),
+      Math.random() * (DISPLAY.height - GLITCH_TEXT_MARGIN_Y),
+    );
     text.setVisible(true);
   }
 

@@ -1,0 +1,17 @@
+{
+  "id": "world_map",
+  "name": "世界地図",
+  "type": "point-selection-world-map",
+  "formatVersion": 1,
+  "coordinateSpace": "background-pixels",
+  "width": 1448,
+  "height": 1086,
+  "background": "background.png",
+  "destinations": "destinations.json",
+  "entryDestinationIds": {
+    "from_starting_place": "destination_starting_place",
+    "from_starting_town": "destination_starting_town"
+  },
+  "developmentUnlockedFlags": [],
+  "assetStatus": "CURRENT"
+}

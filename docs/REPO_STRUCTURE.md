@@ -1,6 +1,6 @@
 # モンスタークエスト0 リポジトリ構成
 
-最終更新: 2026-09-10 23:46 JST
+最終更新: 2026-09-18 JST
 
 ## 1. 現在
 現時点では仕様・素材整理が先行している。Phaser本体を初期化する際は以下を基準とする。
@@ -15,7 +15,8 @@ monster-quest-0/
 ├─ assets/
 │  ├─ characters/
 │  ├─ monsters/
-│  ├─ tiles/
+│  ├─ maps/
+│  │  └─ <map_id>/       # background.png / collision.png / events.json / objects.json
 │  ├─ battle-backgrounds/
 │  ├─ ui/
 │  ├─ cards/
@@ -78,6 +79,8 @@ monster-quest-0/
 ## 7. assets
 既存の `assets/README.md` と `assets/asset_catalog.json` を正として、実ファイルを分類する。
 ChatGPT内で作成済みでもGitHubにないものは、存在する前提にしない。
+
+新規ローカルマップは `MAP_SYSTEM.md` のBACKGROUND / COLLISION / EVENT / OBJECT構成を使う。既存の `tiled/`、tileset、生成済みTiledランタイム資産はlegacyとして保持し、今回移動しない。
 
 ## 8. 禁止
 - `src/game.ts` 1枚へ全機能を集約

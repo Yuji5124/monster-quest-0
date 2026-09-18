@@ -1,6 +1,6 @@
 # モンスタークエスト0 QA仕様
 
-最終更新: 2026-09-12 JST
+最終更新: 2026-09-18 JST
 
 ## 1. 目的
 Claude Code / Codex / Phaser Game Agentが同じ品質基準で確認する。
@@ -14,7 +14,7 @@ Claude Code / Codex / Phaser Game Agentが同じ品質基準で確認する。
 - 主人公歩行
 - **No.02「はじまりのまち」**
 - NPC会話
-- フィールド移動
+- ワールドマップの目的地選択 / ローカルマップ移動
 - 戦闘開始 / 終了
 - メニュー
 - セーブ / ロード
@@ -36,6 +36,10 @@ Claude Code / Codex / Phaser Game Agentが同じ品質基準で確認する。
 
 ## 4. マップ
 - 正式No.01〜No.20を使用
+- 背景画像、Collision Mask、Event、Objectが同一座標系で重なる
+- Collision Maskの白=歩行可能、黒=歩行不可が正しく反映される
+- 背景を変更したマップではCollision / Event / Objectを再確認する
+- 実行中にAI画像解析を呼び出さない
 - 壁抜けなし
 - 出入口正常
 - 閉じ込めなし
@@ -45,6 +49,7 @@ Claude Code / Codex / Phaser Game Agentが同じ品質基準で確認する。
 - 再入場状態正常
 - No.01初回 / 昼 / 「もういちど」再訪を混同しない
 - No.02内部マップの親子transfer正常
+- ワールドマップの未解放 / 解放済み目的地、選択、移動先が正しい
 
 ## 5. NPC / イベント
 - 基本会話表示

@@ -1,0 +1,14 @@
+{
+  "id": "map_01_starting_place",
+  "name": "はじまりのばしょ",
+  "formatVersion": 1,
+  "coordinateSpace": "background-pixels",
+  "width": 1536,
+  "height": 1024,
+  "background": "background.png",
+  "collision": "collision.png",
+  "events": "events.json",
+  "objects": "objects.json",
+  "collisionCellSize": 16,
+  "assetStatus": "CURRENT"
+}

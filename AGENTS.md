@@ -66,6 +66,8 @@
 
 ## 最新スコープ
 - 全体ワールドマップ・主要地域配置・大枠は維持
+- 地域間はポイント選択式ワールドマップ。巨大な徒歩フィールドを新規制作しない
+- 新規ローカルマップは高解像度背景画像を正本とし、生成後に人間が修正するCollision / Event / Objectで管理する
 - 町・村・城内部はコンパクト化
 - ダンジョン内部もコンパクト化
 - NPC人数は縮小後マップに合わせて再編集
@@ -77,6 +79,7 @@
 - `docs/OPENING_SPEC.md`
 - `docs/STORY_FLOW.md`
 - `docs/MAP_FLOW_SPEC.md`
+- `docs/MAP_SYSTEM.md`
 - `docs/NPC_SPEC.md`
 
 ### 戦闘 / 成長 / コンテンツ
@@ -116,6 +119,7 @@
 - `SAVE_FLAG_SPEC.md` に合わせる
 - `BATTLE_SPEC.md` に合わせる
 - `PERFORMANCE_BUDGET.md` を守る
+- 新規マップをTiled TMX/TMJや32×32タイル背景の正本として追加しない。既存Tiled実装は削除しない
 - GitHubに存在しない素材をある前提で使わない
 - 仮値は仮値と明示する
 - `hero_walk.png` を現行主人公へ使用しない
