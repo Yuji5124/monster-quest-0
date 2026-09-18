@@ -1,0 +1,6 @@
+assets/misc/reference/monster_quest0_image_library_20260912/**/*.wav filter=lfs diff=lfs merge=lfs -text
+assets/misc/reference/monster_quest0_image_library_20260912/**/*.zip filter=lfs diff=lfs merge=lfs -text
+assets/misc/reference/monster_quest0_image_library_20260912/**/*.mid binary
+assets/misc/reference/monster_quest0_image_library_20260912/**/*.png binary
+assets/misc/reference/monster_quest0_image_library_20260912/**/*.jpeg binary
+
