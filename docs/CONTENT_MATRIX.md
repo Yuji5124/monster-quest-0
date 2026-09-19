@@ -38,7 +38,7 @@ Phase 8.6では既存世界地図REFERENCEを背景にしたROUGH_FIELDを追加
 | 02 | はじまりのまち | CONFIRMED | DIALOGUE_DRAFT | PARTIAL: 2026-09-19にCURRENT背景画像方式(`StartingTownScene`、No.01と同じBACKGROUND/COLLISION/EVENT/OBJECT)へ移行。建物5棟(reference画像に実在する数へ6→5縮小、やどや/どうぐや/ぶきや/きょうかい/民家A)の外観+Collision・NPC5体(DEV_PLACEHOLDER)・パーティ加入・戦闘イベント・建物内部5室(InteriorScene、出入りあり)・西端でWorldMapSceneへ接続、まで実装。店/宿/教会機能・正式NPC・正式会話は未実装 | 会話原案あり。人数・配置はNPC_SPEC.mdで再検討中 |
 | 03 | ビーエのむら | CONFIRMED | DIALOGUE_DRAFT | PARTIAL: No.01と同じ画像マップ方式(`BieVillageScene`)で背景+Collision+北門Event+WorldMapScene接続まで実装。unlockFlagは実フラグ(`story.bie_village_unlocked`)で、SaveSystem未接続の間は`developmentUnlockedFlags`を暫定の解放状態として本番でも使い、世界地図から出入りできる(2026-09-19)。NPC・木こり救出イベント・ランダムエンカウントは未実装(会話原案が人数未確定のDIALOGUE_DRAFTのため) | 木こり救出事件あり。縮小後マップに合わせ再編集 |
 | 04 | レインランドのまち | CONFIRMED | DIALOGUE_DRAFT | 未実装 | 王家・ミレイ等の伏線あり |
-| 05 | レインランドじょう | CONFIRMED | DIALOGUE_DRAFT | PARTIAL(2026-09-20、DEV_PLACEHOLDER背景・仮NPC5人) | 王家・政治の中心 |
+| 05 | レインランドじょう | CONFIRMED | DIALOGUE_DRAFT | PARTIAL(2026-09-20、正式背景・仮NPC5人) | 王家・政治の中心 |
 | 06 | ザボンのむら | CONFIRMED | DIALOGUE_DRAFT | 未実装 | タロサ関連。ただし全員をタロサ話題にしない |
 | 07 | いしのむら | CONFIRMED | 未作成 | 未実装 | 石・岩の個性 |
 | 08 | まじんのどうくつ | CONFIRMED | - | 未実装 | ダンジョン |

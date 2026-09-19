@@ -339,8 +339,8 @@ export const MAPS: Record<MapId, MapDefinition> = {
     npcs: [],
     buildings: [],
   },
-  // No.05「レインランドじょう」。通常RPG方式(画像マップ)の城内。座標は background.png(現在はDEV_PLACEHOLDERの
-  // 単色レイアウト、1448×1086)のネイティブ背景ピクセル。正式背景が届いたら spawn / NPC / events.json を測り直す。
+  // No.05「レインランドじょう」。通常RPG方式(画像マップ)の城内。座標は background.png(ユーザー提供の城内背景、
+  // 1448×1086)のネイティブ背景ピクセル。背景を差し替えたら spawn / NPC / events.json / collision.png を測り直す。
   // 入口は「レインランドじょうかまちの北の城門 → MapId + spawnId(fromCastleTown)」だけで固定してある(世界地図には直接載せない)。
   // 将来ここだけブロック城(Voxel)Sceneへ差し替える場合は、sceneKey を差し替え先へ変え、main.tsへそのSceneを登録すればよい
   // (町の北門Event・出口Eventは変更不要)。
@@ -349,18 +349,18 @@ export const MAPS: Record<MapId, MapDefinition> = {
     sceneKey: "RainlandCastleScene",
     spawns: {
       // レインランドじょうかまちの北の城門から入る正式spawn。城門を入った入口ホール、上向き。城外への出口Event zone(y:1050-1086)と重ならない。
-      fromCastleTown: { x: 725, y: 985, facing: "up" },
+      fromCastleTown: { x: 725, y: 960, facing: "up" },
     },
     // 正式出口は assets/maps/rainland_castle/events.json の城門Event(レインランドじょうかまちの北の城門前へ)で管理する。
     exits: [],
     // DEV_PLACEHOLDER_NPC: 会話は data/dialogues.ts のDEV_PLACEHOLDER_DIALOGUE。正式な人数・役割・台詞は
     // docs/NPC/04_rainland_castle.md(NEXT_TO_DESIGN)の確定待ち。ミレイの正体に触れる台詞は置いていない。
     npcs: [
-      { id: "rainland_castle_gate_soldier", mapId: "map_05_rainland_castle", position: { x: 575, y: 955 }, facing: "right", dialogueId: "rainland_castle_gate_soldier" },
-      { id: "rainland_castle_hall_soldier", mapId: "map_05_rainland_castle", position: { x: 650, y: 480 }, facing: "down", dialogueId: "rainland_castle_hall_soldier" },
-      { id: "rainland_castle_throne_guard", mapId: "map_05_rainland_castle", position: { x: 630, y: 240 }, facing: "right", dialogueId: "rainland_castle_throne_guard" },
-      { id: "rainland_castle_servant", mapId: "map_05_rainland_castle", position: { x: 180, y: 470 }, facing: "right", dialogueId: "rainland_castle_servant" },
-      { id: "rainland_castle_resident", mapId: "map_05_rainland_castle", position: { x: 1060, y: 585 }, facing: "up", dialogueId: "rainland_castle_resident" },
+      { id: "rainland_castle_gate_soldier", mapId: "map_05_rainland_castle", position: { x: 565, y: 925 }, facing: "right", dialogueId: "rainland_castle_gate_soldier" },
+      { id: "rainland_castle_hall_soldier", mapId: "map_05_rainland_castle", position: { x: 632, y: 400 }, facing: "right", dialogueId: "rainland_castle_hall_soldier" },
+      { id: "rainland_castle_throne_guard", mapId: "map_05_rainland_castle", position: { x: 676, y: 190 }, facing: "right", dialogueId: "rainland_castle_throne_guard" },
+      { id: "rainland_castle_servant", mapId: "map_05_rainland_castle", position: { x: 160, y: 500 }, facing: "right", dialogueId: "rainland_castle_servant" },
+      { id: "rainland_castle_resident", mapId: "map_05_rainland_castle", position: { x: 1000, y: 640 }, facing: "left", dialogueId: "rainland_castle_resident" },
     ],
     buildings: [],
   },

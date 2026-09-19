@@ -133,9 +133,9 @@
 - 本書§2のNo.05「レインランドじょう」を、城内を歩ける画像マップとして追加した。`assets/maps/rainland_castle/`（`map_05_rainland_castle`、`RainlandCastleScene`）。No.01と同じBACKGROUND/COLLISION/EVENT/OBJECT方式（`MAP_SYSTEM.md`）で`worldScale: 1.5`。
 - **導線（正式）**: レインランドじょうかまち(§4.12)の**北の城門**(`event_rainland_castle_town_castle_gate`、`transfer`) → 城門を入った入口ホール(`fromCastleTown`、上向き)。城の出口(`event_rainland_castle_exit`、`transfer`) → 町の北の城門前(`map_rainland_castle_town`の`fromCastle`、下向き)。**世界地図には城を直接載せない**（町が世界地図の地点であり、城は町の北の城門の先という既存の世界構造を優先した）。
 - 構成（コンパクトな1フロア）: 城門・入口ホール・中央ホール・王の間へ向かう絨毯の通路と扉（扉の先は未実装）・西翼（階段の位置）・東翼（小部屋）。NPCは仮5人。イベント点: 入口／王の間の入口／階段／東の小部屋(将来のイベント用の予約地点、内容と名称はストーリー非依存のIDで場所だけ確保)／出口。
-- **背景はDEV_PLACEHOLDER**（単色レイアウト。`tools/build_rainland_castle_placeholder.py`が背景とCollisionを生成、`map.json`の`assetStatus`）。正式背景への差し替えは画像2枚と`map.json`の更新のみ（`ASSET_INDEX.md`）。ユーザー提供の`レインランドじょう_イメージ.png`（外観）と`レインランドじょう_マイクラ風.png`（一人称のブロック城）は歩行背景ではない。
+- **背景は正式**（2026-09-20）: ユーザー提供の城内背景`レインランドじょう_城内.png`(1448×1086)を無加工でCURRENT背景にした（`map.json`の`assetStatus: CURRENT`）。`collision.png`は`tools/build_rainland_castle_collision.py`が背景から測った矩形で生成する。差し替えは画像2枚と`map.json`の更新のみ（`ASSET_INDEX.md`）。`レインランドじょう_イメージ.png`（外観）と`レインランドじょう_マイクラ風.png`（一人称のブロック城）は歩行背景ではない。
 - **将来のブロック城化**: 城内だけをブロック構成の特殊な城へ切り替える場合は、新Sceneを作ってmain.tsへ登録し、`config/maps.ts`の`map_05_rainland_castle.sceneKey`を切り替える。町の北門Eventと出口Eventは`MapId`と`spawnId`しか知らないため変更不要。NPC・台詞・イベントIDはデータ側に残る。
-- 未実装／TBD: 正式な城内背景、NPCの正式人数・台詞（`docs/NPC/04_rainland_castle.md`）、王の間・上階、各イベント本編、BGM。
+- 未実装／TBD: NPCの正式人数・台詞（`docs/NPC/04_rainland_castle.md`）、王の間・上階、各イベント本編、BGM。
 
 ## 5. 基本進行の大枠
 No.01 はじまりのばしょ

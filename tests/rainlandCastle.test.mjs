@@ -37,14 +37,14 @@ function npcBodies() {
   return MAP.npcs.map((npc) => ({ npc, rect: { x: npc.position.x - width / 2, y: npc.position.y - height / 2, width, height } }));
 }
 
-test("castle: manifest is a DEV_PLACEHOLDER four-layer package at 150% like the other maps", () => {
+test("castle: manifest is a CURRENT four-layer package at 150% like the other maps", () => {
   const m = manifest();
   assert.equal(m.id, MAP_ID);
   assert.equal(m.name, "レインランドじょう");
   assert.equal(m.coordinateSpace, "background-pixels");
-  // No user-supplied walkable castle interior exists yet; flip this to CURRENT together with the real background.png / collision.png
-  // (a data-only swap: the Scene carries no DEV_PLACEHOLDER special case).
-  assert.equal(m.assetStatus, "DEV_PLACEHOLDER");
+  // The user-supplied 城内 artwork replaced the DEV_PLACEHOLDER layout (a data-only swap: the Scene has no special case).
+  assert.equal(m.assetStatus, "CURRENT");
+  assert.deepEqual([m.width, m.height], [1448, 1086]);
   assert.equal(m.worldScale, 1.5);
   assert.equal(m.collisionCellSize, 8);
   for (const file of [m.background, m.collision, m.events, m.objects]) assert.ok(existsSync(path.join(MAP_DIR, file)), `${file} must exist`);
@@ -53,10 +53,13 @@ test("castle: manifest is a DEV_PLACEHOLDER four-layer package at 150% like the 
   assert.deepEqual(pngSize(path.join(MAP_DIR, "collision.png")), { width: m.width, height: m.height });
 });
 
-test("castle: the placeholder background is not an unmodified copy of any user-supplied reference image", () => {
-  const background = readFileSync(path.join(MAP_DIR, "background.png"));
-  for (const file of readdirSync(REFERENCE_DIR).filter((name) => name.endsWith(".png"))) {
-    assert.equal(background.equals(readFileSync(path.join(REFERENCE_DIR, file))), false, `background.png must not be a copy of ${file}`);
+test("castle: background.png is an unmodified copy of the user-supplied 城内 artwork, and the original is kept", () => {
+  const reference = path.join(REFERENCE_DIR, "レインランドじょう_城内.png");
+  assert.ok(existsSync(reference), "the original reference image must still exist");
+  assert.ok(readFileSync(reference).equals(readFileSync(path.join(MAP_DIR, "background.png"))), "background.png must be byte-identical to レインランドじょう_城内.png");
+  // the 2D walkable background must never be the exterior establishing shot or the first-person voxel-castle reference
+  for (const other of ["レインランドじょう_イメージ.png", "レインランドじょう_マイクラ風.png"]) {
+    assert.equal(readFileSync(path.join(MAP_DIR, "background.png")).equals(readFileSync(path.join(REFERENCE_DIR, other))), false, `background.png must not be ${other}`);
   }
 });
 
@@ -119,16 +122,19 @@ test("castle: the spawned body clears the exit zone (no instant re-trigger)", ()
   assert.equal(overlaps, false, "the spawned Player body must not overlap the exit zone");
 });
 
-test("castle: hall, throne route, stairs, wings and the gate are walkable; walls, pillars, tables and the throne door are blocked", () => {
+test("castle: carpet, hall floor, stairs, wings and the gate are walkable; walls, pedestals, plants, furniture and the throne door are blocked", () => {
   const isBlocked = collision();
   for (const [name, x, y] of [
-    ["spawn", MAP.spawns.fromCastleTown.x, MAP.spawns.fromCastleTown.y], ["exit zone", 725, 1068], ["entrance hall", 520, 950], ["hall centre", 725, 650],
-    ["hall west", 340, 500], ["hall east", 1100, 800], ["throne route", 725, 320], ["throne door recess", 725, 175], ["west connect", 200, 630],
-    ["west corridor", 180, 400], ["stairs", 180, 280], ["east connect", 1250, 630], ["east corridor", 1275, 450], ["east side room", 1250, 280],
+    ["spawn", MAP.spawns.fromCastleTown.x, MAP.spawns.fromCastleTown.y], ["exit zone", 724, 1068], ["gate stem", 724, 1030], ["entrance hall", 540, 900],
+    ["hall centre carpet", 724, 650], ["hall west", 400, 650], ["hall east", 1000, 700], ["hall north strip", 500, 540], ["throne route carpet", 724, 320],
+    ["throne door apron", 724, 150], ["throne strip (west)", 630, 400], ["throne strip (east)", 820, 400], ["west connect", 290, 610], ["west wing", 170, 600],
+    ["west stairs", 170, 260], ["east connect", 1250, 610], ["east wing", 1280, 450], ["east room carpet", 1280, 360],
   ]) assert.equal(isBlocked(x, y), false, `${name} (${x},${y}) must be walkable`);
   for (const [name, x, y] of [
-    ["pillar (west)", 580, 535], ["pillar (east)", 870, 775], ["east table", 1060, 500], ["west table", 395, 800], ["throne door", 725, 130],
-    ["outer wall (north-west)", 40, 40], ["wall beside the throne route", 500, 300], ["wall beside the gate", 560, 1060], ["outer wall (east)", 1400, 900],
+    ["pedestal (west)", 588, 560], ["pedestal (east)", 860, 770], ["topiary (north-west)", 368, 520], ["topiary (south-east)", 1080, 790], ["picture and bench", 460, 800],
+    ["lamp post", 636, 960], ["entrance topiary", 606, 980], ["torch base (west wing)", 110, 430], ["console table", 1280, 320], ["floor strip behind the table (too narrow)", 1210, 330], ["throne door", 724, 100],
+    ["banner wall beside the throne route", 625, 220], ["hall north wall", 450, 450], ["outer void (north-west)", 40, 40], ["void beside the throne route", 500, 300],
+    ["wall beside the gate", 560, 1060], ["outer void (east)", 1400, 900], ["west stairs wall", 100, 250],
   ]) assert.equal(isBlocked(x, y), true, `${name} (${x},${y}) must be blocked`);
 });
 
@@ -179,8 +185,9 @@ test("castle: with the NPC bodies blocked, the player body still walks from the 
   for (const event of result.eventResults) assert.equal(event.ok, true, `${event.id} is not reachable`);
   // key walking spots: the throne door recess, the top of the stairs, the east side room, both wings' far ends, the hall's four corners
   for (const [x, y, name] of [
-    [725, 175, "throne door recess"], [180, 262, "stairs (top)"], [1250, 280, "east side room"], [130, 680, "west connect (far corner)"], [1320, 680, "east connect (far corner)"],
-    [330, 470, "hall north-west corner"], [1120, 470, "hall north-east corner"], [330, 840, "hall south-west corner"], [1120, 840, "hall south-east corner"],
+    [724, 150, "throne door apron"], [176, 232, "stairs (top)"], [1280, 370, "east room carpet"], [130, 640, "west wing (south-west corner)"],
+    [1330, 640, "east wing (south-east corner)"], [412, 540, "hall north-west"], [1000, 540, "hall north-east"], [340, 700, "hall west edge"], [1000, 826, "hall south-east"],
+    [632, 470, "throne strip (west, south of the soldier)"], [820, 400, "throne strip (east)"], [724, 1070, "exit stem"],
   ]) assert.equal(result.canReach(x, y), true, `${name} (${x},${y}) is not reachable`);
   // each NPC can be talked to: a spot next to it, with the player centre within INTERACTION_REACH (27 world px = 18 native px)
   // of the NPC edge, is reachable. Bare body (margin 0): talking is allowed while pressed up against the NPC.

@@ -69,7 +69,7 @@ assets/maps/<mapId>/
 
 7つ目のパッケージ `assets/maps/rainland_castle_town/`（レインランドじょうかまち、2026-09-19）は、俯瞰の町マップ`レインランドじょうかまち.png`(1447×1087)の無加工コピー`background.png`と、石畳の道・広場・石段・堀の橋だけを歩行可能にした`collision.png`を持つ。共通の`RainlandImageMapScene`（`RainlandForestScene.ts`から公開、もり その1・その2と共有）へ`RainlandCastleTownScene`がパッケージを渡す。町の道は石畳の色（黄土〜クリーム）で抽出し、シーム(継ぎ目)で分断された道を色で補完してつなぎ、石でできた橋の甲板を手で加え、桟橋・外壁の縁・屋根と色が近い部分を手で除き、道を明るい芝の縁へ11px広げた（樹冠・屋根・壁・水・柵には広げない）。
 
-8つ目のパッケージ `assets/maps/rainland_castle/`（No.05レインランドじょう、2026-09-19）は、城内の正式な歩行用画像が未提供のため`assetStatus: "DEV_PLACEHOLDER"`の単色レイアウトを持つ（`tools/build_rainland_castle_placeholder.py`が`background.png`と`collision.png`を同じ定義から生成）。共通の`RainlandImageMapScene`は、`map.json`の`assetStatus`（DEV_PLACEHOLDER/CURRENT）をそのまま受け入れ（正式背景への差し替えはデータだけで済む）、`MAPS[mapId].npcs`が空でないマップだけNPC・会話を有効にする。詳細は`MAP_FLOW_SPEC.md` §4.13、`ASSET_INDEX.md`。
+8つ目のパッケージ `assets/maps/rainland_castle/`（No.05レインランドじょう、2026-09-19着手・2026-09-20に正式背景へ差し替え）は、ユーザー提供の城内背景（1448×1086）の無加工コピー`background.png`と、床・絨毯・階段・小部屋を歩行可能にした`collision.png`を持つ。`collision.png`は背景から測った矩形を`tools/build_rainland_castle_collision.py`が8pxセル格子へ揃えて生成する手書き寄りの方式（画像解析を使わず、`--preview`で目視確認）。共通の`RainlandImageMapScene`は、`map.json`の`assetStatus`（DEV_PLACEHOLDER/CURRENT）をそのまま受け入れ（背景の差し替えはデータだけで済む）、`MAPS[mapId].npcs`が空でないマップだけNPC・会話を有効にする。詳細は`MAP_FLOW_SPEC.md` §4.13、`ASSET_INDEX.md`。
 
 #### 入場演出（`MapSplashScene`）
 
