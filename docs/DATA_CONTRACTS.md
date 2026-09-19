@@ -125,7 +125,7 @@ Claude Code / Codex / Phaser Game Agentが同じJSON構造を前提に実装で�
 - `targetMapId` / `targetSpawnId` は実在するローカルマップの安全なspawnへ解決する。
 - `visible: false` は地点をUIへ出さない。`visible: true` かつ未解放なら、UIは名前を`？？？`として非選択表示にできる。
 - `unlockFlag: null` は常に選択可能、文字列は `SAVE_FLAG_SPEC.md` の小文字・ドット区切りフラグ名とする。最終的な選択可否はSceneに直書きせず、セーブフラグから導出する。
-- 初期DEVでは `map.json` の `developmentUnlockedFlags` を保存済みフラグの代替として使ってよい。本番のSaveSystem接続後はこの値を進行状態として扱わない。
+- 初期DEVでは `map.json` の `developmentUnlockedFlags` を保存済みフラグの代替として使ってよい。SaveSystemが `flags` を持つまでは、本番の`WorldMapScene`も同じ暫定値を`WorldMapData.ts`の`readInterimUnlockedFlags()`経由で使う。SaveSystem接続後はこの関数を差し替え、この値を進行状態として扱わない。
 - 初期DEVデータの位置は正式地理の確定値にしない。
 
 ### 8.1.1 imageMapWorldMapEvent
@@ -166,6 +166,8 @@ Claude Code / Codex / Phaser Game Agentが同じJSON構造を前提に実装で�
 }
 ```
 
+実装初弾（はじまりのもり、`src/data/encounterTables.ts`）は、今回の仕様上1戦闘の敵を必ず1体とするため、`enemies`を要素数1の配列に限定して使用する。地域ごとのencounter tableはSceneへ直書きせず、`src/systems/RandomEncounter.ts`（歩行距離の蓄積・閾値抽選・戦闘後クールダウン）と組み合わせて呼び出す。
+
 ## 10. janCard
 ```json
 {
@@ -177,7 +179,7 @@ Claude Code / Codex / Phaser Game Agentが同じJSON構造を前提に実装で�
   "spoiler": false
 }
 ```
-全45枚。固定順、ダブりなし、1回20円。
+全45枚。固定順、ダブりなし、1回ジャンコイン1枚。ジャンコインは`cards.jumpCoinCount`に保存し、戦闘報酬の`player.money`とは別管理とする。
 
 ## 11. save
 セーブデータは最低限以下を分離する。
@@ -185,7 +187,12 @@ Claude Code / Codex / Phaser Game Agentが同じJSON構造を前提に実装で�
 {
   "version": 1,
   "player": {},
-  "party": [],
+  "party": {
+    "joinedMemberIds": ["hero"],
+    "characterProgress": {
+      "hero": { "level": 1, "exp": 0 }
+    }
+  },
   "inventory": {},
   "equipment": {},
   "flags": {},
@@ -194,6 +201,10 @@ Claude Code / Codex / Phaser Game Agentが同じJSON構造を前提に実装で�
   "settings": {}
 }
 ```
+
+- 現行の暫定GameStateでは、`party.joinedMemberIds` に `hero` → `tarosa` → `mirei` の加入済み接頭辞、`party.characterProgress` に3人全員の`level`/`exp`、`inventory` に正の所持数を保存する。
+- 旧セーブで不足する`characterProgress`/`inventory`は、Lv1・EXP0／空の所持品へ安全に補完する。未加入の後続メンバーだけを含める不正な加入順は正規化して除外する。
+- 正式SaveSystemはこの順序と成長・所持品を引き継ぎ、HP・装備・控え編成を別途拡張する。
 
 ## 12. 禁止
 - 同じ意味のIDを複数方式で作る

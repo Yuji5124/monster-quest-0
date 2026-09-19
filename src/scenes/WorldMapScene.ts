@@ -5,6 +5,7 @@ import type { MapId } from "../config/maps.ts";
 import { InputSystem } from "../systems/InputSystem.ts";
 import { beginMapTransition } from "../systems/MapTransition.ts";
 import {
+  readInterimUnlockedFlags,
   readWorldMapDestinations,
   readWorldMapManifest,
   resolveWorldMapDestinations,
@@ -132,9 +133,9 @@ export class WorldMapScene extends Phaser.Scene {
     }
   }
 
-  /** Production will override this only by wiring the SaveSystem's flags here. */
-  protected readUnlockedFlags(_manifest: WorldMapManifest): ReadonlySet<string> {
-    return new Set();
+  /** Interim: map.json's developmentUnlockedFlags. Wire the SaveSystem's flags here (via WorldMapData.ts) once they exist. */
+  protected readUnlockedFlags(manifest: WorldMapManifest): ReadonlySet<string> {
+    return readInterimUnlockedFlags(manifest);
   }
 
   private resolveCurrentDestination(

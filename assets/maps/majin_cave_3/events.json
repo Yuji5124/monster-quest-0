@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_majin_cave_3_to_2",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 180, "y": 995, "width": 140, "height": 80 },
+      "commands": [{ "type": "transfer", "targetMapId": "map_08_majin_cave_2", "targetSpawnId": "fromCave3" }]
+    }
+  ]
+}

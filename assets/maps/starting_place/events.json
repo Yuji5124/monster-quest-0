@@ -5,7 +5,7 @@
       "id": "event_no01_north_gate",
       "trigger": "enter",
       "once": true,
-      "bounds": { "x": 650, "y": 112, "width": 220, "height": 84 },
+      "bounds": { "x": 650, "y": 0, "width": 95, "height": 55 },
       "commands": [
         {
           "type": "world-map",

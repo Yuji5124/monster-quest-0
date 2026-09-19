@@ -1,0 +1,17 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_starting_forest_north_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 745, "y": 0, "width": 60, "height": 70 },
+      "commands": [
+        {
+          "type": "world-map",
+          "worldMapEntryId": "from_starting_forest"
+        }
+      ]
+    }
+  ]
+}

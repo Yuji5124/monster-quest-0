@@ -8,7 +8,7 @@
 1. `PROJECT_STATUS.md` — 現在地点と最新固定値
 2. `GAME_SPEC.md` — ゲーム全体仕様
 3. `CREATIVE_DIRECTION.md` — 作り込み密度・二重構造・元設定への敬意
-4. `OPENING_SPEC.md` — 約5秒異常 → **No.01 はじまりのばしょ**
+4. `OPENING_SPEC.md` — 暗闇→焚き火の明転 → **No.01 はじまりのばしょ**
 5. `STORY_FLOW.md` — 物語全体 / 「もういちど」 / 真エンディング
 6. `MAP_FLOW_SPEC.md` — **正式No.01〜No.20**
 7. `MAP_SYSTEM.md` — **背景画像正本 / Collision生成 / 4レイヤー / ワールドマップ**
@@ -20,7 +20,7 @@
 - `MAP_FLOW_SPEC.md` — No.01〜20、No.01再訪、No.20再戦
 - `MAP_SYSTEM.md` — 新規ローカルマップとワールドマップの制作・データ方針
 - `NPC_SPEC.md` — NPC会話方針
-- `GLITCH_SPEC.md` — 導入異常 / 終盤 / 「もういちど」
+- `GLITCH_SPEC.md` — 終盤異常 / 「もういちど」
 
 ## 戦闘・成長・データ
 - `BATTLE_SPEC.md` — コマンド戦闘、だいヒット、オロチゾンビ裏ボス
@@ -53,6 +53,7 @@
 ## 進捗
 - `PHASE_WORLD_MAP_POINT_SELECTION.md` — 高解像度背景 / 目的地選択 / 拡大 / ローカルマップ遷移（DEV）
 - `PHASE_IMAGE_MAP_MINIMUM.md` — 背景画像 + Collision + Event + ObjectのNo.01最小検証（DEV）
+- `PHASE_DEV_PARTY_FOLLOWERS.md` — DEV加入NPC / 3人パーティー / 経路追従 / Scene再生成
 - `PHASE_DEMAS_BATTLE.md` — デーマス実戦 / 反射フック / Battle Test / NPC復帰の検証
 - `CURRENT_WORK.md`
 - `CONTENT_MATRIX.md`

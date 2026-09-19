@@ -37,3 +37,18 @@ test("an absent or unknown dialogue event is ignored safely", () => {
   assert.equal(isBattleDialogueEvent(undefined), false);
   assert.equal(isBattleDialogueEvent({ type: "unknown" }), false);
 });
+
+test("a random-encounter battle event carries the exact pre-battle position through unchanged", () => {
+  const event = {
+    type: "battle",
+    eventId: "event_starting_forest_random_encounter",
+    monsterId: "001",
+    returnSceneKey: "StartingForestScene",
+    returnSpawnId: "fromWorldMap",
+    returnSpawnX: 812.5,
+    returnSpawnY: 640,
+    returnFacing: "left",
+  };
+  assert.ok(isBattleDialogueEvent(event));
+  assert.deepEqual(createBattleSceneStartData(event), { mode: "event", ...event });
+});

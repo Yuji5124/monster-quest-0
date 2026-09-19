@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { getJumpCardDisplayName, JUMP_CARD_COST, JUMP_CARD_DEFINITIONS, JUMP_CARD_PAGE_SIZE, JUMP_CARD_TOTAL, getJumpCardPage, getJumpCardRecords, getNextJumpCard, preloadJumpCardImages } from "../src/data/jumpCards.ts";
+import { getJumpCardDisplayName, JUMP_CARD_COIN_COST, JUMP_CARD_DEFINITIONS, JUMP_CARD_PAGE_SIZE, JUMP_CARD_TOTAL, getJumpCardPage, getJumpCardRecords, getNextJumpCard, preloadJumpCardImages } from "../src/data/jumpCards.ts";
 import { GAME_STATE_STORAGE_KEY, GameStateRepository, createDefaultGameState, normalizeGameState } from "../src/systems/GameStateRepository.ts";
 
 class MemoryStorage {
@@ -64,7 +64,7 @@ test("encyclopedia records stay ordered in five pages and do not mutate collecti
 
 test("reading card book records leaves the persisted gacha collection unchanged", () => {
   const storage = new MemoryStorage();
-  const savedState = createDefaultGameState(780);
+  const savedState = createDefaultGameState({ money: 780, jumpCoinCount: 12 });
   savedState.cards.obtainedJumpCards = ["card_01", "card_02"];
   savedState.cards.jumpCardCount = 2;
   const serialized = JSON.stringify(savedState);
@@ -76,23 +76,33 @@ test("reading card book records leaves the persisted gacha collection unchanged"
   assert.equal(storage.getItem(GAME_STATE_STORAGE_KEY), serialized);
 });
 
-test("a draw charges 20 yen, persists, and never duplicates a card", () => {
+test("a draw charges one ジャンコイン, preserves battle gold, persists, and never duplicates a card", () => {
   const storage = new MemoryStorage();
-  storage.setItem(GAME_STATE_STORAGE_KEY, JSON.stringify(createDefaultGameState(60)));
+  storage.setItem(GAME_STATE_STORAGE_KEY, JSON.stringify(createDefaultGameState({ money: 60, jumpCoinCount: 3 })));
   const repository = new GameStateRepository(storage);
   const first = repository.drawNextJumpCard();
   assert.equal(first.kind, "obtained");
   assert.equal(first.card.id, "card_01");
-  assert.equal(first.state.player.money, 60 - JUMP_CARD_COST);
+  assert.equal(first.state.cards.jumpCoinCount, 3 - JUMP_CARD_COIN_COST);
+  assert.equal(first.state.player.money, 60);
   const second = repository.drawNextJumpCard();
   assert.equal(second.kind, "obtained");
   assert.equal(second.card.id, "card_02");
   assert.deepEqual(repository.load().cards.obtainedJumpCards, ["card_01", "card_02"]);
 });
 
+test("awarding ジャンコイン leaves battle gold and the collection untouched", () => {
+  const storage = new MemoryStorage();
+  storage.setItem(GAME_STATE_STORAGE_KEY, JSON.stringify(createDefaultGameState({ money: 7, jumpCoinCount: 0 })));
+  const state = new GameStateRepository(storage).addJumpCoins(3.8);
+  assert.equal(state.cards.jumpCoinCount, 3);
+  assert.equal(state.player.money, 7);
+  assert.deepEqual(state.cards.obtainedJumpCards, []);
+});
+
 test("all 45 paid draws are ordered, unique, and the 46th draw is blocked as complete", () => {
   const storage = new MemoryStorage();
-  storage.setItem(GAME_STATE_STORAGE_KEY, JSON.stringify(createDefaultGameState(JUMP_CARD_COST * JUMP_CARD_TOTAL)));
+  storage.setItem(GAME_STATE_STORAGE_KEY, JSON.stringify(createDefaultGameState({ jumpCoinCount: JUMP_CARD_COIN_COST * JUMP_CARD_TOTAL })));
   const repository = new GameStateRepository(storage);
   for (const expected of JUMP_CARD_DEFINITIONS) {
     const result = repository.drawNextJumpCard();
@@ -103,31 +113,34 @@ test("all 45 paid draws are ordered, unique, and the 46th draw is blocked as com
   assert.equal(complete.kind, "complete");
   assert.equal(complete.state.cards.jumpCardCount, JUMP_CARD_TOTAL);
   assert.equal(complete.state.cards.obtainedJumpCards.length, JUMP_CARD_TOTAL);
-  assert.equal(complete.state.player.money, 0);
+  assert.equal(complete.state.cards.jumpCoinCount, 0);
 });
 
-test("insufficient funds and all 45 owned cards reject a draw without altering state", () => {
+test("insufficient ジャンコイン and all 45 owned cards reject a draw without altering state", () => {
   const storage = new MemoryStorage();
-  storage.setItem(GAME_STATE_STORAGE_KEY, JSON.stringify(createDefaultGameState(19)));
+  storage.setItem(GAME_STATE_STORAGE_KEY, JSON.stringify(createDefaultGameState({ jumpCoinCount: 0 })));
   const repository = new GameStateRepository(storage);
-  assert.equal(repository.drawNextJumpCard().kind, "insufficientFunds");
+  assert.equal(repository.drawNextJumpCard().kind, "insufficientCoins");
   assert.equal(repository.load().cards.jumpCardCount, 0);
 
-  const completeState = createDefaultGameState(1000);
+  const completeState = createDefaultGameState({ money: 1000, jumpCoinCount: 9 });
   completeState.cards.obtainedJumpCards = JUMP_CARD_DEFINITIONS.map((card) => card.id);
   completeState.cards.jumpCardCount = JUMP_CARD_TOTAL;
   storage.setItem(GAME_STATE_STORAGE_KEY, JSON.stringify(completeState));
   assert.equal(repository.drawNextJumpCard().kind, "complete");
-  assert.equal(repository.load().player.money, 1000);
+  assert.equal(repository.load().cards.jumpCoinCount, 9);
 });
 
 test("loading normalizes duplicated or stale card state without writing over invalid JSON", () => {
   const normalized = normalizeGameState({
     version: 1,
     player: { money: 30.9 },
-    cards: { jumpCardCount: 99, obtainedJumpCards: ["card_02", "card_01", "card_01", "unknown"] },
+    cards: { jumpCoinCount: 30.9, jumpCardCount: 99, obtainedJumpCards: ["card_02", "card_01", "card_01", "unknown"] },
   });
-  assert.deepEqual(normalized?.cards, { jumpCardCount: 2, obtainedJumpCards: ["card_01", "card_02"] });
+  assert.deepEqual(normalized?.cards, { jumpCoinCount: 30, jumpCardCount: 2, obtainedJumpCards: ["card_01", "card_02"] });
+
+  const legacy = normalizeGameState({ version: 1, player: { money: 44 }, cards: { obtainedJumpCards: [] } });
+  assert.equal(legacy?.cards.jumpCoinCount, 44);
 
   const storage = new MemoryStorage();
   storage.setItem(GAME_STATE_STORAGE_KEY, "not-json");

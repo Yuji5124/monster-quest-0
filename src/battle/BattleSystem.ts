@@ -1,6 +1,7 @@
 import type { BattleCommandId } from "../config/battle.ts";
 import { NORMAL_ATTACK } from "../data/battleActions.ts";
 import type { BattleAction } from "../data/battleActions.ts";
+import { ITEM_DEFINITIONS } from "../data/items.ts";
 
 export type BattleState = "COMMAND" | "PLAYER_ACTION" | "ENEMY_ACTION" | "VICTORY" | "DEFEAT" | "ESCAPED";
 
@@ -14,6 +15,26 @@ export interface BattleCombatantDefinition {
   readonly isBoss?: boolean;
   readonly learnedMagic?: readonly BattleAction[];
   readonly enemyActions?: readonly BattleAction[];
+  /** TEMP_TEST_VALUE: battle reward balance pending the formal monster-data pass. */
+  readonly reward?: BattleRewardDefinition;
+}
+
+export interface BattleItemDropDefinition {
+  readonly itemId: string;
+  /** Inclusive lower / exclusive upper probability (0 to 1). */
+  readonly chance: number;
+}
+
+export interface BattleRewardDefinition {
+  readonly experience: number;
+  readonly money: number;
+  readonly drops?: readonly BattleItemDropDefinition[];
+}
+
+export interface BattleReward {
+  readonly experience: number;
+  readonly money: number;
+  readonly itemId?: string;
 }
 
 export interface BattleStatus { mirror: number }
@@ -30,6 +51,20 @@ export interface BattleSnapshot {
   readonly enemy: Readonly<BattleCombatant>;
   readonly party: readonly Readonly<BattleCombatant>[];
   readonly message: string;
+  /** Set exactly once when the battle enters VICTORY. */
+  readonly reward?: BattleReward;
+}
+
+/** Rolls a single first-match item drop. Invalid values safely produce no reward. */
+export function rollBattleReward(definition: BattleRewardDefinition | undefined, random: () => number = Math.random): BattleReward {
+  const experience = Math.max(0, Math.floor(definition?.experience ?? 0));
+  const money = Math.max(0, Math.floor(definition?.money ?? 0));
+  const itemId = definition?.drops?.find((drop) =>
+    typeof drop.itemId === "string" && drop.itemId.length > 0
+    && Number.isFinite(drop.chance) && drop.chance > 0
+    && random() < Math.min(1, drop.chance),
+  )?.itemId;
+  return itemId ? { experience, money, itemId } : { experience, money };
 }
 
 /** Reflect once; never recursively bounce between two mirrored combatants. */
@@ -53,8 +88,11 @@ export class BattleSystem {
   private state: BattleState = "COMMAND";
   private message: string;
   private enemyActionIndex = 0;
+  private reward: BattleReward | undefined;
+  private readonly random: () => number;
 
-  constructor(player: BattleCombatantDefinition, enemy: BattleCombatantDefinition) {
+  constructor(player: BattleCombatantDefinition, enemy: BattleCombatantDefinition, random: () => number = Math.random) {
+    this.random = random;
     this.player = { ...player, hp: player.maxHp, mp: player.maxMp ?? 0, status: { mirror: 0 } };
     this.enemy = { ...enemy, hp: enemy.maxHp, mp: enemy.maxMp ?? 0, status: { mirror: 0 } };
     this.message = `${this.enemy.displayName}が　あらわれた！`;
@@ -68,6 +106,7 @@ export class BattleSystem {
       // Party recruitment / multiple actors are not implemented yet.
       party: [{ ...this.player, status: { ...this.player.status } }],
       message: this.message,
+      reward: this.reward ? { ...this.reward } : undefined,
     };
   }
 
@@ -120,7 +159,15 @@ export class BattleSystem {
 
   private victory(): void {
     this.state = "VICTORY";
-    this.message = `${this.enemy.displayName}を　たおした！`;
+    this.reward = rollBattleReward(this.enemy.reward, this.random);
+    const lines = [
+      `${this.enemy.displayName}を　たおした！`,
+      `${this.reward.experience} EXPと　${this.reward.money}Gを　てにいれた！`,
+    ];
+    if (this.reward.itemId && Object.hasOwn(ITEM_DEFINITIONS, this.reward.itemId)) {
+      lines.push(`${ITEM_DEFINITIONS[this.reward.itemId as keyof typeof ITEM_DEFINITIONS].name}を　みつけた！`);
+    }
+    this.message = lines.join("\n");
   }
 
   private performAction(caster: BattleCombatant, target: BattleCombatant, action: BattleAction): boolean {

@@ -1,23 +1,66 @@
 # モンスタークエスト0 現在作業
 
-最終更新: 2026-09-18 JST
+最終更新: 2026-09-19 JST
+
+## 今回の作業範囲: 起動オープニング（ARROWAREクレジット＋思い出の回想）（2026-09-19）
+- `src/scenes/OpeningIntroScene.ts`と`src/config/openingIntro.ts`を新設し、`BootScene`の遷移先を`TitleScene`から`OpeningIntroScene`へ変更（`main.ts`のnormalScenesへ登録）。「Produced by ARROWARE」約3秒→回想画像6枚（A,B,D,E,F,G）を約10秒→タイトル。
+- `TitleScene`は`init(data)`で`{ fromIntro, skipToMenu }`を受け、スキップ時は「なにか ボタンを おしてください」を飛ばして`enterMenu()`から始める（ロゴ登場も即時）。演出から来たときだけカメラfadeInを付ける。ジャンカード画面などからの復帰（dataなし）は従来どおり。
+- 回想画像は`assets/title/opening_memories/`へ無加工コピー。詳細・検証結果は`PROJECT_STATUS.md`先頭の同名エントリ。
+- 未確定: 正式な秒数・字間・書体、BGM/SE、iPhone Safari実機確認。
+
+## 今回の作業範囲: はじまりのまち画像マップ移行（2026-09-19）
+- No.02「はじまりのまち」をDEV_PLACEHOLDER表示（`STARTING_TOWN_PLACEHOLDER`の単色背景＋`Building` entityの単色矩形＋壁セグメント計算）から、No.01と同じBACKGROUND/COLLISION/EVENT/OBJECT画像マップ方式へ移行した。`assets/maps/starting_town/`（background.png=ユーザー提供reference画像`はじまりのまち.png`の無加工コピー、1448×1086、collision.png=噴水広場・石畳・土の道のHSV色閾値→建物5棟の敷地を個別除外(出入口だけ帯状に残す)→噴水/花壇/川を除外→膨張で生成、map.json/events.json/objects.json）を追加し、`StartingTownScene`を全面的に書き換えた。
+- 既存のNPC会話（`Interaction.ts`/`dialogues.ts`/`DialogueBox.ts`）、パーティ加入（タロサ→ミレイ、`PartySystem`/`PartyFollowers`）、戦闘イベント（DEV_BATTLE_EVENT・デーマス、`DialogueEvents.ts`）、建物内部接続（`InteriorScene`、`building.door`＋`createExitZone`）は無変更のロジックをそのまま再利用した。壁Collisionは背景画像由来のCollision Maskが担うため、DEV_PLACEHOLDER専用だった`entities/Building.ts`・`config/building.ts`・`config/startingTown.ts`は不要になり削除した。
+- **建物6→5への縮小**: reference画像には教会＋4棟（屋台風の店=どうぐや、井戸+薪の家=ぶきや、普通の家=民家A、干し草の家=やどや）＝合計5棟しか描かれておらず、旧DEV_PLACEHOLDER時代の6棟目「民家B」に対応する建物が存在しなかった。ユーザーに確認のうえ「5棟へ正式に縮小する」を選び、`assets/maps/data/no02_start_town_interiors.json`・`src/config/interiors.ts`・`src/config/maps.ts`から`map_02_house_b`関連データ（interior定義・spawn・building）を削除した。
+- 出入口は西端1か所のみを`WorldMapScene`への正式接続として`events.json`の`event_starting_town_west_exit`で管理する（`maps.ts`の`exits`は空配列、他の画像マップと同じ方式）。座標は西端で自然に道が画像端へ到達する箇所を採用（正式な「西門」の絵は描かれていないため、既存ドキュメントが定める「No.02西端の出口」という制約に合わせた判断）。
+- カメラを固定表示(`setScroll(0,0)`)から他の画像マップと同じ追従式(`configureMapCamera`)へ変更。これに伴い、`DialogueBox`（背景色矩形・本文・次ページ矢印）がカメラスクロールで流れてしまう問題を発見し、`setScrollFactor(0)`を追加して画面に固定されるよう修正した（No.02が会話UIを使う初めての画像マップだったため、この問題は今回まで顕在化していなかった）。
+- NPC・建物frontSpawn・battle_event_return等の座標はすべて新しい背景画像の実座標へ引き直した。建物入口Zoneとの再トリガー防止（Player body高さ42px分のマージン）を各frontSpawnに適用し、回帰テストを追加した。
+- `?mapTest=no02`のDEV単体起動に`WorldMapScene`/`InteriorScene`/`BattleScene`も登録し、西端出口・建物出入り・NPC戦闘イベントを1つのDEV URLで確認できるようにした。
+- 検証: `npm test`167/167（新規`startingTown.test.mjs`、既存`buildings.test.mjs`/`interiors.test.mjs`/`maps.test.mjs`/`demasBattle.test.mjs`を5棟・新座標へ更新）・typecheck・build全てPASS。ブラウザ実機（`game.step()`手動進行）で、背景/Collision表示、歩行・衝突、NPC会話（パーティ加入でlocalStorageへタロサ加入を確認）、戦闘イベントNPC→BattleScene→勝利→復帰座標、どうぐや入口→InteriorScene→退出→復帰座標、西端→WorldMapScene（現在地表示）→選択→はじまりのまちへ復帰、までの一連と、No.01/はじまりのもり/ビーエのむら/FieldScene(legacy)の回帰なしを確認した。
+- 未確定: 実店舗機能（価格・商品）、正式NPC人数・台詞、建物内部の正式レイアウト、東・南東の未接続路の扱い。
 
 ## 現行の正式マップ方針（2026-09-18）
 
-本書のTiled / `FieldScene`に関する以下の記録は、2026-09-17までに完了した既存No.01 runtimeの作業記録である。以後の新規マップ制作の正本ではない。新規の町・村・城・ダンジョン・イベント地点は、背景画像正本、生成後に人間が修正するCollision、Event、Objectの4レイヤーを使用する。地域間はポイント選択式ワールドマップへ移行する。既存実装を削除・置換しない。詳細: `MAP_SYSTEM.md`。
+本書のTiled / `FieldScene`に関する以下の記録は、2026-09-17までに完了した既存No.01 runtimeの作業記録である。以後の新規マップ制作の正本ではない。No.01は背景画像正本、生成後に人間が修正するCollision、Event、Objectの4レイヤーへ通常導線を移行済みである。地域間はポイント選択式ワールドマップへ移行する。legacy実装は削除せず保持する。詳細: `MAP_SYSTEM.md`。
+
+## 今回の作業範囲: ビーエのむら追加（2026-09-18）
+- No.01「はじまりのばしょ」/はじまりのもりの実装（`StartingPlaceScene`系: `ImageMapCollision.ts` / `ImageMapData.ts` / `MapCamera.ts` / `MapTransition.ts` / `Player.ts` / `InputSystem.ts`）をそのまま再利用し、`BieVillageScene`と`assets/maps/bie_village/`（background.png=ユーザー提供reference画像の無加工コピー、collision.png=石畳/土の道のHSV色閾値→建物6棟＋井戸状構造物を個別除外→川除外→膨張で生成、map.json/events.json/objects.json）を追加した。正式No.01〜No.20の番号を持つ最初の画像マップ移行例（`MAP_FLOW_SPEC.md`§4.8）。
+- `WorldMapScene`の`destinations.json`へ`destination_bie_village`を追加。No.01/No.02/はじまりのもりと異なり`unlockFlag: "story.bie_village_unlocked"`という実フラグを持たせた（`MAP_FLOW_SPEC.md`§4.5が定める「No.03以降はSaveSystemのフラグ連動」の方針どおり）。SaveSystemの`flags`は未実装のため、当初は本番`WorldMapScene`で`？？？`表示だった（2026-09-19に、`developmentUnlockedFlags`を暫定の解放状態として本番でも使うよう変更し、実プレイでも選択できる）。`map.json`の`developmentUnlockedFlags`へ同フラグを追加し、`WorldMapTestScene`でDEV確認できるようにした。
+- 北門のみを世界地図への正式出入口とし、`events.json`の`event_bie_village_north_exit`で接続。背景に描かれた東・南東方向の道は行き止まりのまま残し、今回は接続先を定めない。
+- NPC・会話・木こり救出イベント・ランダムエンカウントは、`docs/NPC/02_bie_no_mura.md`が`SOURCE_DRAFT_EXISTS / REDUCING`（NPC人数・台詞本文とも未確定、旧15人案から約半分へ圧縮予定）のステータスであることを確認し、今回は実装しない（follow-up）。
+- `?mapTest=bie-village`（`BieVillageTestScene`）でDEV単体起動を追加。`?worldMapTest=1`側のDEV Scene一覧にも`StartingForestScene`/`BieVillageScene`/`BattleScene`を追加し、世界地図からの全地点遷移を1つのDEV URLで確認できるようにした。
+- 検証: `npm test`160/160（新規: `bieVillage.test.mjs`、既存`worldMapData.test.mjs`/`maps.test.mjs`/`devMapTest.test.mjs`を4地点対応へ更新）・typecheck・build全てPASS。ブラウザ実機（`game.step()`手動進行）で、背景表示・Collision表示・歩行/衝突（建物・川・森を正しく迂回、広場〜北門〜各建物周りを実際に踏破）・北門イベント→WorldMapScene（現在地表示は`？？？`のまま、SaveSystem未接続の既知の挙動）・DEV解放経由でのWorldMapTestScene→ビーエのむら選択→本番Scene起動、までを確認。既存No.01/No.02/はじまりのもり/WorldMapScene本番導線の回帰なしを確認。
+- 実装中、`fromWorldMap`spawn(710,120)が北門Event zone(y:0-110)とPlayer body(高さ42)分だけ重なり、着地直後に即座World Mapへ戻ってしまう不具合を発見しy=150へ修正。回帰防止のテストを追加した。
+- 未確定: `unlockFlag`のSaveSystem接続、`story.bie_village_unlocked`が実際に立つタイミング（本編のどのイベント後か）、NPC・木こり救出イベント・正式内部設計データ、東/南東の未接続路の扱い。
+
+## 今回の作業範囲: DEV 3人パーティー・経路追従（2026-09-18）
+- `PartySystem`で主人公・タロサ・ミレイの加入状態と固定順をScene横断で管理し、既存の暫定GameStateへ安全に保存する。旧セーブは主人公のみとして読み込む。
+- No.02に `DEV_PARTY_JOIN_TAROSA` / `DEV_PARTY_JOIN_MIREI` の検証専用NPCを追加。タロサ→ミレイの順だけを許可し、重複加入しない。
+- followerは主人公の実移動履歴を後方から辿る表示専用で、Physics・NPC会話・出口判定を持たない。タロサは2026-09-19に正式歩行Sprite(`tarosa_walk.png`)へ置き換え済み(動いているかで歩行/直立を切り替え)。ミレイは参考画像未提供のため引き続き同サイズの単色Rectangle。
+- 実行確認はNo.02→WorldMapScene→No.01まで済み。本編の正式加入イベント、共通イベントランナー接続、BattleSystemの複数人対応は未着手。詳細: `PHASE_DEV_PARTY_FOLLOWERS.md`。
+
+## 今回の作業範囲: はじまりのもり追加（2026-09-18）
+- No.01「はじまりのばしょ」の実装（`StartingPlaceScene` / `ImageMapCollision.ts` / `ImageMapData.ts` / `MapCamera.ts` / `MapTransition.ts` / `Player.ts` / `InputSystem.ts`）をそのまま再利用し、`StartingForestScene`と`assets/maps/starting_forest/`（background.png=ユーザー提供reference画像の無加工コピー、collision.png=HSV色閾値→最大連結成分→プレイヤー幅分膨張で生成、map.json/events.json/objects.json）を追加した。
+- `WorldMapScene`の`destinations.json`へ`destination_starting_forest`（`unlockFlag: null`、No.01/No.02と同じ常時解放）、`map.json`の`entryDestinationIds`へ`from_starting_forest`を追加。北門Eventが`WorldMapScene`へ戻る。正式No.01〜No.20の番号は持たない追加フィールド（`MAP_FLOW_SPEC.md`§4.7、`MAP_SYSTEM.md`）。
+- 距離ベースのランダムエンカウントを新設: `src/systems/RandomEncounter.ts`（歩いた実距離を蓄積→閾値到達時のみ抽選→戦闘後は一定距離再抽選禁止、フレーム単位抽選はしない）+ `src/config/encounter.ts`（TEMP_TEST_VALUEのペース設定）+ `src/data/encounterTables.ts`（1戦闘1体、`monster 001`/`003`を重み1/1＝50%/50%で管理、既存`getDevBattleMonster`経由で接続）。
+- `src/data/monsters.ts`へ`DEV_BATTLE_MONSTERS["001"]`（`mq0_monster_001_0d78a307c8.png`）を既存`"003"`と同じ最小接続パターンで追加。両敵とも正式名称・正式ステータスはMONSTER_SPEC.md上未確定のため、`"003"`と同様に`DEV_BATTLE_BALANCE`のプレースホルダー値のみ。
+- 既存`BattleScene`をそのまま再利用。`BattleDialogueEvent`へ`returnSpawnX/Y/Facing`を追加（既存のNPCイベントは未指定のまま動作不変）し、ランダムエンカウントだけ戦闘直前の実座標へ復帰できるようにした。`BattleScene.returnToEventMap()`はこの値がある場合だけ`spawnX/Y/spawnFacing`を渡す。
+- `?mapTest=starting-forest`（`StartingForestTestScene`）でNo.01の`?mapTest=image-no01`と同じDEV単体起動を追加。`D`キー/`?collisionDebug=1`のCollision表示も既存のまま再利用。
+- 検証: `npm test`153/153（新規: `startingForest.test.mjs` `randomEncounter.test.mjs` `encounterTables.test.mjs`、既存`worldMapData.test.mjs`/`maps.test.mjs`/`devMapTest.test.mjs`/`battleEvent.test.mjs`を3地点対応へ更新）・typecheck・build全てPASS。ブラウザ実機（`game.step()`手動進行、Browserペイン背景化時のrAF停止は既知の制約）でWorldMap→はじまりのもり→歩行→Collision→ランダムエンカウント→BattleScene→勝利→戦闘直前座標へ復帰→戦闘後クールダウン→北門→WorldMapScene（3地点表示、現在地表示）までを確認。No.01/No.02/WorldMapScene本番導線の回帰なしを確認。
+- 未確定: `unlockFlag`は本番`WorldMapScene`未接続（SaveSystem`flags`が未実装のため、No.01/No.02と同じ`null`常時解放のまま。No.03以降と同様、将来SaveSystem接続時に差し替え対象）。モンスター001/003の正式名称・HP等・エンカウント確率(25%/240px)・クールダウン距離(300px)はTBD/TEMP_TEST_VALUE。
 
 ## 今回の作業範囲: ポイント選択式ワールドマップ（2026-09-18）
 - `assets/maps/world_map/background.png` は4:3・1448×1086のCURRENTオリジナル高解像度背景。縮小時はLINEARフィルタで表示する。
-- `WorldMapScene` を通常Sceneとして登録。No.01東端／No.02西端からデータ定義の入口IDで入り、目的地をクリック / タップまたはキーで選び、暗転してローカルマップへ戻る。
+- `WorldMapScene` を通常Sceneとして登録。No.01北門Event／No.02西端からデータ定義の入口IDで入り、目的地をクリック / タップまたはキーで選び、暗転してローカルマップへ戻る。
 - `destinations.json` はNo.01 / No.02の2地点だけを参照し、`visible` / `unlockFlag` / `targetMapId` / `targetSpawnId` で既存Sceneへ接続する。`map.json` の `entryDestinationIds` がローカル出口と現在地ポイントを結ぶ。地点座標は `DEV_PLACEHOLDER_POSITION`。SaveSystem接続とNo.03以降は未着手。
 - 既存の`FieldScene`、No.01 / No.02のTiled / image-map検証は保持する。`FieldScene`は通常Title導線から外したlegacy実装。詳細: `PHASE_WORLD_MAP_POINT_SELECTION.md`。
 
-## 今回の作業範囲: 背景画像マップ最小検証（2026-09-18）
-- `assets/maps/starting_place/` を、`background.png` / `collision.png` / `map.json` / `events.json` / `objects.json` の独立パッケージとして追加。背景・マスクはいずれも1536×1024、背景ピクセル座標を共通の正本としている。
-- `ImageMapTestNo01Scene` を `?mapTest=image-no01` のDEV専用Sceneとして追加。通常のTitle導線と既存`MapTestNo01Scene`（Tiled）を変更しない。
+## 今回の作業範囲: No.01背景画像マップの通常導線統合（2026-09-18）
+- `assets/maps/starting_place/` を、`background.png` / `collision.png` / `map.json` / `events.json` / `objects.json` のCURRENTパッケージとして統合。背景・マスクはいずれも1448×1086(2026-09-19に夜版へ差し替え、旧1536×1024の昼景から変更)、背景ピクセル座標を共通の正本としている。
+- 通常の`StartingPlaceScene`がこのパッケージを読み、Tiledを読まない。`ImageMapTestNo01Scene` は同じ正式パッケージを単独起動するDEV入口である。
 - 黒=歩行不可 / 白=歩行可能のPNGマスクを、実行時にAI解析せず16pxセル単位で結合した静的Bodyへ変換する。`D` または`?collisionDebug=1`でDEV表示を確認できる。
-- `events.json`の北ゲートは既存No.02へのtransferを1件、`objects.json`はblockingなNPCマーカーを1件定義する。No.02はlegacy runtimeのままで、新方式への移行はしない。
-- 背景とマスクは生成・手修正による**DEV_PLACEHOLDER**。正式昼夜背景、画像解析による初期マスク、MQ0 Map Editor、ポイント選択式ワールドマップは次作業。詳細: `PHASE_IMAGE_MAP_MINIMUM.md`。
+- `events.json`の北門は `world-map` コマンドを持ち、WorldMapSceneの `from_starting_place` 入口IDへ遷移する。`objects.json` は空のOBJECTレイヤーとして存在し、正式NPC等は未配置。
+- No.01夜版、画像解析による初期マスク生成、MQ0 Map Editor、正式Object、iPhone Safari実機確認は未完了。既存Tiled版は `LegacyTiledStartingPlaceScene` と `MapTestNo01Scene` として保持する。詳細: `PHASE_IMAGE_MAP_MINIMUM.md`。
 
 ## 今回の作業範囲: StartingPlaceScene 本番Tiled化(2026-09-17)
 - 前Phaseで`MapTestNo01Scene.ts`に実装したTiled読み込み(preload/tileset登録/layer生成/Collision/PlayerSpawn/Camera/Events)を`src/systems/TiledMapRuntime.ts`(新規)へ共通化。マップ定義データも`src/config/mapTest.ts`→`src/config/no01TiledMap.ts`(DEV専用ではない共有データ)へ改名移設。`MapTestNo01Scene`は削除せず単体テスト用として維持、両Sceneが同じ関数を呼ぶ形にして二重実装を解消。
@@ -211,10 +254,11 @@ Phase 8.6では既存世界地図REFERENCEを背景にしたROUGH_FIELDを追加
 - 世界間の異常でMQ0へ迷い込む
 - 最初から選ばれた勇者ではない
 - エレキテル採用
+- 最新男性主人公の正式外見(2026-09-19、`assets/characters/reference/reference/主人公/`のユーザー提供参考画像)
+- 正式歩行スプライト(2026-09-19、`assets/characters/playable/protagonist_walk.png`。`src/entities/Player.ts`が使用)
 
 不足:
-- 最新男性主人公の正式外見
-- 正式歩行スプライト
+- 正式な移動速度・当たり判定寸法・歩行アニメーション速度(Phase 5のTEMP_TEST_VALUEを流用中)
 
 旧女性勇者風 `hero_walk.png` は現行主人公に使用しない。
 
@@ -255,7 +299,7 @@ TBD:
 
 ## ジャンカード
 - 全45枚
-- 1回20円
+- 1回ジャンコイン1枚
 - No.01→45固定順
 - ダブりなし
 - 本編必須ではない

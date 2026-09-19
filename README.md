@@ -2,17 +2,29 @@
 
 **モンスタークエスト0 ～幻の冒険の書～**
 
-最終更新: 2026-09-18 JST
+最終更新: 2026-09-19 JST
 
 ## マップ制作の正式方針
 
 新規の町・村・城・ダンジョン・イベント地点は、**高解像度の1枚絵背景を正本**にし、制作時に画像解析で生成して人間が修正したCollision Maskを読み込む方式とする。実行中にAI画像認識は行わない。背景、Collision、Event、Objectの4レイヤー、MQ0 Map Editorの将来要件、ポイント選択式ワールドマップ、既存Tiled資産の扱いは [MAP_SYSTEM.md](docs/MAP_SYSTEM.md) を正式仕様とする。
 
-No.01「はじまりのばしょ」はこの新方式へ移行済みで、通常の `StartingPlaceScene` は画像マップを読む。既存のTiledマップ、`TiledMapRuntime`、`FieldScene`、テスト、アセットはlegacyとして保持し、削除しない。
+No.01「はじまりのばしょ」はこの新方式へ移行済みで、通常の `StartingPlaceScene` は画像マップを読む。「はじまりのもり」（`StartingForestScene`）も同じ方式・同じPlayer/Collision/Camera/Transitionをそのまま再利用した追加フィールドで、正式No.01〜No.20の番号は持たない（詳細は [MAP_FLOW_SPEC.md](docs/MAP_FLOW_SPEC.md) §4.7）。No.03「ビーエのむら」（`BieVillageScene`）は同じ方式を使う最初のNo.番号付き移行例（詳細は同§4.8）。No.02「はじまりのまち」（`StartingTownScene`）も2026-09-19に同方式へ移行し、既存のNPC会話・パーティ加入・戦闘イベント・建物内部接続はそのまま維持している（詳細は同§4.9）。既存のTiledマップ、`TiledMapRuntime`、`FieldScene`、テスト、アセットはlegacyとして保持し、削除しない。
 
 ## ポイント選択式ワールドマップ（通常導線）
 
-通常起動ではNo.01北門またはNo.02西端から、CURRENT高解像度の世界地図を開く。目的地をクリック / タップで選び、拡大表示後にローカルマップへ移動する。初期地点はNo.01 / No.02の2件で、方向キー、`Z` / `Enter`、`Esc` に対応する。目的地の `visible` / `unlockFlag` はデータで管理し、未解放地点は`？？？`としてロック表示できる。No.03以降の地点座標は `DEV_PLACEHOLDER_POSITION` のまま未投入である。`?worldMapTest=1` では同じ画面を単独確認できる。徒歩 `FieldScene` はlegacyとして保持するが、通常進行には使わない。詳細は [ワールドマップ目的地選択](docs/PHASE_WORLD_MAP_POINT_SELECTION.md)。
+通常起動ではNo.01北門・No.02西端・はじまりのもり北門・ビーエのむら北門から、CURRENT高解像度の世界地図を開く。目的地をクリック / タップで選び、拡大表示後にローカルマップへ移動する。初期地点はNo.01 / No.02 / はじまりのもり / ビーエのむらの4件で、方向キー、`Z` / `Enter`、`Esc` に対応する。目的地の `visible` / `unlockFlag` はデータで管理し、未解放地点は`？？？`としてロック表示できる。No.01/No.02/はじまりのもりは`unlockFlag: null`（常時選択可）、ビーエのむらは正式No.03のため実フラグ`story.bie_village_unlocked`を持つが、SaveSystem本体が未実装で本番`WorldMapScene`は常に空集合を返すため、実プレイでは当面`？？？`のままである。`?worldMapTest=1`（`WorldMapTestScene`）は`developmentUnlockedFlags`経由で全地点を解放した状態を単独確認でき、No.01/No.02/はじまりのもり/ビーエのむら/BattleSceneすべてに遷移できる。徒歩 `FieldScene` はlegacyとして保持するが、通常進行には使わない。詳細は [ワールドマップ目的地選択](docs/PHASE_WORLD_MAP_POINT_SELECTION.md)。
+
+## はじまりのもり（ランダムエンカウント）
+
+はじまりのもりは、南の木戸（世界地図からのspawn）から北の石アーチ（世界地図への出口）まで続く一本道を歩けるフィールド。歩いた実距離を蓄積し、一定距離ごとにのみ抽選する方式（`src/systems/RandomEncounter.ts`）で、モンスター`001`/`003`（`src/data/encounterTables.ts`、1戦闘1体、50%/50%）とランダムエンカウントする。戦闘は既存`BattleScene`をそのまま使い、勝敗後は戦闘直前の座標へ復帰し、一定距離は再エンカウントしない。`?mapTest=starting-forest`で単体起動でき、`D`キー/`?collisionDebug=1`でCollision表示を切り替えられる。
+
+## ビーエのむら（No.03）
+
+ビーエのむらは、広場を中心に放射状の道が伸びる山間の村。背景には建物6棟（水車小屋・民家3棟・畑の家・小屋）や井戸状の構造物、川と橋があり、Collisionはそれらを個別に除外して生成している。北門1か所だけを`WorldMapScene`への正式出入口とし、背景に描かれた他の道（東・南東）は今回接続しない行き止まりとして残した。NPC・会話・木こり救出イベント・ランダムエンカウントは、会話原案(`docs/NPC/02_bie_no_mura.md`)がNPC人数未確定の`SOURCE_DRAFT_EXISTS`のため今回は実装していない。`?mapTest=bie-village`で単体起動できる。
+
+## はじまりのまち（No.02、画像マップ移行）
+
+はじまりのまちは、噴水広場を中心に十字型の道が伸びる町。旧DEV_PLACEHOLDER（単色背景＋単色矩形の建物）からCURRENT背景画像方式へ移行し、既存のNPC会話・パーティ加入（タロサ/ミレイ）・戦闘イベント（DEV_BATTLE_EVENT/デーマス）・建物内部(`InteriorScene`)接続はそのまま再利用している。reference画像に実在する建物が5棟（やどや/どうぐや/ぶきや/きょうかい/民家A）だけだったため、正式建物数を6→5へ縮小した（民家Bを統合終了）。西端1か所だけを`WorldMapScene`への正式出入口とする。`?mapTest=no02`で単体起動でき（`WorldMapScene`/`InteriorScene`/`BattleScene`も同時登録）、`D`キー/`?collisionDebug=1`でCollision表示を切り替えられる。
 
 ## 起動・検証（legacy Tiled / Field prototypeを含む）
 
@@ -28,7 +40,7 @@ npm run dev
 ### No.01背景画像マップの単体検証
 
 `http://127.0.0.1:5173/?mapTest=image-no01` で、通常のNo.01と同じ `background.png` / `collision.png` / `events.json` / `objects.json` を単独確認できる。黒マスクCollision、北門からのワールドマップ遷移を確認できる。`?collisionDebug=1` または `D` キーでCollision表示を切り替える。Tiled版は `?mapTest=no01` のlegacy検証として保持する。詳細は [背景画像マップ最小検証](docs/PHASE_IMAGE_MAP_MINIMUM.md) を参照。
-No.01画像マップで方向キーによる4方向移動・当たり判定を確認でき、北門Eventへ入ると暗転して`WorldMapScene`へ移る。世界地図でNo.01 / No.02を選ぶと、それぞれ安全な`fromWorldMap` spawnへ戻れる。No.02は建物6棟（やどや/どうぐや/ぶきや/きょうかい/民家A/民家B）の外観+Collisionを配置済みで、各建物のドアから共通`InteriorScene`へ入って戻れる。店・宿泊・教会等の機能そのもの、内部NPC・大規模会話、ランダムエンカウント・戦闘は未実装。徒歩の`FieldScene`（仮mapId`field_starting_region`）は旧方式のlegacyとしてコード・テスト・アセットを保持するが、通常導線には使用しない。タイトルの「はじめから」以外の5項目は決定入力を取得するのみで本体機能へは未接続。
+No.01画像マップで方向キーによる4方向移動・当たり判定を確認でき、北門Eventへ入ると暗転して`WorldMapScene`へ移る。世界地図でNo.01 / No.02を選ぶと、それぞれ安全な`fromWorldMap` spawnへ戻れる。No.02はCURRENT背景画像上に建物5棟（やどや/どうぐや/ぶきや/きょうかい/民家A）の外観+Collisionを配置済みで、各建物のドアから共通`InteriorScene`へ入って戻れる。店・宿泊・教会等の機能そのもの、内部NPC・大規模会話は未実装。徒歩の`FieldScene`（仮mapId`field_starting_region`）は旧方式のlegacyとしてコード・テスト・アセットを保持するが、通常導線には使用しない。タイトルの「はじめから」以外の5項目は決定入力を取得するのみで本体機能へは未接続。
 
 - Phaser **3.90.0**を完全固定。既存の依存指定がなかったため今回初回導入した。
 - 内部解像度は確認用の仮値 **960×720**（旧320×240の3倍、4:3を維持）。`src/config/display.ts` で`BASE_WIDTH`/`BASE_HEIGHT`/`SCALE_FACTOR`として一元管理し、正式解像度のTBDは維持する。
@@ -41,8 +53,8 @@ No.01画像マップで方向キーによる4方向移動・当たり判定を�
 - 移動は仮の連続4方向・60px/秒。`src/config/player.ts`でサイズと速度を調整する。同時押しは縦優先、逆方向は相殺。焚き火・地面より上・画面端には進入できない。
 - Phase 6: マップ間の出口/入口/spawnは `src/config/maps.ts` に集約。座標判定はScene側に直書きせず、`src/systems/MapTransition.ts` の共通ヘルパー(入力ロック→暗転→Scene切替)を通す。No.02は `src/scenes/StartingTownScene.ts` / `src/config/startingTown.ts`。
 - Phase 7: NPC + 会話。`src/systems/Interaction.ts`(Phaser非依存の正面判定) / `src/data/dialogues.ts`(会話データ分離) / `src/ui/DialogueBox.ts`(下部会話ウィンドウ)。会話中はPlayer.update()を呼ばず移動を止め、`consumePressed`で入力の二重消費を防ぐ。DEV_PLACEHOLDER_NPC/DEV_PLACEHOLDER_DIALOGUEのみで正式台詞は未着手。
-- Phase 8-A: No.02外観。建物6棟(`src/config/maps.ts`の`MapDefinition.buildings`、`src/entities/Building.ts`、`src/config/building.ts`)を外観+Collisionのみ配置。`interiorId`で`assets/maps/data/no02_start_town_interiors.json`と対応させるが、実際の内部遷移は未実装(Phase 8-B)。正式NPC人数・会話は`NPC_SPEC.md`で再検討中。
-- Phase 8-B: No.02建物内部＋出入り。共通`src/scenes/InteriorScene.ts`が`src/config/interiors.ts`の`interiorId`をキーに6室のDEV_PLACEHOLDER_INTERIORを構築。`Building.ts`の`computeWallSegments`でドア位置だけ通行可能なCollisionに分割し、`maps.ts`に追加した`frontSpawnId`で退出時に正しい建物前へ戻す。`MapTransition.ts`の`beginMapTransition`は`data: Record<string,string>`を渡す形に一般化。店・宿泊・教会機能、内部NPC・大規模会話は未実装。
+- Phase 8-A: No.02外観。建物6棟(`src/config/maps.ts`の`MapDefinition.buildings`、`src/entities/Building.ts`、`src/config/building.ts`)を外観+Collisionのみ配置。`interiorId`で`assets/maps/data/no02_start_town_interiors.json`と対応させるが、実際の内部遷移は未実装(Phase 8-B)。正式NPC人数・会話は`NPC_SPEC.md`で再検討中。（`Building.ts`/`config/building.ts`と6棟目「民家B」は2026-09-19の画像マップ移行でSUPERSEDED。現在は`MAP_FLOW_SPEC.md`§4.9を参照）
+- Phase 8-B: No.02建物内部＋出入り。共通`src/scenes/InteriorScene.ts`が`src/config/interiors.ts`の`interiorId`をキーに6室のDEV_PLACEHOLDER_INTERIORを構築。`Building.ts`の`computeWallSegments`でドア位置だけ通行可能なCollisionに分割し、`maps.ts`に追加した`frontSpawnId`で退出時に正しい建物前へ戻す。`MapTransition.ts`の`beginMapTransition`は`data: Record<string,string>`を渡す形に一般化。店・宿泊・教会機能、内部NPC・大規模会話は未実装。（壁Collisionの計算方式は2026-09-19に背景画像のCollision Maskへ置き換え、部屋数は5室へ変更。`InteriorScene`自体・出入りの流れは無変更）
 - Phase 8.5: フィールド導入＋主人公追従カメラ。序盤導線をNo.01⇔No.02直接接続からNo.01⇔`FieldScene`(仮mapId`field_starting_region`)⇔No.02へ変更(旧直接接続はSUPERSEDED)。フィールドのサイズ・地形は`src/config/field.ts`に分離(960×720より大きい仮値)。新規`src/systems/MapCamera.ts`の`configureMapCamera`がCamera bounds設定+即時追従(lerp=1)+roundPixelsを担当し、`Player.ts`にはカメラ処理を追加していない。No.01/No.02側は`maps.ts`のspawn/exitキーをリネームしただけで、Scene本体は無変更。
 - Phase 8.6: Phase 8.6では既存世界地図REFERENCEを背景にしたROUGH_FIELDを追加。内部960×720、Field 1920×1440、180px/秒、即時追従CameraとMapTransitionを維持。No.01／No.02の位置はDEV_PLACEHOLDER_WORLD_POSITIONで、南西の橋を通る徒歩往復を確認。建物退出直後の再入場を再現し、6棟の帰還座標だけを修正。正式地理・正式Collision・Tiled・Phase 9は未着手。詳細: `PHASE8_6_ROUGH_FIELD.md`。
 - `npm test`: 入力処理・メニュー構成・異常演出ステージ設定・4方向移動・マップ遷移設定・NPC/会話/正面判定・建物配置・建物内部・フィールド/カメラのテスト。
@@ -57,7 +69,7 @@ No.01画像マップで方向キーによる4方向移動・当たり判定を�
 - 主人公: **男性 / 別のモンスタークエスト作品・別バージョン世界の元NPC**
 - わたべ: 特殊参加 / 終盤重要人物
 - モンスター: 全25体
-- ジャンカード: 全45枚 / 1回20円 / No.01→45の固定順 / ダブりなし / ランダムではない
+- ジャンカード: 全45枚 / 1回ジャンコイン1枚 / No.01→45の固定順 / ダブりなし / ランダムではない
 - ジャンカードは本編攻略必須ではない独立サブゲーム
 - 実装中心: Phaser 3 / Phaser Game Agent
 - メイン実装: Claude Code

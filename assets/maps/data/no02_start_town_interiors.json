@@ -7,7 +7,8 @@
   "notes": [
     "Tiled/Phaser実装前の構成データ。実タイルGIDはタイルセット確定後に割り当てる。",
     "町内部はコンパクトにし、無意味な移動距離を増やさない。",
-    "各建物は入口から主要NPC・機能まで数秒で到達できる構成を基本とする。"
+    "各建物は入口から主要NPC・機能まで数秒で到達できる構成を基本とする。",
+    "2026-09-18: 外観をCURRENT背景画像(assets/maps/starting_town/background.png)へ移行。実画像には建物5棟(やどや/どうぐや/ぶきや/きょうかい/民家A)しか描かれていないため、民家B(map_02_house_b)は正式に廃止した(ユーザー確認済み)。"
   ],
   "interiors": [
     {
@@ -137,28 +138,6 @@
         {"type": "bed", "x": 7, "y": 2},
         {"type": "cabinet", "x": 2, "y": 2},
         {"type": "fireplace", "x": 4, "y": 1}
-      ],
-      "npcs": [],
-      "events": []
-    },
-    {
-      "id": "map_02_house_b",
-      "name": "はじまりのまち・民家B",
-      "type": "interior_house",
-      "size": {"width": 10, "height": 8},
-      "bgm": "bgm_town",
-      "exit": {"x": 5, "y": 7, "to": "map_02_starting_town", "spawnId": "spawn_house_b_front"},
-      "zones": [
-        {"id": "living", "rect": {"x": 2, "y": 2, "w": 6, "h": 4}},
-        {"id": "entrance", "rect": {"x": 4, "y": 6, "w": 3, "h": 2}}
-      ],
-      "objects": [
-        {"type": "table", "x": 5, "y": 4},
-        {"type": "chair", "x": 4, "y": 4},
-        {"type": "chair", "x": 6, "y": 4},
-        {"type": "bed", "x": 2, "y": 2},
-        {"type": "shelf", "x": 7, "y": 2},
-        {"type": "pot", "x": 2, "y": 6}
       ],
       "npcs": [],
       "events": []

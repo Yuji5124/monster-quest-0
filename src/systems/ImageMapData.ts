@@ -11,6 +11,13 @@ export interface ImageMapManifest {
   readonly objects: string;
   readonly collisionCellSize: number;
   readonly assetStatus: "DEV_PLACEHOLDER" | "CURRENT";
+  /**
+   * 実行時にBACKGROUND/COLLISION/EVENT/OBJECTをまとめて拡大する倍率。背景画像自体(background.png/
+   * collision.png)はネイティブ解像度のまま変更せず、Sceneがこの倍率をPhaser表示・物理ワールド境界・
+   * Collision矩形・Event/Object座標・spawn座標へ実行時に一律適用する(MAP_SYSTEM.md参照)。
+   * 省略時は1(スケールなし、従来どおりネイティブ座標=ワールド座標)。
+   */
+  readonly worldScale: number;
 }
 
 export interface ImageMapEvent {
@@ -59,6 +66,20 @@ export interface ImageMapBounds {
   readonly height: number;
 }
 
+/** Any {x,y,width,height} shape (ImageMapBounds, CollisionRect, BuildingDefinition.door, ...). */
+export interface RectLike {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+/** Scales a rectangle by manifest.worldScale. Used to convert stored native background-pixel
+ * rectangles into the runtime world coordinate space without rewriting the stored data (MAP_SYSTEM.md). */
+export function scaleRect<T extends RectLike>(rect: T, scale: number): RectLike {
+  return { x: rect.x * scale, y: rect.y * scale, width: rect.width * scale, height: rect.height * scale };
+}
+
 export function readImageMapManifest(value: unknown): ImageMapManifest {
   const record = requireRecord(value, "map manifest");
   const coordinateSpace = requireString(record, "coordinateSpace", "map manifest");
@@ -78,6 +99,7 @@ export function readImageMapManifest(value: unknown): ImageMapManifest {
     objects: requireString(record, "objects", "map manifest"),
     collisionCellSize: requirePositiveInteger(record, "collisionCellSize", "map manifest"),
     assetStatus,
+    worldScale: readOptionalPositiveNumber(record, "worldScale", "map manifest") ?? 1,
   };
 }
 
@@ -172,6 +194,13 @@ function requirePositiveInteger(record: Record<string, unknown>, key: string, la
 function requireNonNegativeNumber(record: Record<string, unknown>, key: string, label: string): number {
   const value = record[key];
   if (typeof value !== "number" || !Number.isFinite(value) || value < 0) throw new Error(`${label}.${key} must be a non-negative number`);
+  return value;
+}
+
+function readOptionalPositiveNumber(record: Record<string, unknown>, key: string, label: string): number | undefined {
+  const value = record[key];
+  if (value === undefined) return undefined;
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) throw new Error(`${label}.${key} must be a positive number`);
   return value;
 }
 

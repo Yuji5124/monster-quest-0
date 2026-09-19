@@ -10,8 +10,13 @@
   "destinations": "destinations.json",
   "entryDestinationIds": {
     "from_starting_place": "destination_starting_place",
-    "from_starting_town": "destination_starting_town"
+    "from_starting_town": "destination_starting_town",
+    "from_starting_forest": "destination_starting_forest",
+    "from_bie_village": "destination_bie_village",
+    "from_rainland_forest": "destination_rainland_forest",
+    "from_rainland_castle_town": "destination_rainland_castle_town",
+    "from_majin_cave": "destination_majin_cave"
   },
-  "developmentUnlockedFlags": [],
+  "developmentUnlockedFlags": ["story.bie_village_unlocked"],
   "assetStatus": "CURRENT"
 }

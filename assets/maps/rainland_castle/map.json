@@ -1,0 +1,15 @@
+{
+  "id": "map_05_rainland_castle",
+  "name": "レインランドじょう",
+  "formatVersion": 1,
+  "coordinateSpace": "background-pixels",
+  "width": 1448,
+  "height": 1086,
+  "background": "background.png",
+  "collision": "collision.png",
+  "events": "events.json",
+  "objects": "objects.json",
+  "collisionCellSize": 8,
+  "assetStatus": "DEV_PLACEHOLDER",
+  "worldScale": 1.5
+}

@@ -4,6 +4,7 @@ import Phaser from 'phaser';
 import { BootScene } from '../../src/scenes/BootScene.ts';
 import { TitleScene } from '../../src/scenes/TitleScene.ts';
 import { OpeningGlitchScene } from '../../src/scenes/OpeningGlitchScene.ts';
+import { OpeningIntroScene } from '../../src/scenes/OpeningIntroScene.ts';
 import { StartingPlaceScene } from '../../src/scenes/StartingPlaceScene.ts';
 import { WorldMapScene } from '../../src/scenes/WorldMapScene.ts';
 import { FieldScene } from '../../src/scenes/FieldScene.ts';
@@ -17,7 +18,7 @@ window.addEventListener('error', e => errors.push(e.message));
 window.addEventListener('unhandledrejection', e => errors.push(String(e.reason)));
 const game = new Phaser.Game({ type: Phaser.AUTO, parent: 'game', width: 960, height: 720,
   pixelArt: true, roundPixels: true, input: { keyboard: false }, audio: { noAudio: true },
-  scene: [BootScene, TitleScene, OpeningGlitchScene, StartingPlaceScene, WorldMapScene, FieldScene, StartingTownScene, InteriorScene, BattleScene] });
+  scene: [BootScene, OpeningIntroScene, TitleScene, OpeningGlitchScene, StartingPlaceScene, WorldMapScene, FieldScene, StartingTownScene, InteriorScene, BattleScene] });
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
 const assert = (value, message) => { if (!value) throw new Error(message); };
 const report = text => { result.textContent += '\nPASS ' + text; };
@@ -85,10 +86,12 @@ document.querySelector('#run').addEventListener('click', async event => {
   result.textContent = 'Running';
   const storageBefore = JSON.stringify({ ...localStorage });
   try {
+    await scene('OpeningIntroScene');
+    await confirm(); // any button skips the ARROWARE/memory intro straight to the title menu
     await scene('TitleScene');
-    await confirm(2);
+    await confirm(); // "はじめから"
     await scene('StartingPlaceScene');
-    report('Title -> opening -> No.01');
+    report('Intro skip -> title menu -> opening -> No.01');
     const field = await start('FieldScene', { spawnId: 'fromStartingTown' });
     const x = field.player.body.center.x;
     await key('ArrowRight', 120);

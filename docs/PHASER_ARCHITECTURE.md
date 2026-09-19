@@ -23,6 +23,12 @@ Claude Code / Codex / Phaser Game Agentが、同じ責務分離で実装する�
 - 必須アセット読み込み
 - エラーを把握できるログ
 
+### OpeningIntroScene
+- 起動直後の導入: 「Produced by ARROWARE」（約3秒）→ 回想の1枚絵6枚（約10秒）→ TitleScene
+- 回想画像は演出中に裏で読み込み、終了時にテクスチャを解放する（iPhone Safariのメモリ配慮）
+- 何かボタン（タップ）でTitleSceneのメニュー（はじめから／つづきから）へ直行
+- 秒数・並び・画像は`src/config/openingIntro.ts`
+
 ### TitleScene
 - タイトル
 - はじめから

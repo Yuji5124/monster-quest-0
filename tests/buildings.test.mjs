@@ -68,12 +68,11 @@ test("every non-null interiorId matches a real entry in no02_start_town_interior
   }
 });
 
-test("No.02 has exactly the 6 buildings confirmed in the interior design data", () => {
+test("No.02 has exactly the 5 buildings confirmed in the interior design data (background image only shows 5)", () => {
   const ids = MAPS.map_02_starting_town.buildings.map((b) => b.interiorId).sort();
   assert.deepEqual(ids, [
     "map_02_church",
     "map_02_house_a",
-    "map_02_house_b",
     "map_02_inn",
     "map_02_item_shop",
     "map_02_weapon_shop",

@@ -19,7 +19,8 @@ export interface JumpCardRecord extends JumpCardDefinition {
 }
 
 export const JUMP_CARD_TOTAL = 45;
-export const JUMP_CARD_COST = 20;
+/** 指定素材I.pngの「1回 ジャンコイン」に合わせた、1回分の専用通貨コスト。 */
+export const JUMP_CARD_COIN_COST = 1;
 export const JUMP_CARD_PAGE_SIZE = 9;
 const UNCONFIGURED_CARD_NAME = "未設定";
 const VERIFIED_SOURCE_CARD_IMAGE_PATHS = {

@@ -2,12 +2,13 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 import { DEV_BATTLE_PLAYER, readDevBattleMonsterId } from "../src/config/battle.ts";
-import { calculateDamage, BattleSystem } from "../src/battle/BattleSystem.ts";
+import { calculateDamage, BattleSystem, rollBattleReward } from "../src/battle/BattleSystem.ts";
 import { DEV_BATTLE_MONSTERS, getDevBattleMonster } from "../src/data/monsters.ts";
 
-test("both DEV battle monsters have usable images and positive DEV stats", () => {
-  for (const monster of [DEV_BATTLE_MONSTERS["003"], DEV_BATTLE_MONSTERS["006"]]) {
-    assert.match(monster.displayName, /^MONSTER 00[36]$/);
+test("starting-forest enemies keep their confirmed names, assets, and DEV stats", () => {
+  assert.equal(DEV_BATTLE_MONSTERS["001"].displayName, "たまゴースト");
+  assert.equal(DEV_BATTLE_MONSTERS["003"].displayName, "プリン");
+  for (const monster of [DEV_BATTLE_MONSTERS["001"], DEV_BATTLE_MONSTERS["003"], DEV_BATTLE_MONSTERS["006"]]) {
     assert.ok(monster.maxHp > 0 && monster.attack > 0 && monster.defense >= 0);
     const url = new URL(monster.portraitUrl);
     assert.ok(existsSync(url));
@@ -30,7 +31,7 @@ test("battle state advances command, player action, enemy action, and command", 
 });
 
 test("a defeated enemy does not counterattack and reaches VICTORY after acknowledgement", () => {
-  const battle = new BattleSystem({ ...DEV_BATTLE_PLAYER, attack: 99 }, DEV_BATTLE_MONSTERS["003"]);
+  const battle = new BattleSystem({ ...DEV_BATTLE_PLAYER, attack: 99 }, DEV_BATTLE_MONSTERS["003"], () => 0);
   const playerHp = battle.getSnapshot().player.hp;
   battle.confirm();
   assert.equal(battle.getSnapshot().enemy.hp, 0);
@@ -38,6 +39,14 @@ test("a defeated enemy does not counterattack and reaches VICTORY after acknowle
   battle.confirm();
   assert.equal(battle.getSnapshot().state, "VICTORY");
   assert.equal(battle.getSnapshot().player.hp, playerHp);
+  assert.deepEqual(battle.getSnapshot().reward, { experience: 4, money: 3, itemId: "dokukeshi" });
+  assert.match(battle.getSnapshot().message, /4 EXPと　3G/);
+});
+
+test("battle rewards sanitize values and make an item drop probabilistic through an injected roll", () => {
+  const definition = { experience: 3.9, money: -2, drops: [{ itemId: "kaifukuyaku", chance: 0.25 }] };
+  assert.deepEqual(rollBattleReward(definition, () => 0.24), { experience: 3, money: 0, itemId: "kaifukuyaku" });
+  assert.deepEqual(rollBattleReward(definition, () => 0.25), { experience: 3, money: 0 });
 });
 
 test("a player at zero HP reaches DEFEAT", () => {
