@@ -1,7 +1,8 @@
 import Phaser from "phaser";
-import { getJumpCardDisplayName, JUMP_CARD_COST, JUMP_CARD_TOTAL, preloadJumpCardImages } from "../data/jumpCards.ts";
+import { getJumpCardDisplayName, JUMP_CARD_COIN_COST, JUMP_CARD_TOTAL, preloadJumpCardImages } from "../data/jumpCards.ts";
 import type { JumpCardDefinition } from "../data/jumpCards.ts";
 import { DISPLAY, SCALE_FACTOR } from "../config/display.ts";
+import { JUMP_CARD_GACHA_PRESENTATION } from "../config/jumpCardGachaPresentation.ts";
 import { GameStateRepository } from "../systems/GameStateRepository.ts";
 import type { GameState, JumpCardDrawResult } from "../systems/GameStateRepository.ts";
 import { InputSystem } from "../systems/InputSystem.ts";
@@ -18,10 +19,19 @@ const GACHA_MACHINE_IMAGE_PATH = new URL(
   "../../assets/ui/reference/gacha/mq0_gacha_005_0c06dc5303.png",
   import.meta.url,
 ).href;
+const GACHA_COIN_INSERT_KEY = "ui.gacha.coin-insert";
+const GACHA_COIN_INSERT_IMAGE_PATH = new URL(
+  "../../assets/title/reference/H.png",
+  import.meta.url,
+).href;
+const GACHA_TURN_KEY = "ui.gacha.turn";
+const GACHA_TURN_IMAGE_PATH = new URL(
+  "../../assets/title/reference/I.png",
+  import.meta.url,
+).href;
 // 指定素材(941x1672、透過なし)の上側1台だけを使う。下側に重複して写る筐体は見せない。
 const GACHA_MACHINE_SOURCE_WIDTH = 941;
 const GACHA_MACHINE_CROP_HEIGHT = 820;
-const GACHA_REVEAL_DELAY_MS = 850;
 const MACHINE_X = DISPLAY.width / 2;
 const MACHINE_Y = 137 * SCALE_FACTOR;
 const RESULT_Y = 128 * SCALE_FACTOR;
@@ -41,6 +51,7 @@ export class JumpCardGachaScene extends Phaser.Scene {
   private cardContainer!: Phaser.GameObjects.Container;
   private machineContainer!: Phaser.GameObjects.Container;
   private machineGlow!: Phaser.GameObjects.Rectangle;
+  private coinPresentation: Phaser.GameObjects.Container | undefined;
   private revealTimer: Phaser.Time.TimerEvent | undefined;
   private readonly menuBounds = [
     { x: 24 * SCALE_FACTOR, y: 194 * SCALE_FACTOR, width: 272 * SCALE_FACTOR, height: 18 * SCALE_FACTOR },
@@ -54,6 +65,8 @@ export class JumpCardGachaScene extends Phaser.Scene {
   preload(): void {
     preloadJumpCardImages(this.load);
     this.load.image(GACHA_MACHINE_KEY, GACHA_MACHINE_IMAGE_PATH);
+    this.load.image(GACHA_COIN_INSERT_KEY, GACHA_COIN_INSERT_IMAGE_PATH);
+    this.load.image(GACHA_TURN_KEY, GACHA_TURN_IMAGE_PATH);
   }
 
   create(): void {
@@ -91,6 +104,7 @@ export class JumpCardGachaScene extends Phaser.Scene {
       this.revealTimer?.remove(false);
       this.tweens.killTweensOf(this.machineContainer);
       this.tweens.killTweensOf(this.machineGlow);
+      this.clearCoinPresentation();
       this.actions.destroy();
       this.input.off("pointerdown", this.handlePointer, this);
       this.events.off(Phaser.Scenes.Events.SHUTDOWN, cleanup);
@@ -157,7 +171,7 @@ export class JumpCardGachaScene extends Phaser.Scene {
     const result = this.repository.drawNextJumpCard();
     this.state = result.state;
     if (result.kind !== "obtained") {
-      this.messageText.setText(result.kind === "complete" ? "カードは　ぜんぶ\nそろっています" : "おかねが　たりません");
+      this.messageText.setText(result.kind === "complete" ? "カードは　ぜんぶ\nそろっています" : "ジャンコインが　たりません");
       this.renderInfo();
       return;
     }
@@ -165,19 +179,23 @@ export class JumpCardGachaScene extends Phaser.Scene {
     this.mode = "spinning";
     this.actions.setLocked(true);
     this.messageText.setVisible(true);
-    this.messageText.setText("ガチャガチャ…");
-    this.renderInfo();
+    this.messageText.setText("");
+    this.infoText.setVisible(false);
     this.cardContainer.removeAll(true);
     this.menuTexts.forEach((text) => text.setVisible(false));
-    this.machineContainer.setVisible(true);
-    this.playGachaMachineAnimation();
-    this.revealTimer = this.time.delayedCall(GACHA_REVEAL_DELAY_MS, () => this.revealCard(result));
+    this.machineContainer.setVisible(false);
+    this.playGachaCoinPresentation();
+    this.revealTimer = this.time.delayedCall(
+      JUMP_CARD_GACHA_PRESENTATION.totalDurationMs,
+      () => this.revealCard(result),
+    );
   }
 
   private revealCard(result: Extract<JumpCardDrawResult, { kind: "obtained" }>): void {
     this.revealTimer = undefined;
     this.mode = "reveal";
     this.actions.setLocked(false);
+    this.clearCoinPresentation();
     this.messageText.setVisible(false);
     this.infoText.setVisible(false);
     this.machineContainer.setVisible(false);
@@ -201,7 +219,14 @@ export class JumpCardGachaScene extends Phaser.Scene {
       }
       const machine = this.add.image(0, 0, GACHA_MACHINE_KEY, GACHA_MACHINE_FRAME)
         .setDisplaySize(126 * SCALE_FACTOR, 110 * SCALE_FACTOR);
-      this.machineContainer.add(machine);
+      // 旧筐体画像に焼き込まれた「20円」を覆い、現行ルールを待機画面にも明示する。
+      const coinCostPlate = this.add.rectangle(50, 50, 74, 32, 0xc91f29)
+        .setStrokeStyle(2, 0xffeea6);
+      const coinCostText = this.add.text(50, 50, "1枚\nジャンコイン", {
+        fontFamily: "monospace", fontSize: `${4 * SCALE_FACTOR}px`, color: "#ffffff",
+        align: "center", lineSpacing: -4,
+      }).setOrigin(0.5);
+      this.machineContainer.add([machine, coinCostPlate, coinCostText]);
       return;
     }
 
@@ -220,25 +245,80 @@ export class JumpCardGachaScene extends Phaser.Scene {
     this.machineContainer.add([cabinet, display, slot, dial, label]);
   }
 
-  private playGachaMachineAnimation(): void {
-    this.tweens.killTweensOf(this.machineContainer);
-    this.tweens.killTweensOf(this.machineGlow);
-    this.machineContainer.setPosition(MACHINE_X, MACHINE_Y).setScale(1);
-    this.machineGlow.setAlpha(0);
+  /** H.pngとI.pngで、コイン投入→レバー操作→発光の順に見せる5秒演出。 */
+  private playGachaCoinPresentation(): void {
+    this.clearCoinPresentation();
+    const presentation = this.add.container(DISPLAY.width / 2, DISPLAY.height / 2).setDepth(12);
+    const veil = this.add.rectangle(0, 0, DISPLAY.width, DISPLAY.height, 0x04050b, 0.94);
+    const panel = this.add.rectangle(0, 0, 166 * SCALE_FACTOR, 226 * SCALE_FACTOR, 0x101526)
+      .setStrokeStyle(2 * SCALE_FACTOR, 0xe7c84e);
+    const turn = this.add.image(0, 0, GACHA_TURN_KEY).setDisplaySize(150 * SCALE_FACTOR, 218 * SCALE_FACTOR);
+    const insert = this.add.image(22 * SCALE_FACTOR, 0, GACHA_COIN_INSERT_KEY)
+      .setDisplaySize(150 * SCALE_FACTOR, 218 * SCALE_FACTOR)
+      .setAlpha(0);
+    const flash = this.add.rectangle(0, 0, 154 * SCALE_FACTOR, 220 * SCALE_FACTOR, 0xfff8d5, 0);
+    const caption = this.add.text(0, 92 * SCALE_FACTOR, "ジャンコインを　セット！", {
+      fontFamily: "monospace", fontSize: `${12 * SCALE_FACTOR}px`, color: "#fff6c7",
+      stroke: "#15101d", strokeThickness: 3 * SCALE_FACTOR / 2,
+    }).setOrigin(0.5);
+    presentation.add([veil, panel, turn, insert, flash, caption]);
+    this.coinPresentation = presentation;
+
+    const turnScaleX = turn.scaleX;
+    const turnScaleY = turn.scaleY;
+    turn.setScale(turnScaleX * 0.92, turnScaleY * 0.92).setAlpha(0);
+    this.tweens.add({ targets: presentation, alpha: { from: 0, to: 1 }, duration: 250 });
     this.tweens.add({
-      targets: this.machineContainer,
-      y: MACHINE_Y - 3 * SCALE_FACTOR,
-      scaleX: 1.025,
-      scaleY: 0.98,
-      duration: 85,
+      targets: turn,
+      alpha: 1,
+      scaleX: turnScaleX,
+      scaleY: turnScaleY,
+      duration: 620,
+      ease: "Back.easeOut",
+    });
+    this.tweens.add({
+      targets: turn,
+      alpha: 0,
+      delay: JUMP_CARD_GACHA_PRESENTATION.instructionHoldMs,
+      duration: 340,
+      ease: "Sine.easeIn",
+    });
+    this.tweens.add({
+      targets: insert,
+      x: 0,
+      alpha: 1,
+      delay: JUMP_CARD_GACHA_PRESENTATION.coinInsertStartMs,
+      duration: 540,
+      ease: "Cubic.easeOut",
+      onStart: () => caption.setText("ジャンコインを　いれる！"),
+    });
+    this.tweens.add({
+      targets: insert,
+      scaleX: insert.scaleX * 1.035,
+      scaleY: insert.scaleY * 1.035,
+      delay: 2_620,
+      duration: 210,
       yoyo: true,
       repeat: 3,
       ease: "Sine.easeInOut",
+      onStart: () => caption.setText("ガチャガチャ…"),
     });
-    this.tweens.add({ targets: this.machineGlow, alpha: 0.58, duration: 95, yoyo: true, repeat: 3 });
-    this.time.delayedCall(430, () => {
-      if (this.mode === "spinning") this.messageText.setText("コトン…");
+    this.tweens.add({
+      targets: flash,
+      alpha: 0.92,
+      delay: JUMP_CARD_GACHA_PRESENTATION.finalFlashStartMs,
+      duration: 240,
+      yoyo: true,
+      ease: "Sine.easeOut",
     });
+  }
+
+  private clearCoinPresentation(): void {
+    if (!this.coinPresentation) return;
+    this.tweens.killTweensOf(this.coinPresentation);
+    this.tweens.killTweensOf(this.coinPresentation.list);
+    this.coinPresentation.destroy(true);
+    this.coinPresentation = undefined;
   }
 
   private playCardRevealAnimation(): void {
@@ -283,6 +363,7 @@ export class JumpCardGachaScene extends Phaser.Scene {
 
   private returnToMenu(): void {
     this.mode = "menu";
+    this.clearCoinPresentation();
     this.cardContainer.removeAll(true);
     this.cardContainer.setPosition(DISPLAY.width / 2, RESULT_Y).setScale(1).setAlpha(1);
     this.machineContainer.setPosition(MACHINE_X, MACHINE_Y).setScale(1).setVisible(true);
@@ -310,6 +391,6 @@ export class JumpCardGachaScene extends Phaser.Scene {
   }
 
   private renderInfo(): void {
-    this.infoText.setText(`おかね　${this.state.player.money}円　　1かい　${JUMP_CARD_COST}円\nあつめたカード　${this.state.cards.jumpCardCount} / ${JUMP_CARD_TOTAL}`);
+    this.infoText.setText(`ジャンコイン　${this.state.cards.jumpCoinCount}枚　　1かい　${JUMP_CARD_COIN_COST}枚\nあつめたカード　${this.state.cards.jumpCardCount} / ${JUMP_CARD_TOTAL}`);
   }
 }

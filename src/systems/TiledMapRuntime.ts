@@ -2,9 +2,9 @@ import type Phaser from "phaser";
 import type { TiledTilesetDef } from "../config/no01TiledMap.ts";
 
 /**
- * No.01 Tiledマップの読み込み・レイヤー生成・Collision・Events検出を共通化する薄いヘルパー。
- * MapTestNo01Scene(DEV)とStartingPlaceScene(本番)の両方から使い、同じTiled読み込みコードを
- * 二重実装しない。既存のPhaser Tilemaps APIを直接呼ぶだけで、独自の抽象レイヤーは増やさない。
+ * legacy No.01 Tiledマップの読み込み・レイヤー生成・Collision・Events検出を共通化する薄いヘルパー。
+ * MapTestNo01Scene(DEV)とLegacyTiledStartingPlaceSceneだけが使う。通常のStartingPlaceSceneは
+ * 背景画像マップ方式であり、このRuntimeを使用しない。
  */
 
 export interface TiledMapDef {

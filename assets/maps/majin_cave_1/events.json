@@ -1,0 +1,19 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_majin_cave_1_world_map_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 1100, "y": 970, "width": 140, "height": 100 },
+      "commands": [{ "type": "world-map", "worldMapEntryId": "from_majin_cave" }]
+    },
+    {
+      "id": "event_majin_cave_1_to_2",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 95, "y": 50, "width": 120, "height": 84 },
+      "commands": [{ "type": "transfer", "targetMapId": "map_08_majin_cave_2", "targetSpawnId": "fromCave1" }]
+    }
+  ]
+}

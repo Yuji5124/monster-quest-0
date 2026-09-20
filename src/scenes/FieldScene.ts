@@ -4,8 +4,13 @@ import { MAPS, MAP_TRANSITION_FADE_MS } from "../config/maps.ts";
 import type { MapExitTrigger } from "../config/maps.ts";
 import { Player } from "../entities/Player.ts";
 import { InputSystem } from "../systems/InputSystem.ts";
+import { PartyFollowers } from "../systems/PartyFollowers.ts";
 import { configureMapCamera } from "../systems/MapCamera.ts";
 import { beginConfiguredMapExitTransition, createExitZone } from "../systems/MapTransition.ts";
+import { PROTAGONIST_SPRITE } from "../config/protagonistSprite.ts";
+import { TAROSA_SPRITE } from "../config/tarosaSprite.ts";
+import { MIREI_SPRITE } from "../config/mireiSprite.ts";
+import { ensureWalkAnimations, preloadWalkSprite } from "../systems/CharacterWalkSprite.ts";
 
 const MAP_ID = "field_starting_region"; // 仮ID。正式フィールド名称・mapIdは未確定(DEV_PLACEHOLDER_FIELD)。
 
@@ -26,6 +31,9 @@ export class FieldScene extends Phaser.Scene {
 
   preload(): void {
     this.load.image(FIELD_REFERENCE.key, FIELD_REFERENCE.url);
+    preloadWalkSprite(this, PROTAGONIST_SPRITE);
+    preloadWalkSprite(this, TAROSA_SPRITE);
+    preloadWalkSprite(this, MIREI_SPRITE);
   }
 
   create(data?: { spawnId?: string }): void {
@@ -61,7 +69,9 @@ export class FieldScene extends Phaser.Scene {
 
     const spawnId = data?.spawnId && map.spawns[data.spawnId] ? data.spawnId : Object.keys(map.spawns)[0];
     const spawn = map.spawns[spawnId];
+    ensureWalkAnimations(this, PROTAGONIST_SPRITE);
     this.player = new Player(this, spawn.x, spawn.y, spawn.facing);
+    new PartyFollowers(this, this.player);
     this.physics.add.collider(this.player.body, featureGroup);
 
     // Player spawn解決 → Camera bounds/追従開始 → fadeIn の順で、

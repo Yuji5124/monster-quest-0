@@ -14,6 +14,8 @@ import { Player } from "../entities/Player.ts";
 import { InputSystem } from "../systems/InputSystem.ts";
 import { configureMapCamera } from "../systems/MapCamera.ts";
 import { beginConfiguredMapExitTransition, createExitZone } from "../systems/MapTransition.ts";
+import { PROTAGONIST_SPRITE } from "../config/protagonistSprite.ts";
+import { ensureWalkAnimations, preloadWalkSprite } from "../systems/CharacterWalkSprite.ts";
 import type { Facing } from "../systems/PlayerMovement.ts";
 import type { TiledMapDef } from "../systems/TiledMapRuntime.ts";
 import { createTiledEventZones, createTiledMap, findPlayerSpawn, preloadTiledMap, updateTiledEventZones } from "../systems/TiledMapRuntime.ts";
@@ -42,6 +44,7 @@ export class LegacyTiledStartingPlaceScene extends Phaser.Scene {
 
   preload(): void {
     preloadTiledMap(this, NO01_DAY_MAP_DEF);
+    preloadWalkSprite(this, PROTAGONIST_SPRITE);
   }
 
   create(data?: { spawnId?: string }): void {
@@ -63,8 +66,9 @@ export class LegacyTiledStartingPlaceScene extends Phaser.Scene {
       playerY = spawn.y;
       facing = "down";
     }
+    ensureWalkAnimations(this, PROTAGONIST_SPRITE);
     this.player = new Player(this, playerX, playerY, facing);
-    this.player.visual.setDepth(1000);
+    this.player.setDepth(1000);
     this.physics.add.collider(this.player.body, collisionLayer);
     configureMapCamera(this, this.player.visual, { x: 0, y: 0, width: map.widthInPixels, height: map.heightInPixels });
     this.cameras.main.setBackgroundColor("#101018");

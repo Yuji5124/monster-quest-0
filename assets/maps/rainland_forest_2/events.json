@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_rainland_forest_2_south_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": {
+        "x": 335,
+        "y": 1050,
+        "width": 80,
+        "height": 36
+      },
+      "commands": [
+        {
+          "type": "transfer",
+          "targetMapId": "map_rainland_forest_1",
+          "targetSpawnId": "fromForest2"
+        }
+      ]
+    }
+  ]
+}

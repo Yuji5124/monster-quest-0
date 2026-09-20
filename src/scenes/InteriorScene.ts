@@ -5,7 +5,12 @@ import type { InteriorDefinition } from "../config/interiors.ts";
 import { MAP_TRANSITION_FADE_MS } from "../config/maps.ts";
 import { Player } from "../entities/Player.ts";
 import { InputSystem } from "../systems/InputSystem.ts";
+import { PartyFollowers } from "../systems/PartyFollowers.ts";
 import { beginMapTransition, createExitZone } from "../systems/MapTransition.ts";
+import { PROTAGONIST_SPRITE } from "../config/protagonistSprite.ts";
+import { TAROSA_SPRITE } from "../config/tarosaSprite.ts";
+import { MIREI_SPRITE } from "../config/mireiSprite.ts";
+import { ensureWalkAnimations, preloadWalkSprite } from "../systems/CharacterWalkSprite.ts";
 
 // 内部から出た際に戻るspawnIdが指定されていない場合の安全な既定値(No.02の正面入口)。
 // Phase 8.5でNo.02側の入口spawnIdが fromStartingPlace → fromField へ改名されたため追従。
@@ -26,6 +31,12 @@ export class InteriorScene extends Phaser.Scene {
   constructor() {
     // PhysicsはこのSceneだけで有効化する。既存Boot / Title / 異常演出には追加しない。
     super({ key: "InteriorScene", physics: { arcade: { gravity: { x: 0, y: 0 } } } });
+  }
+
+  preload(): void {
+    preloadWalkSprite(this, PROTAGONIST_SPRITE);
+    preloadWalkSprite(this, TAROSA_SPRITE);
+    preloadWalkSprite(this, MIREI_SPRITE);
   }
 
   create(data?: { interiorId?: string; returnSpawnId?: string }): void {
@@ -70,7 +81,9 @@ export class InteriorScene extends Phaser.Scene {
     }
 
     const spawn = interior.playerSpawn;
+    ensureWalkAnimations(this, PROTAGONIST_SPRITE);
     this.player = new Player(this, offsetX + spawn.x, offsetY + spawn.y, spawn.facing);
+    new PartyFollowers(this, this.player);
     this.physics.add.collider(this.player.body, furnitureGroup);
 
     const exitZoneBody = createExitZone(this, {

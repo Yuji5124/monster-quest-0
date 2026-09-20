@@ -1,0 +1,40 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_rainland_castle_town_south_gate",
+      "trigger": "enter",
+      "once": true,
+      "bounds": {
+        "x": 675,
+        "y": 1052,
+        "width": 105,
+        "height": 35
+      },
+      "commands": [
+        {
+          "type": "world-map",
+          "worldMapEntryId": "from_rainland_castle_town"
+        }
+      ]
+    },
+    {
+      "id": "event_rainland_castle_town_castle_gate",
+      "trigger": "enter",
+      "once": true,
+      "bounds": {
+        "x": 690,
+        "y": 128,
+        "width": 70,
+        "height": 30
+      },
+      "commands": [
+        {
+          "type": "transfer",
+          "targetMapId": "map_05_rainland_castle",
+          "targetSpawnId": "fromCastleTown"
+        }
+      ]
+    }
+  ]
+}

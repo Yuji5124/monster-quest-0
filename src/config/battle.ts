@@ -24,7 +24,12 @@ export type BattleCommandId = (typeof DEV_BATTLE_COMMANDS)[number];
 
 export const DEV_BATTLE_QUERY_PARAM = "battleTest";
 export const DEV_BATTLE_EVENT_FADE_MS = 220;
-export const DEV_BATTLE_MONSTER_IDS = ["003", "006", "demas"] as const;
+/**
+ * A brisk, controlled pixel-collapse from field to battle. DEV battle queries bypass it.
+ * Kept short enough that routine encounters do not stall exploration.
+ */
+export const BATTLE_ENTRANCE_DURATION_MS = 1_300;
+export const DEV_BATTLE_MONSTER_IDS = ["001", "003", "006", "demas"] as const;
 export type DevBattleMonsterId = (typeof DEV_BATTLE_MONSTER_IDS)[number];
 
 export function readDevBattleMonsterId(search: string): DevBattleMonsterId {

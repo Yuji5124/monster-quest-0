@@ -1,0 +1,40 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_rainland_castle_entrance",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 512, "y": 904, "width": 424, "height": 96 },
+      "commands": [{ "type": "message", "text": "[DEV] 城の入口" }]
+    },
+    {
+      "id": "event_rainland_castle_throne_room_entrance",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 664, "y": 136, "width": 120, "height": 40 },
+      "commands": [{ "type": "message", "text": "[DEV] 王の間の入口（未実装）" }]
+    },
+    {
+      "id": "event_rainland_castle_stairs",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 120, "y": 216, "width": 112, "height": 40 },
+      "commands": [{ "type": "message", "text": "[DEV] 上階への階段（現在は進めない）" }]
+    },
+    {
+      "id": "event_rainland_castle_east_room",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 1232, "y": 344, "width": 96, "height": 40 },
+      "commands": [{ "type": "message", "text": "[DEV] 東の小部屋（イベント予約地点・未実装）" }]
+    },
+    {
+      "id": "event_rainland_castle_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 656, "y": 1050, "width": 136, "height": 36 },
+      "commands": [{ "type": "transfer", "targetMapId": "map_rainland_castle_town", "targetSpawnId": "fromCastle" }]
+    }
+  ]
+}

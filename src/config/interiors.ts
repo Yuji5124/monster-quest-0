@@ -112,18 +112,6 @@ export const INTERIORS: Record<string, InteriorDefinition> = {
     playerSpawn: { x: 45 * SCALE_FACTOR, y: 54 * SCALE_FACTOR, facing: "up" },
     exitZone: { x: 37 * SCALE_FACTOR, y: 62 * SCALE_FACTOR, width: 16 * SCALE_FACTOR, height: 8 * SCALE_FACTOR },
   },
-  map_02_house_b: {
-    id: "map_02_house_b",
-    name: "民家B",
-    parentSceneKey: "StartingTownScene",
-    room: { width: 90 * SCALE_FACTOR, height: 70 * SCALE_FACTOR },
-    floorColor: 0x2e2420,
-    wallColor: 0x171210,
-    furniture: [
-      { x: 40 * SCALE_FACTOR, y: 20 * SCALE_FACTOR, width: 18 * SCALE_FACTOR, height: 12 * SCALE_FACTOR, color: TABLE },
-      { x: 12 * SCALE_FACTOR, y: 12 * SCALE_FACTOR, width: 14 * SCALE_FACTOR, height: 18 * SCALE_FACTOR, color: BED },
-    ],
-    playerSpawn: { x: 45 * SCALE_FACTOR, y: 54 * SCALE_FACTOR, facing: "up" },
-    exitZone: { x: 37 * SCALE_FACTOR, y: 62 * SCALE_FACTOR, width: 16 * SCALE_FACTOR, height: 8 * SCALE_FACTOR },
-  },
+  // map_02_house_b(民家B)は2026-09-18に廃止した。CURRENT背景画像(はじまりのまち.png)には
+  // 建物5棟しか描かれておらず、実在しない6棟目を維持しないと判断した(ユーザー確認済み)。
 };

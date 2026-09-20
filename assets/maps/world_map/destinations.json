@@ -22,6 +22,61 @@
       "visible": true,
       "unlockFlag": null,
       "positionStatus": "DEV_PLACEHOLDER_POSITION"
+    },
+    {
+      "id": "destination_starting_forest",
+      "name": "はじまりのもり",
+      "targetMapId": "map_starting_forest",
+      "targetSpawnId": "fromWorldMap",
+      "x": 610,
+      "y": 380,
+      "visible": true,
+      "unlockFlag": null,
+      "positionStatus": "DEV_PLACEHOLDER_POSITION"
+    },
+    {
+      "id": "destination_bie_village",
+      "name": "ビーエのむら",
+      "targetMapId": "map_03_bie_village",
+      "targetSpawnId": "fromWorldMap",
+      "x": 980,
+      "y": 420,
+      "visible": true,
+      "unlockFlag": "story.bie_village_unlocked",
+      "positionStatus": "DEV_PLACEHOLDER_POSITION"
+    },
+    {
+      "id": "destination_rainland_forest",
+      "name": "レインランドのもり",
+      "targetMapId": "map_rainland_forest_1",
+      "targetSpawnId": "fromWorldMap",
+      "x": 770,
+      "y": 250,
+      "visible": true,
+      "unlockFlag": null,
+      "positionStatus": "DEV_PLACEHOLDER_POSITION"
+    },
+    {
+      "id": "destination_rainland_castle_town",
+      "name": "レインランドじょうかまち",
+      "targetMapId": "map_rainland_castle_town",
+      "targetSpawnId": "fromWorldMap",
+      "x": 690,
+      "y": 140,
+      "visible": true,
+      "unlockFlag": null,
+      "positionStatus": "DEV_PLACEHOLDER_POSITION"
+    },
+    {
+      "id": "destination_majin_cave",
+      "name": "まじんのどうくつ",
+      "targetMapId": "map_08_majin_cave",
+      "targetSpawnId": "fromWorldMap",
+      "x": 1200,
+      "y": 220,
+      "visible": true,
+      "unlockFlag": null,
+      "positionStatus": "DEV_PLACEHOLDER_POSITION"
     }
   ]
 }

@@ -6,7 +6,7 @@ import type { BattleAction } from "./battleActions.ts";
 
 export interface DevBattleMonsterDefinition {
   readonly id: DevBattleMonsterId;
-  /** The source files do not establish a CURRENT formal name. */
+  /** User-confirmed display name. Stats remain DEV_BATTLE_BALANCE until the formal monster data pass. */
   readonly displayName: string;
   readonly portraitUrl: string;
   readonly portraitFormat: "png" | "jpeg";
@@ -17,6 +17,7 @@ export interface DevBattleMonsterDefinition {
   readonly maxMp?: number;
   readonly isBoss?: boolean;
   readonly enemyActions?: readonly BattleAction[];
+  readonly reward?: BattleCombatantDefinition["reward"];
   readonly display?: { readonly scale: number; readonly offsetY: number };
   readonly background?: { readonly key: string; readonly url: string };
   readonly devPlayer?: BattleCombatantDefinition;
@@ -24,14 +25,36 @@ export interface DevBattleMonsterDefinition {
 
 // Direct Vite URLs retain the source files and avoid an unnecessary runtime copy.
 export const DEV_BATTLE_MONSTERS: Record<DevBattleMonsterId, DevBattleMonsterDefinition> = {
+  // はじまりのもりの通常敵。ユーザー確認済みの名称のみ反映し、数値はDEV_BATTLE_BALANCEのまま維持する。
+  "001": {
+    id: "001",
+    displayName: "たまゴースト",
+    portraitUrl: new URL("../../assets/monsters/source/portraits/mq0_monster_001_0d78a307c8.png", import.meta.url).href,
+    portraitFormat: "png",
+    maxHp: 12,
+    attack: 4,
+    defense: 1,
+    reward: { experience: 3, money: 2, drops: [{ itemId: "kaifukuyaku", chance: 0.15 }] }, // TEMP_TEST_VALUE
+    display: { scale: 0.7, offsetY: 0 },
+    background: {
+      key: "battle.bg.starting_forest",
+      url: new URL("../../assets/battle/backgrounds/reference/mq0_battle_bg_013_5ecb71635c.png", import.meta.url).href,
+    },
+  },
   "003": {
     id: "003",
-    displayName: "MONSTER 003",
+    displayName: "プリン",
     portraitUrl: new URL("../../assets/monsters/source/portraits/mq0_monster_003_1e2e150bba.png", import.meta.url).href,
     portraitFormat: "png",
     maxHp: 15,
     attack: 5,
     defense: 2,
+    reward: { experience: 4, money: 3, drops: [{ itemId: "dokukeshi", chance: 0.1 }] }, // TEMP_TEST_VALUE
+    display: { scale: 0.7, offsetY: 0 },
+    background: {
+      key: "battle.bg.starting_forest",
+      url: new URL("../../assets/battle/backgrounds/reference/mq0_battle_bg_013_5ecb71635c.png", import.meta.url).href,
+    },
   },
   "006": {
     id: "006",
@@ -41,6 +64,7 @@ export const DEV_BATTLE_MONSTERS: Record<DevBattleMonsterId, DevBattleMonsterDef
     maxHp: 24,
     attack: 6,
     defense: 3,
+    reward: { experience: 5, money: 4 }, // TEMP_TEST_VALUE
   },
   demas: {
     id: "demas",
@@ -51,6 +75,7 @@ export const DEV_BATTLE_MONSTERS: Record<DevBattleMonsterId, DevBattleMonsterDef
     isBoss: true,
     // TEMP_TEST_VALUE / DEV_BATTLE_BALANCE, not the source card's 1000/500/300.
     maxHp: 360, maxMp: 60, attack: 42, defense: 12,
+    reward: { experience: 50, money: 100 }, // TEMP_TEST_VALUE
     enemyActions: [NORMAL_ATTACK, DEV_MIRROR, DEV_DAIDAIN],
     display: { scale: 1.7, offsetY: 0 },
     background: {

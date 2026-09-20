@@ -4,6 +4,7 @@ dist/
 *.tsbuildinfo
 npm-debug.log*
 .qa/
+__pycache__/
 
 # Tiled Map Editor local cache/session (not project data)
 *.tiled-session

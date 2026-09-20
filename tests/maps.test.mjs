@@ -12,6 +12,9 @@ const WORLD_MAP_DIR = path.join(REPO_ROOT, "assets/maps/world_map");
 const worldMapManifest = readWorldMapManifest(JSON.parse(readFileSync(path.join(WORLD_MAP_DIR, "map.json"), "utf-8")));
 const worldMapDestinations = readWorldMapDestinations(JSON.parse(readFileSync(path.join(WORLD_MAP_DIR, "destinations.json"), "utf-8")), worldMapManifest);
 const startingPlaceEvents = readImageMapEvents(JSON.parse(readFileSync(path.join(REPO_ROOT, "assets/maps/starting_place/events.json"), "utf-8")));
+const startingTownEvents = readImageMapEvents(JSON.parse(readFileSync(path.join(REPO_ROOT, "assets/maps/starting_town/events.json"), "utf-8")));
+const startingForestEvents = readImageMapEvents(JSON.parse(readFileSync(path.join(REPO_ROOT, "assets/maps/starting_forest/events.json"), "utf-8")));
+const bieVillageEvents = readImageMapEvents(JSON.parse(readFileSync(path.join(REPO_ROOT, "assets/maps/bie_village/events.json"), "utf-8")));
 
 test("every map has a scene key and at least the spawns its exits reference", () => {
   for (const map of Object.values(MAPS)) {
@@ -51,14 +54,51 @@ test("No.01 and No.02 use the point-selection WorldMapScene as the active round-
   assert.equal(no01NorthGate.commands[0].type, "world-map");
   assert.equal(resolveWorldMapEntryDestination(worldMapManifest, worldMapDestinations, no01NorthGate.commands[0].worldMapEntryId).id, "destination_starting_place");
 
-  const toWorldMap02 = MAPS.map_02_starting_town.exits.find((e) => e.id === "toWorldMap");
-  assert.equal(toWorldMap02.kind, "world-map");
-  assert.equal(resolveWorldMapEntryDestination(worldMapManifest, worldMapDestinations, toWorldMap02.worldMapEntryId).id, "destination_starting_town");
+  const westExit02 = startingTownEvents.find((event) => event.id === "event_starting_town_west_exit");
+  assert.equal(westExit02.commands[0].type, "world-map");
+  assert.equal(resolveWorldMapEntryDestination(worldMapManifest, worldMapDestinations, westExit02.commands[0].worldMapEntryId).id, "destination_starting_town");
 
   for (const destination of worldMapDestinations) {
     const target = MAPS[destination.targetMapId];
     assert.ok(target.spawns[destination.targetSpawnId]);
   }
+});
+
+test("はじまりのまち (map_02_starting_town) is an image-map package with no direct maps.ts exits", () => {
+  assert.equal(MAPS.map_02_starting_town.exits.length, 0);
+  assert.equal(MAPS.map_02_starting_town.sceneKey, "StartingTownScene");
+});
+
+test("はじまりのもり (map_starting_forest) round-trips through the point-selection WorldMapScene", () => {
+  const northExit = startingForestEvents.find((event) => event.id === "event_starting_forest_north_exit");
+  assert.equal(northExit.commands[0].type, "world-map");
+  assert.equal(resolveWorldMapEntryDestination(worldMapManifest, worldMapDestinations, northExit.commands[0].worldMapEntryId).id, "destination_starting_forest");
+
+  const forestDestination = worldMapDestinations.find((destination) => destination.id === "destination_starting_forest");
+  assert.ok(forestDestination, "destination_starting_forest must be defined");
+  const target = MAPS[forestDestination.targetMapId];
+  assert.equal(target.sceneKey, "StartingForestScene");
+  assert.ok(target.spawns[forestDestination.targetSpawnId]);
+
+  // 正式No.01〜No.20の番号は持たない追加フィールドであり、既存の番号付きmapIdと衝突しない。
+  assert.equal(MAPS.map_starting_forest.id, "map_starting_forest");
+  assert.equal(MAPS.map_starting_forest.exits.length, 0);
+});
+
+test("ビーエのむら (map_03_bie_village) round-trips through the point-selection WorldMapScene", () => {
+  const northExit = bieVillageEvents.find((event) => event.id === "event_bie_village_north_exit");
+  assert.equal(northExit.commands[0].type, "world-map");
+  assert.equal(resolveWorldMapEntryDestination(worldMapManifest, worldMapDestinations, northExit.commands[0].worldMapEntryId).id, "destination_bie_village");
+
+  const bieDestination = worldMapDestinations.find((destination) => destination.id === "destination_bie_village");
+  assert.ok(bieDestination, "destination_bie_village must be defined");
+  assert.equal(bieDestination.unlockFlag, "story.bie_village_unlocked");
+  const target = MAPS[bieDestination.targetMapId];
+  assert.equal(target.sceneKey, "BieVillageScene");
+  assert.ok(target.spawns[bieDestination.targetSpawnId]);
+
+  assert.equal(MAPS.map_03_bie_village.id, "map_03_bie_village");
+  assert.equal(MAPS.map_03_bie_village.exits.length, 0);
 });
 
 test("legacy FieldScene still resolves its own direct No.01 <-> No.02 prototype route", () => {
