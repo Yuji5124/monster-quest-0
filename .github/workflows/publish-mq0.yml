@@ -1,0 +1,31 @@
+name: Apply Monster Quest0 publish bundles
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.mq0-bundles/**'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply staged publish bundles
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Yuji5124'
+          git config user.email 'Yuji5124@users.noreply.github.com'
+          cat .mq0-bundles/mq0-publish.part* > /tmp/mq0-publish.bundle
+          git bundle verify /tmp/mq0-publish.bundle
+          git fetch /tmp/mq0-publish.bundle refs/heads/main:refs/remotes/mq0-publish/main
+          git merge --no-ff -X theirs --no-edit refs/remotes/mq0-publish/main
+          git rm -r .mq0-bundles .github/workflows/publish-mq0.yml .github/workflows/apply-mq0-bundles.yml
+          git commit -m 'Publish Monster Quest0 data'
+          git push
