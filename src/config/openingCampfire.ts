@@ -4,7 +4,6 @@
  */
 export const OPENING_CAMPFIRE = {
   initialSilenceMs: 700,
-  ambienceStartMs: 700,
   revealStartMs: 2000,
   revealDurationMs: 5000,
   narrationStartMs: 7000,
@@ -13,6 +12,7 @@ export const OPENING_CAMPFIRE = {
   narrationEndFadeMs: 900,
   fireOnlyMs: 2000,
   lookPauseMs: 650,
+  protagonistLineFadeInMs: 260,
   protagonistLineMs: 1500,
   protagonistLineFadeMs: 400,
   nightVeilAlpha: 0.28,
@@ -35,6 +35,7 @@ export function getOpeningCampfireControlReleaseMs(): number {
     + OPENING_CAMPFIRE_NARRATION.length * OPENING_CAMPFIRE.narrationLineMs
     + OPENING_CAMPFIRE.fireOnlyMs
     + OPENING_CAMPFIRE.lookPauseMs
+    + OPENING_CAMPFIRE.protagonistLineFadeInMs
     + OPENING_CAMPFIRE.protagonistLineMs
     + OPENING_CAMPFIRE.protagonistLineFadeMs;
 }

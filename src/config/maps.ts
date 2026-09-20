@@ -14,9 +14,7 @@ export type MapId =
   | "map_rainland_forest_2"
   | "map_rainland_castle_town"
   | "map_05_rainland_castle"
-  | "map_08_majin_cave_1"
-  | "map_08_majin_cave_2"
-  | "map_08_majin_cave_3";
+  | "map_08_majin_cave";
 
 export interface SpawnPoint {
   readonly x: number;
@@ -364,35 +362,13 @@ export const MAPS: Record<MapId, MapDefinition> = {
     ],
     buildings: [],
   },
-  // No.08「まじんのどうくつ」。3枚の内部背景を順に使うコンパクトな連結ダンジョン。
-  // ボス・出現モンスター・BGM・解放条件は未確定のため、今回の接続は画像マップと出入口のみ。
-  map_08_majin_cave_1: {
-    id: "map_08_majin_cave_1",
-    sceneKey: "MajinCave1Scene",
+  // No.08 is the one explicit map-system exception: a deterministic 32px grid dungeon.
+  // Its Scene owns a run's floor data and is entered from the point-selection WorldMapScene.
+  map_08_majin_cave: {
+    id: "map_08_majin_cave",
+    sceneKey: "MajinCaveScene",
     spawns: {
-      fromWorldMap: { x: 1120, y: 900, facing: "up" },
-      fromCave2: { x: 190, y: 125, facing: "down" },
-    },
-    exits: [],
-    npcs: [],
-    buildings: [],
-  },
-  map_08_majin_cave_2: {
-    id: "map_08_majin_cave_2",
-    sceneKey: "MajinCave2Scene",
-    spawns: {
-      fromCave1: { x: 1240, y: 880, facing: "up" },
-      fromCave3: { x: 190, y: 125, facing: "down" },
-    },
-    exits: [],
-    npcs: [],
-    buildings: [],
-  },
-  map_08_majin_cave_3: {
-    id: "map_08_majin_cave_3",
-    sceneKey: "MajinCave3Scene",
-    spawns: {
-      fromCave2: { x: 330, y: 900, facing: "up" },
+      fromWorldMap: { x: 0, y: 0, facing: "down" },
     },
     exits: [],
     npcs: [],

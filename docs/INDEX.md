@@ -55,6 +55,7 @@
 - `PHASE_IMAGE_MAP_MINIMUM.md` — 背景画像 + Collision + Event + ObjectのNo.01最小検証（DEV）
 - `PHASE_DEV_PARTY_FOLLOWERS.md` — DEV加入NPC / 3人パーティー / 経路追従 / Scene再生成
 - `PHASE_DEMAS_BATTLE.md` — デーマス実戦 / 反射フック / Battle Test / NPC復帰の検証
+- `PHASE_MAJIN_CAVE_DUNGEON_RPG.md` — No.08専用ターン制Dungeon RPG / 10F帰還 / DEV URL
 - `CURRENT_WORK.md`
 - `CONTENT_MATRIX.md`
 - `ROADMAP.md`

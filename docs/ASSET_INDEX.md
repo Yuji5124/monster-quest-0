@@ -1,6 +1,6 @@
 # Monster Quest 0 Asset Index
 
-最終更新: 2026-09-19 JST
+最終更新: 2026-09-20 JST
 
 このファイルを画像アセットの正式台帳とする。Phaser Game Agent / Codex / Claude Code は画像を探す前にこのファイルを確認する。
 
@@ -209,19 +209,15 @@ Collisionの作り方: 背景をHSV変換し、道の色域（H≈33〜52°, S�
 
 ### まじんのどうくつ
 
-2026-09-19追加。正式No.08の3画面ダンジョン。キービジュアルは世界地図からの入場演出専用、`その1〜3`は歩行可能なローカルマップ背景として分離する。
+2026-09-20更新。正式No.08は32px論理グリッドの特殊Dungeon RPGへ移行。キービジュアルと旧`その1〜3`は資料として保持し、ランタイム背景・入場演出としては使用しない。
 
 | パス | 用途 | 状態 |
 |---|---|---|
-| `assets/maps/reference/reference/まじんのどうくつ.png` | ユーザー提供のキービジュアル（1448×1086）。削除・上書きせず、その1の`entry_splash.png`へ無加工コピー | REFERENCE |
-| `assets/maps/reference/reference/まじんのどうくつ_その１.png` | ユーザー提供の洞窟内部SOURCE（1448×1086）。その1の背景へ無加工コピー | REFERENCE |
-| `assets/maps/reference/reference/まじんのどうくつ_その2.png` | ユーザー提供の洞窟内部SOURCE（1448×1086）。その2の背景へ無加工コピー | REFERENCE |
-| `assets/maps/reference/reference/まじんのどうくつ_その3.png` | ユーザー提供の洞窟内部SOURCE（1448×1086）。その3の背景へ無加工コピー | REFERENCE |
-| `assets/maps/majin_cave_1/background.png` / `collision.png` / `entry_splash.png` | その1のCURRENT背景・編集可能Collision・入場演出画像 | CURRENT |
-| `assets/maps/majin_cave_2/background.png` / `collision.png` | その2のCURRENT背景・編集可能Collision | CURRENT |
-| `assets/maps/majin_cave_3/background.png` / `collision.png` | その3のCURRENT背景・編集可能Collision | CURRENT |
-
-Collisionは石床・橋・階段を結ぶ広めの初期導線として作成している。実行時の画像解析は行わず、`collision.png`だけを読む。最終的な道幅・寄り道・装飾への接触可否は人間によるプレイ確認で調整する。
+| `assets/maps/reference/reference/まじんのどうくつ.png` | ユーザー提供のキービジュアル（1448×1086）。削除・上書きせず、UI・構成・雰囲気のREFERENCEとしてのみ保持。ランタイムにはロードしない | REFERENCE |
+| `assets/maps/reference/reference/mq0_majin_cave_tileset.png` / `.json` | No.08専用タイルセットのSOURCE／仕様（256×256 RGBA、32px、8×8、64セル） | REFERENCE |
+| `assets/maps/majin_cave/tileset.png` / `tileset.json` | 上記のバイト一致ランタイムコピー。`MajinCaveScene`がスプライトシートとメタデータとして読む | CURRENT |
+| `assets/maps/reference/reference/まじんのどうくつ_その１.png` / `その2.png` / `その3.png` | 旧画像マップ初期実装で使った洞窟内資料。新しいNo.08ランタイムは直接ロードしない | REFERENCE |
+| `assets/maps/majin_cave_1/` / `majin_cave_2/` / `majin_cave_3/` | 旧3画面画像マップのパッケージ。削除せず、No.08の現行runtimeでは使用しない | SUPERSEDED |
 
 ### レインランドじょうかまち
 

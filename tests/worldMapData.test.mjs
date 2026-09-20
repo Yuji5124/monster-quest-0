@@ -46,9 +46,8 @@ test("world-map destinations declare visibility and flag-based unlock conditions
   // レインランドじょうかまちも、追加フィールドとして常時選択可能。正式な解放条件はTBD。
   assert.equal(definitions[5].id, "destination_rainland_castle_town");
   assert.equal(definitions[5].unlockFlag, null);
-  // No.08まじんのどうくつも、正式な解放フラグの実装まで常時選択可能とする。
-  // (No.05レインランドじょうは世界地図に直接載せず、レインランドじょうかまちの北の城門から入る。)
   assert.equal(definitions[6].id, "destination_majin_cave");
+  assert.equal(definitions[6].targetMapId, "map_08_majin_cave");
   assert.equal(definitions[6].unlockFlag, null);
   assert.deepEqual(manifest.developmentUnlockedFlags, ["story.bie_village_unlocked"]);
   assert.equal(manifest.entryDestinationIds.from_starting_place, "destination_starting_place");

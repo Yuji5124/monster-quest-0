@@ -14,7 +14,6 @@ const read = (relative) => readFileSync(path.join(REPO_ROOT, relative), "utf-8")
 
 test("the No.01 opening is dark and silent first, then reveals over 0:02-0:07", () => {
   assert.equal(OPENING_CAMPFIRE.initialSilenceMs, 700);
-  assert.equal(OPENING_CAMPFIRE.ambienceStartMs, 700);
   assert.equal(OPENING_CAMPFIRE.revealStartMs, 2000);
   assert.equal(OPENING_CAMPFIRE.revealDurationMs, 5000);
   assert.equal(OPENING_CAMPFIRE.narrationStartMs, 7000);

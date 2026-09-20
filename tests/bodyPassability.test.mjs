@@ -19,9 +19,6 @@ const IMAGE_MAPS = [
   ["rainland_forest_2", "map_rainland_forest_2"],
   ["rainland_castle_town", "map_rainland_castle_town"],
   ["rainland_castle", "map_05_rainland_castle"],
-  ["majin_cave_1", "map_08_majin_cave_1"],
-  ["majin_cave_2", "map_08_majin_cave_2"],
-  ["majin_cave_3", "map_08_majin_cave_3"],
 ];
 
 test("the player hitbox is a small feet box, not most of the 54x70 sprite", () => {

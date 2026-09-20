@@ -14,7 +14,7 @@ import { MapTestNo01Scene } from "./scenes/MapTestNo01Scene.ts";
 import { OpeningGlitchScene } from "./scenes/OpeningGlitchScene.ts";
 import { OpeningIntroScene } from "./scenes/OpeningIntroScene.ts";
 import { MapSplashScene } from "./scenes/MapSplashScene.ts";
-import { MajinCave1Scene, MajinCave2Scene, MajinCave3Scene } from "./scenes/MajinCaveScene.ts";
+import { MajinCaveScene } from "./scenes/MajinCaveScene.ts";
 import { RainlandCastleScene } from "./scenes/RainlandCastleScene.ts";
 import { RainlandCastleTownScene } from "./scenes/RainlandCastleTownScene.ts";
 import { RainlandForest1Scene, RainlandForest2Scene } from "./scenes/RainlandForestScene.ts";
@@ -34,7 +34,7 @@ const cardBookTestRequested = new URLSearchParams(window.location.search).has("c
 const worldMapTestRequested = new URLSearchParams(window.location.search).has("worldMapTest");
 // DEV_MAP_TEST (?mapTest=no01|no02|image-no01): 通常起動に接続せず、対象マップだけを確認する。
 const mapTestRequested = readDevMapTest(window.location.search);
-const normalScenes = [BootScene, OpeningIntroScene, TitleScene, OpeningGlitchScene, StartingPlaceScene, WorldMapScene, FieldScene, StartingTownScene, StartingForestScene, BieVillageScene, RainlandForest1Scene, RainlandForest2Scene, RainlandCastleTownScene, RainlandCastleScene, MajinCave1Scene, MajinCave2Scene, MajinCave3Scene, MapSplashScene, InteriorScene, BattleScene, JumpCardGachaScene, JumpCardEncyclopediaScene];
+const normalScenes = [BootScene, OpeningIntroScene, TitleScene, OpeningGlitchScene, StartingPlaceScene, WorldMapScene, FieldScene, StartingTownScene, StartingForestScene, BieVillageScene, RainlandForest1Scene, RainlandForest2Scene, RainlandCastleTownScene, RainlandCastleScene, MajinCaveScene, MapSplashScene, InteriorScene, BattleScene, JumpCardGachaScene, JumpCardEncyclopediaScene];
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -61,7 +61,7 @@ const game = new Phaser.Game({
         ? [JumpCardEncyclopediaScene]
         : worldMapTestRequested
           // ワールド地図から全ての正式ローカルマップへ移る検証用。
-          ? [WorldMapTestScene, StartingPlaceScene, StartingTownScene, StartingForestScene, BieVillageScene, RainlandForest1Scene, RainlandForest2Scene, RainlandCastleTownScene, RainlandCastleScene, MajinCave1Scene, MajinCave2Scene, MajinCave3Scene, MapSplashScene, BattleScene]
+          ? [WorldMapTestScene, StartingPlaceScene, StartingTownScene, StartingForestScene, BieVillageScene, RainlandForest1Scene, RainlandForest2Scene, RainlandCastleTownScene, RainlandCastleScene, MajinCaveScene, MapSplashScene, BattleScene]
         : mapTestRequested === "no01"
           ? [MapTestNo01Scene]
           : mapTestRequested === "no02"
@@ -87,8 +87,8 @@ const game = new Phaser.Game({
                         // レインランドじょう単体確認: 出口Eventでレインランドじょうかまちの北の城門前へ戻り、北の城門から再入場できる。
                         ? [RainlandCastleScene, RainlandCastleTownScene, WorldMapScene, MapSplashScene]
                       : mapTestRequested === "majin-cave"
-                        // No.08単体確認: その1〜3を往復でき、世界地図から再入場すると3.5秒の入場演出を挟む。
-                        ? [MajinCave1Scene, MajinCave2Scene, MajinCave3Scene, WorldMapScene, MapSplashScene]
+                        // No.08単体確認: 通常WorldMapSceneを経由・登録せず、このSceneだけを起動する。
+                        ? [MajinCaveScene]
                       : normalScenes,
 });
 

@@ -230,6 +230,8 @@ export class WorldMapScene extends Phaser.Scene {
     }
     this.transitioning = true;
     this.notice.setText(`${destination.name}へ移動します…`);
-    beginMapTransition(this, this.actions, target.sceneKey, { spawnId: destination.targetSpawnId }, TRANSITION_MS);
+    const data: Record<string, string> = { spawnId: destination.targetSpawnId };
+    if (target.sceneKey === "MajinCaveScene") data.returnSceneKey = this.scene.key;
+    beginMapTransition(this, this.actions, target.sceneKey, data, TRANSITION_MS);
   }
 }

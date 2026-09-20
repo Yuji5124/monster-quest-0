@@ -28,15 +28,6 @@ export const MAP_ENTRY_SPLASHES: Readonly<Partial<Record<MapId, MapEntrySplash>>
     spawnIds: ["fromWorldMap"],
     caption: "レインランドじょうかまち",
   },
-  map_08_majin_cave_1: {
-    imageUrl: new URL("../../assets/maps/majin_cave_1/entry_splash.png", import.meta.url).toString(),
-    fadeInMs: 700,
-    holdMs: 2100,
-    fadeOutMs: 700,
-    spawnIds: ["fromWorldMap"],
-    caption: "まじんのどうくつ",
-    captionPosition: "bottom-right",
-  },
 };
 
 export function getEntrySplashDurationMs(splash: MapEntrySplash): number {

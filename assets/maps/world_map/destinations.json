@@ -70,7 +70,7 @@
     {
       "id": "destination_majin_cave",
       "name": "まじんのどうくつ",
-      "targetMapId": "map_08_majin_cave_1",
+      "targetMapId": "map_08_majin_cave",
       "targetSpawnId": "fromWorldMap",
       "x": 1200,
       "y": 220,

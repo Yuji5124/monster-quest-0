@@ -196,7 +196,35 @@
       "path": "assets/maps/reference/reference/まじんのどうくつ.png",
       "status": "reference",
       "sha256": "b979e24208b60e083aca83683e82104bba963c57841b2a36874c0705a8c1c0de",
-      "note": "2026-09-19: user-supplied 1448x1086 establishing artwork for No.08 まじんのどうくつ. Copied unmodified to map.majin_cave_1.entry_splash for the world-map entry presentation; the original is preserved."
+      "note": "2026-09-20: user-supplied 1448x1086 establishing artwork for No.08 まじんのどうくつ. Preserved as UI/composition/atmosphere reference only; it is never loaded or copied by the current runtime."
+    },
+    {
+      "key": "map.majin_cave.tileset_source",
+      "path": "assets/maps/reference/reference/mq0_majin_cave_tileset.png",
+      "status": "reference",
+      "sha256": "4d0b297b267555d30678b13912b55d2e20afaf20ddcfaeb327ce549fde048ecf",
+      "note": "2026-09-20: user-provided normalized No.08 SOURCE tileset. RGBA PNG, 256x256, 8x8 cells, 32px tiles. The runtime copy is byte-identical."
+    },
+    {
+      "key": "map.majin_cave.tileset_metadata_source",
+      "path": "assets/maps/reference/reference/mq0_majin_cave_tileset.json",
+      "status": "reference",
+      "sha256": "58fad128192448524acf2f44f56703553dddf1895346f2d1932f55f834812c38",
+      "note": "2026-09-20: user-provided No.08 tileset metadata. Labels/blocking annotations are auxiliary; MajinCaveGenerator's logical grid remains the collision authority."
+    },
+    {
+      "key": "map.majin_cave.tileset",
+      "path": "assets/maps/majin_cave/tileset.png",
+      "status": "current",
+      "sha256": "4d0b297b267555d30678b13912b55d2e20afaf20ddcfaeb327ce549fde048ecf",
+      "note": "2026-09-20: CURRENT runtime copy of the normalized 32px No.08 tileset. MajinCaveScene loads it as a Phaser spritesheet; no TMJ/TSJ is used."
+    },
+    {
+      "key": "map.majin_cave.tileset_metadata",
+      "path": "assets/maps/majin_cave/tileset.json",
+      "status": "current",
+      "sha256": "58fad128192448524acf2f44f56703553dddf1895346f2d1932f55f834812c38",
+      "note": "2026-09-20: CURRENT byte-identical runtime metadata for map.majin_cave.tileset."
     },
     {
       "key": "map.majin_cave_1.reference",
@@ -208,23 +236,23 @@
     {
       "key": "map.majin_cave_1.background",
       "path": "assets/maps/majin_cave_1/background.png",
-      "status": "current",
+      "status": "superseded",
       "sha256": "9d43e50c34e73ea4b7145823af16b5c39f7e8dbe7b6f5e7e2be598e4e98d1e7c",
-      "note": "2026-09-19: CURRENT 1448x1086 background for No.08 まじんのどうくつ（その1）, an unmodified copy of map.majin_cave_1.reference."
+      "note": "2026-09-20: SUPERSEDED runtime background from the former three-page No.08 image-map prototype. Kept on disk as reference; the current special dungeon does not load it."
     },
     {
       "key": "map.majin_cave_1.collision",
       "path": "assets/maps/majin_cave_1/collision.png",
-      "status": "current",
+      "status": "superseded",
       "sha256": "0e8e6eb48977c6693168c3d6ab48d3a8ba055d4234fa1e5ff5e2e5c51eefc984",
-      "note": "2026-09-19: CURRENT 1448x1086 binary Collision Mask for No.08 page 1 (white=walkable, black=blocked). A wide, connected initial route follows the pictured stone approach, bridges, and upper passages. Runtime reads only this human-editable mask; visual tuning remains pending."
+      "note": "2026-09-20: SUPERSEDED collision mask from the former No.08 image-map prototype. The current dungeon uses generated logical grid collision instead."
     },
     {
       "key": "map.majin_cave_1.entry_splash",
       "path": "assets/maps/majin_cave_1/entry_splash.png",
-      "status": "current",
+      "status": "superseded",
       "sha256": "b979e24208b60e083aca83683e82104bba963c57841b2a36874c0705a8c1c0de",
-      "note": "2026-09-19: CURRENT 1448x1086 entry splash, an unmodified copy of map.majin_cave.entry_reference. It fades in and out in 3.5 seconds when entering No.08 from the world map."
+      "note": "2026-09-20: SUPERSEDED old-package copy. No.08 key-art is REFERENCE-only and no active runtime copy exists."
     },
     {
       "key": "map.majin_cave_2.reference",
@@ -236,16 +264,16 @@
     {
       "key": "map.majin_cave_2.background",
       "path": "assets/maps/majin_cave_2/background.png",
-      "status": "current",
+      "status": "superseded",
       "sha256": "1107d59cf2264571211f26f9db1ee0bc6c518a2876d65514aa75f8c5710b924a",
-      "note": "2026-09-19: CURRENT 1448x1086 background for No.08 まじんのどうくつ（その2）, an unmodified copy of map.majin_cave_2.reference."
+      "note": "2026-09-20: SUPERSEDED runtime background from the former three-page No.08 image-map prototype. Kept on disk as reference."
     },
     {
       "key": "map.majin_cave_2.collision",
       "path": "assets/maps/majin_cave_2/collision.png",
-      "status": "current",
+      "status": "superseded",
       "sha256": "023591d85aa481fae5a8cfa2325aca5be5bbc1dddf54f2fad7a5a723c46d7ebb",
-      "note": "2026-09-19: CURRENT 1448x1086 binary Collision Mask for No.08 page 2 (white=walkable, black=blocked). A wide, connected initial route follows the pictured stone approaches, bridge, and stairs. Runtime reads only this human-editable mask; visual tuning remains pending."
+      "note": "2026-09-20: SUPERSEDED collision mask from the former No.08 image-map prototype."
     },
     {
       "key": "map.majin_cave_3.reference",
@@ -257,16 +285,16 @@
     {
       "key": "map.majin_cave_3.background",
       "path": "assets/maps/majin_cave_3/background.png",
-      "status": "current",
+      "status": "superseded",
       "sha256": "1d23b3ff12fe75fb48cc6819ebe0f79abdcd4f0ed5c115634b292f0409a6d56c",
-      "note": "2026-09-19: CURRENT 1448x1086 background for No.08 まじんのどうくつ（その3）, an unmodified copy of map.majin_cave_3.reference."
+      "note": "2026-09-20: SUPERSEDED runtime background from the former three-page No.08 image-map prototype. Kept on disk as reference."
     },
     {
       "key": "map.majin_cave_3.collision",
       "path": "assets/maps/majin_cave_3/collision.png",
-      "status": "current",
+      "status": "superseded",
       "sha256": "24361fcbda7e586ab410a377ab4449e1b2fa38e282da58e27a982159e0ee1b01",
-      "note": "2026-09-19: CURRENT 1448x1086 binary Collision Mask for No.08 page 3 (white=walkable, black=blocked). A wide, connected initial route follows the pictured stone approach to the upper ritual platform. Runtime reads only this human-editable mask; visual tuning remains pending."
+      "note": "2026-09-20: SUPERSEDED collision mask from the former No.08 image-map prototype."
     },
     {
       "key": "map.tileset.dev_placeholder_outdoor",
