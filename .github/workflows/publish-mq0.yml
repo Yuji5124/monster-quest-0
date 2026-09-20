@@ -25,7 +25,7 @@ jobs:
           cat .mq0-bundles/mq0-publish.small.part* > /tmp/mq0-publish.bundle
           git bundle verify /tmp/mq0-publish.bundle
           git fetch /tmp/mq0-publish.bundle refs/heads/main:refs/remotes/mq0-publish/main
-          git merge --no-ff -X theirs --no-edit refs/remotes/mq0-publish/main
+          git merge --no-ff --no-edit refs/remotes/mq0-publish/main
           git rm -r .mq0-bundles .github/workflows/publish-mq0.yml .github/workflows/apply-mq0-bundles.yml
           git commit -m 'Publish Monster Quest0 data'
           git push
