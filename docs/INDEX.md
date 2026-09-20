@@ -1,6 +1,6 @@
 # モンスタークエスト0 仕様書インデックス
 
-最終更新: 2026-09-18 JST
+最終更新: 2026-09-20 JST
 
 このファイルはAI・人間が仕様を読むための入口。
 
@@ -12,13 +12,15 @@
 5. `STORY_FLOW.md` — 物語全体 / 「もういちど」 / 真エンディング
 6. `MAP_FLOW_SPEC.md` — **正式No.01〜No.20**
 7. `MAP_SYSTEM.md` — **背景画像正本 / Collision生成 / 4レイヤー / ワールドマップ**
-8. `AI_EXECUTION_PROTOCOL.md` — AIの作業手順
+8. `SPECIAL_GAMEPLAY_SPEC.md` — **特殊ゲームプレイ / シューティング / ブロック城 / まじん巨大化 / アクション区間**
+9. `AI_EXECUTION_PROTOCOL.md` — AIの作業手順
 
 ## ストーリー・世界
 - `OPENING_SPEC.md` — タイトルからNo.01〜No.02への導入
 - `STORY_FLOW.md` — 元NPC主人公 / 複数世界断片 / 裏ワザ / エンディング
 - `MAP_FLOW_SPEC.md` — No.01〜20、No.01再訪、No.20再戦
 - `MAP_SYSTEM.md` — 新規ローカルマップとワールドマップの制作・データ方針
+- `SPECIAL_GAMEPLAY_SPEC.md` — 世界混線に伴うジャンル切替・特殊操作区間
 - `NPC_SPEC.md` — NPC会話方針
 - `GLITCH_SPEC.md` — 導入異常 / 終盤 / 「もういちど」
 
@@ -69,7 +71,7 @@
 
 ## 読み方
 ### Claude Code / Phaser Game Agent
-`PROJECT_STATUS` → `GAME_SPEC` → `CREATIVE_DIRECTION` → `OPENING_SPEC` → `STORY_FLOW` → `MAP_FLOW_SPEC` → `MAP_SYSTEM`（マップ作業時は必須）→ 対象SPEC → `SAVE_FLAG_SPEC`（進行に関係する場合）→ `TBD_REGISTRY` → `DEFINITION_OF_DONE`
+`PROJECT_STATUS` → `GAME_SPEC` → `CREATIVE_DIRECTION` → `OPENING_SPEC` → `STORY_FLOW` → `MAP_FLOW_SPEC` → `MAP_SYSTEM`（マップ作業時は必須）→ `SPECIAL_GAMEPLAY_SPEC`（特殊区間作業時は必須）→ 対象SPEC → `SAVE_FLAG_SPEC`（進行に関係する場合）→ `TBD_REGISTRY` → `DEFINITION_OF_DONE`
 
 ### Codex
 上記 + `QA_SPEC` + `PERFORMANCE_BUDGET`
