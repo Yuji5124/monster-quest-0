@@ -1,8 +1,11 @@
 import Phaser from "phaser";
 import { DISPLAY, SCALE_FACTOR } from "../config/display.ts";
 import { TITLE_MENU_ITEMS } from "../config/menu.ts";
+import { OPENING_INTRO } from "../config/openingIntro.ts";
+import type { TitleSceneData } from "../config/openingIntro.ts";
 import { TITLE_PRESENTATION } from "../config/titlePresentation.ts";
 import { InputSystem } from "../systems/InputSystem.ts";
+import { openingCampfireAudio } from "../systems/OpeningCampfireAudio.ts";
 
 const LOGO_KEY = "titleLogo";
 const LOGO_PATH = "assets/ui/title/mq0_title_logo.png";
@@ -38,9 +41,15 @@ export class TitleScene extends Phaser.Scene {
   private mode: TitleMode = "splash";
   private promptBlinkElapsedMs = 0;
   private cursorTween?: Phaser.Tweens.Tween;
+  private entry: TitleSceneData = {};
 
   constructor() {
     super("TitleScene");
+  }
+
+  /** オープニング演出から来た場合の指定。ジャンカード画面などから戻る場合は空。 */
+  init(data?: TitleSceneData): void {
+    this.entry = data ?? {};
   }
 
   preload(): void {
@@ -62,8 +71,15 @@ export class TitleScene extends Phaser.Scene {
     const { menuTop, menuHeight } = this.createLogo();
     this.createMenu(menuTop);
     this.createPrompt(menuTop, menuHeight);
-    this.playLogoIntro();
+    // オープニングをスキップして来たときは、ロゴ登場を待たず「はじめから／つづきから」のメニューから始める。
+    this.playLogoIntro(this.entry.skipToMenu === true);
     this.scheduleIdleGlitch();
+    if (this.entry.skipToMenu === true) this.enterMenu();
+    if (this.entry.fromIntro === true) {
+      // オープニングの黒からタイトルへ、ゆっくり明るくなる。スキップ時はすばやく。
+      const fadeMs = this.entry.skipToMenu === true ? OPENING_INTRO.skipFadeInMs : OPENING_INTRO.titleFadeInMs;
+      this.cameras.main.fadeIn(fadeMs, 0, 0, 0);
+    }
 
     const input = this.actions;
     const cleanup = (): void => {
@@ -246,11 +262,12 @@ export class TitleScene extends Phaser.Scene {
     }).setOrigin(0.5, 0.5).setAlpha(0);
   }
 
-  private playLogoIntro(): void {
-    if (!TITLE_PRESENTATION.logo.enabled) {
+  private playLogoIntro(instant: boolean): void {
+    if (!TITLE_PRESENTATION.logo.enabled || instant) {
       this.logoMain.setAlpha(1);
       this.promptText.setAlpha(1);
       this.startLogoIdleAnimation(this.logoMain.scaleX);
+      if (TITLE_PRESENTATION.logo.enabled) this.scheduleLogoShines();
       return;
     }
     const logoScale = this.logoMain.scaleX;
@@ -402,6 +419,8 @@ export class TitleScene extends Phaser.Scene {
     if (this.gameStarting) return;
     this.gameStarting = true;
     this.actions.setLocked(true);
+    // 「はじめから」を押したその入力中にAudioContextを許可する。演出本体はNo.01で開始する。
+    if (item.action === "START_GAME") openingCampfireAudio.prepareFromUserGesture();
     this.cursorTween?.stop();
     const selectedText = this.itemTexts[this.selectedIndex];
     this.tweens.add({
@@ -416,7 +435,7 @@ export class TitleScene extends Phaser.Scene {
 
   private runMenuAction(action: string): void {
     console.log(`[TitleScene] action: ${action}`);
-    if (action === "START_GAME") this.scene.start("OpeningGlitchScene");
+    if (action === "START_GAME") this.scene.start("StartingPlaceScene", { openingSequence: true });
     if (action === "JANCARD_GACHA") this.scene.start("JumpCardGachaScene");
     if (action === "JANCARD_BOOK") this.scene.start("JumpCardEncyclopediaScene");
     // 未接続項目は、既存どおり入力解除してタイトルへ留まる。

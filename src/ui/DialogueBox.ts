@@ -38,6 +38,8 @@ export class DialogueBox {
     this.background = scene.add
       .rectangle(boxX + boxWidth / 2, boxY + BOX_HEIGHT / 2, boxWidth, BOX_HEIGHT, BOX_COLOR, 1)
       .setStrokeStyle(BORDER_WIDTH, BORDER_COLOR)
+      .setScrollFactor(0)
+      .setDepth(2500)
       .setVisible(false);
 
     this.text = scene.add
@@ -48,6 +50,8 @@ export class DialogueBox {
         lineSpacing: LINE_SPACING,
         wordWrap: { width: boxWidth - TEXT_PADDING * 2 },
       })
+      .setScrollFactor(0)
+      .setDepth(2501)
       .setVisible(false);
 
     this.nextIndicator = scene.add
@@ -61,6 +65,8 @@ export class DialogueBox {
           color: TEXT_COLOR,
         },
       )
+      .setScrollFactor(0)
+      .setDepth(2501)
       .setVisible(false);
   }
 

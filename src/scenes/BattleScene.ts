@@ -5,7 +5,12 @@ import { getDevBattleMonster } from "../data/monsters.ts";
 import type { BattleSceneStartData } from "../events/BattleEventData.ts";
 import { BattleSystem } from "../battle/BattleSystem.ts";
 import type { BattleSnapshot } from "../battle/BattleSystem.ts";
+import { ITEM_DEFINITIONS } from "../data/items.ts";
 import { InputSystem } from "../systems/InputSystem.ts";
+import { characterProgression } from "../systems/CharacterProgression.ts";
+import { GameStateRepository } from "../systems/GameStateRepository.ts";
+import { inventory } from "../systems/Inventory.ts";
+import { partySystem } from "../systems/PartySystem.ts";
 
 const WINDOW_COLOR = 0x090c18;
 const TEXT_COLOR = "#eeeeee";
@@ -16,6 +21,7 @@ export class BattleScene extends Phaser.Scene {
   private battle: BattleSystem | undefined;
   private eventData: BattleSceneStartData | undefined;
   private portrait!: Phaser.GameObjects.Image;
+  private groundShadow!: Phaser.GameObjects.Ellipse;
   private commandText!: Phaser.GameObjects.Text;
   private messageText!: Phaser.GameObjects.Text;
   private statusTexts: Phaser.GameObjects.Text[] = [];
@@ -26,6 +32,8 @@ export class BattleScene extends Phaser.Scene {
   private magicMenu = false;
   private magicIndex = 0;
   private transitioning = false;
+  private rewardGranted = false;
+  private readonly gameState = new GameStateRepository();
 
   constructor() { super("BattleScene"); }
 
@@ -42,6 +50,7 @@ export class BattleScene extends Phaser.Scene {
   create(data?: BattleSceneStartData): void {
     this.battle = undefined;
     this.transitioning = false;
+    this.rewardGranted = false;
     this.commandIndex = 0;
     this.magicMenu = false;
     this.magicIndex = 0;
@@ -63,6 +72,8 @@ export class BattleScene extends Phaser.Scene {
     const scale = enemy.display?.scale ?? 1;
     this.portrait = this.add.image(layout.enemy.x, layout.enemy.y + (enemy.display?.offsetY ?? 0) * DISPLAY.height, key).setDepth(1);
     this.portrait.setScale(Math.min(layout.enemy.maxWidth * scale / this.portrait.width, layout.enemy.maxHeight * scale / this.portrait.height, 1));
+    // 全ての敵に共通する接地影。画像固有の描き足しを避け、透明ポートレートでも背景から浮かないようにする。
+    this.groundShadow = this.createGroundShadow(this.portrait);
     this.portraitOriginX = this.portrait.x;
 
     const style: Phaser.Types.GameObjects.Text.TextStyle = { fontFamily: "monospace", fontSize: `${layout.fontSize}px`, color: TEXT_COLOR, lineSpacing: 5 };
@@ -159,8 +170,21 @@ export class BattleScene extends Phaser.Scene {
     const magic = this.magicMenu ? before.player.learnedMagic?.[this.magicIndex] : undefined;
     this.battle.confirm(command, magic?.id);
     this.magicMenu = false;
-    this.applyVisualFeedback(before, this.battle.getSnapshot());
+    const after = this.battle.getSnapshot();
+    this.grantVictoryReward(after);
+    this.applyVisualFeedback(before, after);
     this.render();
+  }
+
+  /** Event battles write their reward once; standalone ?battleTest visual QA never touches a player's save. */
+  private grantVictoryReward(snapshot: BattleSnapshot): void {
+    if (this.rewardGranted || !this.eventData || snapshot.state !== "VICTORY" || !snapshot.reward) return;
+    this.rewardGranted = true;
+    characterProgression.awardExperience(partySystem.getPartyOrder(), snapshot.reward.experience);
+    this.gameState.addMoney(snapshot.reward.money);
+    if (snapshot.reward.itemId && Object.hasOwn(ITEM_DEFINITIONS, snapshot.reward.itemId)) {
+      inventory.add(snapshot.reward.itemId as keyof typeof ITEM_DEFINITIONS);
+    }
   }
 
   private createBackground(background?: { readonly key: string; readonly url: string }): void {
@@ -173,6 +197,16 @@ export class BattleScene extends Phaser.Scene {
     // Existing normal-enemy DEV background, also a safe image-load fallback.
     this.add.rectangle(DISPLAY.width / 2, DISPLAY.height / 2, DISPLAY.width, DISPLAY.height, 0x1e3154);
     this.add.rectangle(DISPLAY.width / 2, DISPLAY.height * 0.65, DISPLAY.width, DISPLAY.height * 0.35, 0x243b31);
+  }
+
+  /** Shared grounding treatment for normal enemies and bosses; it stays behind the portrait and above the battle background. */
+  private createGroundShadow(portrait: Phaser.GameObjects.Image): Phaser.GameObjects.Ellipse {
+    const width = Math.max(42, portrait.displayWidth * 0.62);
+    const height = Math.max(10, portrait.displayHeight * 0.12);
+    return this.add
+      // Imageの下端より少し下に出して、輪郭や透明領域に隠れない接地影にする。
+      .ellipse(portrait.x, portrait.y + portrait.displayHeight / 2 + Math.max(4, height / 2), width, height, 0x05070b, 0.46)
+      .setDepth(0.5);
   }
 
   private createWindow(bounds: { readonly x: number; readonly y: number; readonly width: number; readonly height: number }): Phaser.GameObjects.Rectangle {
@@ -192,8 +226,8 @@ export class BattleScene extends Phaser.Scene {
       this.tweens.add({ targets: this.statusWindows, alpha: 0.35, duration: 70, yoyo: true, repeat: 1 });
     }
     if (after.state === "VICTORY") {
-      this.tweens.killTweensOf(this.portrait);
-      this.tweens.add({ targets: this.portrait, alpha: 0, duration: 160 });
+      this.tweens.killTweensOf([this.portrait, this.groundShadow]);
+      this.tweens.add({ targets: [this.portrait, this.groundShadow], alpha: 0, duration: 160 });
     }
   }
 
@@ -205,7 +239,13 @@ export class BattleScene extends Phaser.Scene {
     // only on VICTORY. There is currently no flag store; DEV NPCs remain repeatable.
     this.cameras.main.fadeOut(DEV_BATTLE_EVENT_FADE_MS, 0, 0, 0);
     this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
-      this.scene.start(this.eventData!.returnSceneKey, { spawnId: this.eventData!.returnSpawnId, battleEventReturn: true });
+      const event = this.eventData!;
+      const hasExactReturnPosition = event.returnSpawnX !== undefined && event.returnSpawnY !== undefined;
+      this.scene.start(event.returnSceneKey, {
+        spawnId: event.returnSpawnId,
+        ...(hasExactReturnPosition ? { spawnX: event.returnSpawnX, spawnY: event.returnSpawnY, spawnFacing: event.returnFacing } : {}),
+        battleEventReturn: true,
+      });
     });
   }
 

@@ -1,8 +1,10 @@
-# No.01「はじまりのばしょ」StartingPlaceScene 本番Tiled化
+# No.01「はじまりのばしょ」StartingPlaceScene 本番Tiled化（履歴 / legacy）
 
 最終更新: 2026-09-17 JST
 
-## ステータス: **DONE — 通常の「はじめから」導線でStartingPlaceSceneが正式Tiled No.01昼マップを表示し、主人公がCollision付きで歩ける状態になった**
+## 履歴ステータス: **DONE — 当時の通常導線でTiled No.01昼マップを表示した**
+
+> 2026-09-18の正式方針変更後、通常の `StartingPlaceScene` は `assets/maps/starting_place/` の背景画像マップを読む。本文のTiled本番化記録は削除せず、`LegacyTiledStartingPlaceScene` と `MapTestNo01Scene` のlegacy実装記録として保持する。
 
 `docs/PHASE_NO01_TILED_PHASER_INTEGRATION.md`で`?mapTest=no01`のDEV専用ルートに実装したTiled読み込みを`src/systems/TiledMapRuntime.ts`として共通化し、`src/scenes/StartingPlaceScene.ts`(通常のTitle→Opening→StartingPlace導線の到達先)がGraphics DEV_PLACEHOLDER地形描画に代えて同じ正式Tiledマップを表示するようにした。`MapTestNo01Scene`は削除せず、単体テスト用として維持している。
 

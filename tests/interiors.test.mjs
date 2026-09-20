@@ -20,7 +20,8 @@ test("every INTERIORS key matches its own id field", () => {
   }
 });
 
-test("INTERIORS has exactly the 6 ids confirmed in no02_start_town_interiors.json", () => {
+test("INTERIORS has exactly the 5 ids confirmed in no02_start_town_interiors.json", () => {
+  assert.equal(designIds.size, 5);
   assert.deepEqual(Object.keys(INTERIORS).sort(), [...designIds].sort());
 });
 

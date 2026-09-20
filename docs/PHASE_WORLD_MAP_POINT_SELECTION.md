@@ -6,7 +6,7 @@
 
 **PARTIAL — CURRENT背景、通常のNo.01／No.02往復、目的地選択・拡大・ローカルマップ遷移、データ定義のロック表示を実装。SaveSystem接続とNo.03以降は未着手。**
 
-通常起動では、No.01東端またはNo.02西端の出口が `WorldMapScene` を開く。`?worldMapTest=1` は同じSceneを単独で確認するためのDEV入口である。既存の徒歩 `FieldScene`、Tiledマップ、関連テスト・アセットはlegacyとして保持するが、通常の地域間導線には使用しない。
+通常起動では、No.01画像マップの北門EventまたはNo.02西端の出口が `WorldMapScene` を開く。`?worldMapTest=1` は同じSceneを単独で確認するためのDEV入口である。既存の徒歩 `FieldScene`、Tiledマップ、関連テスト・アセットはlegacyとして保持するが、通常の地域間導線には使用しない。
 
 ```text
 http://127.0.0.1:5173/?worldMapTest=1
@@ -22,7 +22,7 @@ http://127.0.0.1:5173/?worldMapTest=1
 
 初期データはNo.01「はじまりのばしょ」とNo.02「はじまりのまち」の2地点だけである。どちらも既存のローカルマップSceneと安全な `fromWorldMap` spawnを参照する。世界地図上を主人公が徒歩で移動したり、Collisionを作ったりはしない。
 
-目的地は `visible` と `unlockFlag` をデータとして持つ。`visible: false` は非表示、表示済みで未解放の地点は`？？？`とし、クリック・タップ・キー選択では決定できない。No.01 / No.02は初期導線として常に選択可能である。No.03以降はSaveSystemの `flags` を渡すよう差し替え、解放状態をSceneへ直書きしない。
+目的地は `visible` と `unlockFlag` をデータとして持つ。`visible: false` は非表示、表示済みで未解放の地点は`？？？`とし、クリック・タップ・キー選択では決定できない。No.01 / No.02は初期導線として常に選択可能である。No.03以降はSaveSystemの `flags` を渡すよう差し替え、解放状態をSceneへ直書きしない。SaveSystemが `flags` を持つまでの暫定として、`map.json` の `developmentUnlockedFlags` を `readInterimUnlockedFlags()` 経由で本番も使う（2026-09-19、ビーエのむらが選択可能）。
 
 ## アセットとデータ
 
@@ -55,5 +55,5 @@ assets/maps/world_map/
 
 1. 正式な世界地理に合わせて、No.03以降をストーリー順に少数ずつ追加し、目的地座標と解放条件をデータ化する。
 2. SaveSystemの `flags` を接続し、No.03以降のロック状態を進行データから導出する。
-3. No.01東端の出口アイコン・短い出発演出を、No.01の背景画像正本化と合わせて視覚調整する。
+3. No.01北門の出口アイコン・短い出発演出を、No.01背景画像と合わせて視覚調整する。
 4. タッチの押しやすさ、ロード時間、メモリをiPhone Safari実機で測定する。

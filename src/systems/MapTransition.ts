@@ -1,6 +1,8 @@
 import Phaser from "phaser";
 import { MAPS } from "../config/maps.ts";
 import type { MapExitTrigger } from "../config/maps.ts";
+import { findEntrySplash } from "../config/mapSplash.ts";
+import { MAP_SPLASH_SCENE_KEY } from "../scenes/MapSplashScene.ts";
 import type { InputSystem } from "./InputSystem.ts";
 
 // DEV_PLACEHOLDER: 出口領域を目視できるようにする仮マーカー色。正式なドア/出入口表現ではない。
@@ -28,6 +30,8 @@ export function createExitZone(
  * 移動 → 入力ロック → 短い暗転 → Scene切替、までを1か所にまとめる。
  * 新Sceneでの spawn 反映とフェードイン・入力解除は各Sceneのcreate()側の責務とする。
  * dataは新Sceneのcreate(data)へそのまま渡す(mapId/spawnId方式・interiorId方式の両方で使う)。
+ * 遷移先が入場演出を持つマップで、かつspawnIdがその対象(世界地図からの入場)なら、暗転のあと
+ * MapSplashScene(画像のフェードイン・アウト)を挟んでから遷移先へ入る(config/mapSplash.ts)。
  */
 export function beginMapTransition(
   scene: Phaser.Scene,
@@ -39,7 +43,9 @@ export function beginMapTransition(
   actions.setLocked(true);
   scene.cameras.main.fadeOut(fadeMs, 0, 0, 0);
   scene.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
-    scene.scene.start(targetSceneKey, data);
+    const resolved = findEntrySplash(targetSceneKey, data.spawnId);
+    if (resolved) scene.scene.start(MAP_SPLASH_SCENE_KEY, { mapId: resolved.mapId, sceneKey: targetSceneKey, data });
+    else scene.scene.start(targetSceneKey, data);
   });
 }
 

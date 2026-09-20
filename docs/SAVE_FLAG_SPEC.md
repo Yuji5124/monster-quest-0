@@ -1,6 +1,6 @@
 # モンスタークエスト0 セーブ・進行フラグ仕様
 
-最終更新: 2026-09-12 JST
+最終更新: 2026-09-19 JST
 
 このファイルはセーブデータとストーリー進行フラグの責務を整理する正本。JSONの基本構造は `DATA_CONTRACTS.md` に従う。
 
@@ -51,6 +51,7 @@
 - 一度きりイベント状態
 
 ### ジャンカード
+- ジャンコイン残数
 - 取得済みカード
 - 取得枚数
 - 次回排出番号
@@ -113,6 +114,12 @@ boss.orochi_zombie_true_defeated
 story.true_ending_reached
 ```
 
+実装済みキー（2026-09-18、`assets/maps/world_map/destinations.json`のNo.03ビーエのむら`unlockFlag`）:
+```text
+story.bie_village_unlocked
+```
+このフラグを実際にtrueへ立てるSaveSystem本体・進行イベントは未実装（TBD_REGISTRY.md参照）。同義のフラグを別名で増やさない。
+
 正確なキー名は実装開始時に一度だけ確定し、同義キーを増やさない。
 
 ## 6. 「もういちど」状態管理
@@ -135,7 +142,7 @@ story.true_ending_reached
 
 ## 8. ジャンカード
 - 全45枚。
-- 1回20円。
+- 1回ジャンコイン1枚。
 - 固定順。
 - ダブりなし。
 - 46回目以降は通常ガチャを回せない。
@@ -146,6 +153,7 @@ story.true_ending_reached
 ```json
 {
   "cardsCollected": 18,
+  "jumpCoinCount": 12,
   "owned": [1,2,3],
   "nextCard": 19
 }

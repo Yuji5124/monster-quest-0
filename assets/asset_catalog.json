@@ -1,6 +1,6 @@
 {
   "project": "Monster Quest 0 - 幻の冒険の書",
-  "updated": "2026-09-18T00:00:00+09:00",
+  "updated": "2026-09-19T00:00:00+09:00",
   "note": "Catalog only. Files marked ready_to_import are not considered present until the file exists at the path. Old female protagonist asset is superseded by the current male protagonist setting.",
   "assets": [
     {
@@ -10,16 +10,256 @@
       "note": "2026-09-18: CURRENT original 1448x1086 high-resolution 4:3 world-map background. It is displayed with LINEAR filtering for point selection and zoom. Destination positions remain separately tracked as DEV_PLACEHOLDER_POSITION."
     },
     {
-      "key": "map.starting_place.image_test.background",
-      "path": "assets/maps/starting_place/background.png",
-      "status": "placeholder",
-      "note": "2026-09-18: 1536x1024 original high-resolution background for the isolated ImageMapTestNo01Scene. DEV_PLACEHOLDER only; not an official No.01 day/night background and does not replace the legacy Tiled map."
+      "key": "map.starting_place.source_night",
+      "path": "assets/maps/reference/reference/はじまりのばしょ_夜.png",
+      "status": "reference",
+      "sha256": "45d2cbd3c2ad747f8436ed9a82ea960c8fc5f7ecbeea6af4d38fe533eeb13205",
+      "note": "2026-09-19: user-supplied SOURCE artwork for No.01 はじまりのばしょ (night), 1448x1086. Copied unmodified into assets/maps/starting_place/background.png; this original is kept and never overwritten/redrawn."
     },
     {
-      "key": "map.starting_place.image_test.collision",
+      "key": "map.starting_place.source_day",
+      "path": "assets/maps/reference/reference/はじまりのばしょ.png",
+      "status": "reference",
+      "sha256": "bb84a1dbfc20e591d17e56b98076de4ea22506161689dbbca55814fcb5411674",
+      "note": "2026-09-19: user-supplied SOURCE artwork for No.01 はじまりのばしょ (day/dusk), 1448x1086. Same composition as reference_night pixel-for-pixel, so the No.01 Collision Mask applies unchanged. Not yet integrated: the day/night switch is TBD."
+    },
+    {
+      "key": "map.starting_place.background",
+      "path": "assets/maps/starting_place/background.png",
+      "status": "current",
+      "sha256": "45d2cbd3c2ad747f8436ed9a82ea960c8fc5f7ecbeea6af4d38fe533eeb13205",
+      "note": "2026-09-19: CURRENT 1448x1086 high-resolution NIGHT BACKGROUND for No.01, an unmodified copy of map.starting_place.source_night (campfire clearing, north trail with stone steps, waterfall on the left, cliff on the right). StartingPlaceScene loads this image-map package with LINEAR filtering. Replaces the 2026-09-18 1536x1024 daytime image (castle gate / wooden bridge), which is no longer in the working tree and remains in git history (commit e26d6bf)."
+    },
+    {
+      "key": "map.starting_place.collision",
       "path": "assets/maps/starting_place/collision.png",
+      "status": "current",
+      "sha256": "ae74f8cdef552c8b241405a56f7b64963d62314c81915eafa23d7537824f1d14",
+      "note": "2026-09-19: CURRENT 1448x1086 binary Collision Mask for the No.01 night background (white=walkable, black=blocked). Generated from the day/night pair's meadow+dirt colours (HSV thresholds, closing/opening, largest component), then hand-corrected: north trail + stone steps added, campfire ring / log / stumps subtracted, cliff-edge fence cut off, 8px safety margin, and walkable cells not 4-connected to the opening spawn on the 16px runtime grid dropped. Valid for the day image too (identical layout). Human-editable PNG; the runtime performs no image analysis. 2026-09-19 update: isolated cells that contain no spawn/exit were blackened on the 8px runtime grid (collisionCellSize is now 8)."
+    },
+    {
+      "key": "map.starting_forest.reference",
+      "path": "assets/maps/reference/reference/はじまりのもり.png",
+      "status": "reference",
+      "sha256": "2bd0dff81dd062239f81b77b52045c17f4d07fa044794d8f5f70efa2662eda11",
+      "note": "2026-09-18: user-supplied SOURCE artwork for the はじまりのもり field, 1536x1024. Copied unmodified into assets/maps/starting_forest/background.png; this original is kept and never overwritten/redrawn."
+    },
+    {
+      "key": "map.starting_forest.background",
+      "path": "assets/maps/starting_forest/background.png",
+      "status": "current",
+      "sha256": "2bd0dff81dd062239f81b77b52045c17f4d07fa044794d8f5f70efa2662eda11",
+      "note": "2026-09-18: CURRENT 1536x1024 high-resolution BACKGROUND for the はじまりのもり field, an unmodified copy of map.starting_forest.reference. StartingForestScene loads this image-map package with LINEAR filtering, reusing the same BACKGROUND/COLLISION/EVENT/OBJECT runtime as No.01."
+    },
+    {
+      "key": "map.starting_forest.collision",
+      "path": "assets/maps/starting_forest/collision.png",
+      "status": "current",
+      "sha256": "9c19d7c1891ad6833f1338a04519b3cb157eb9a8138f62208ad826c4c057c912",
+      "note": "2026-09-18: CURRENT 1536x1024 binary Collision Mask for はじまりのもり (white=walkable, black=blocked), generated by HSV color-thresholding the dirt path in the background, keeping only its largest connected component, dilating it for comfortable player width, and extending it through the south fence gate and north stone archway. Human-editable PNG; the runtime performs no image analysis."
+    },
+    {
+      "key": "map.bie_village.reference",
+      "path": "assets/maps/reference/reference/ビーエのむら.png",
+      "status": "reference",
+      "sha256": "e8de87e53d838a5fba42e9fba5b553622d4d4364690998ded047c22284ba7b0c",
+      "note": "2026-09-18: user-supplied SOURCE artwork for No.03 ビーエのむら, 1536x1024. Copied unmodified into assets/maps/bie_village/background.png; this original is kept and never overwritten/redrawn."
+    },
+    {
+      "key": "map.bie_village.reference_image",
+      "path": "assets/maps/reference/reference/ビーエのむら_イメージ.png",
+      "status": "reference",
+      "sha256": "c41fac96435ac91c6cfeb8006dd56ecae354146f57d34ab347305ba934e5732c",
+      "note": "2026-09-18: mood/composition REFERENCE only (1448x1086, perspective establishing shot), not the walkable local-map background. Not used as CURRENT."
+    },
+    {
+      "key": "map.bie_village.background",
+      "path": "assets/maps/bie_village/background.png",
+      "status": "current",
+      "sha256": "e8de87e53d838a5fba42e9fba5b553622d4d4364690998ded047c22284ba7b0c",
+      "note": "2026-09-18: CURRENT 1536x1024 high-resolution BACKGROUND for No.03 ビーエのむら, an unmodified copy of map.bie_village.reference. BieVillageScene loads this image-map package with LINEAR filtering, reusing the same BACKGROUND/COLLISION/EVENT/OBJECT runtime as No.01."
+    },
+    {
+      "key": "map.bie_village.collision",
+      "path": "assets/maps/bie_village/collision.png",
+      "status": "current",
+      "sha256": "bfc506fb05d32be1100da0a326c5c1cbf5d48899994c8824e63a0c58c098ba25",
+      "note": "2026-09-18: CURRENT 1536x1024 binary Collision Mask for ビーエのむら (white=walkable, black=blocked), generated by HSV color-thresholding the plaza stone + dirt roads, keeping the connected road/plaza network (merged with the separately-detected bridge segment), subtracting explicit building/well footprints and the river, dilating for comfortable player width, and manually bridging two spots where decorative art (a low garden wall, the tree canopy edge) broke the color mask despite being walkable in the artwork. Single north-gate exit; other path segments that run off-frame are left as unmarked dead ends. Human-editable PNG; the runtime performs no image analysis."
+    },
+    {
+      "key": "map.rainland_forest_1.reference",
+      "path": "assets/maps/reference/reference/レインランドのもり　その１.png",
+      "status": "reference",
+      "sha256": "14d1194aae1c40047ba188c9a160313f05cf96bb839dbbdb7ff7e9976ffd07a6",
+      "note": "2026-09-19: user-supplied SOURCE artwork for レインランドのもり（その1）, 1448x1086. Copied unmodified into assets/maps/rainland_forest_1/background.png; this original is kept and never overwritten/redrawn."
+    },
+    {
+      "key": "map.rainland_forest_1.background",
+      "path": "assets/maps/rainland_forest_1/background.png",
+      "status": "current",
+      "sha256": "14d1194aae1c40047ba188c9a160313f05cf96bb839dbbdb7ff7e9976ffd07a6",
+      "note": "2026-09-19: CURRENT 1448x1086 high-resolution BACKGROUND for レインランドのもり（その1）, an unmodified copy of map.rainland_forest_1.reference. RainlandForest1Scene loads this image-map package with LINEAR filtering (worldScale 1.5), reusing the No.01 BACKGROUND/COLLISION/EVENT/OBJECT runtime."
+    },
+    {
+      "key": "map.rainland_forest_1.collision",
+      "path": "assets/maps/rainland_forest_1/collision.png",
+      "status": "current",
+      "sha256": "91594795ef57a1851fa52c95c4123c622f0e829f8c8cb3e56917d7af9dc46715",
+      "note": "2026-09-19: CURRENT 1448x1086 binary Collision Mask for レインランドのもり（その1） (white=walkable, black=blocked). Generated by HSV-thresholding the tan dirt trails / wooden bridges / wooden stairs, then hand-corrected: stone stairs and ruin altar platforms added, trail gaps hidden by tree canopies bridged, trail ends extended to the map border, props/piers/stumps and cells not 4-connected to the entrance on the 16px runtime grid removed. Water, waterfalls, cliffs and forest are blocked. Human-editable PNG; the runtime performs no image analysis. 2026-09-19 update: the walkable area was widened into the grass verge (never into water, waterfalls or grey stone), bridges (planks are only ~29px) and the gaps hidden by tree canopies were widened, and the runtime cell size is now 8px, so the real 24x24 player body can walk every trail, bridge, staircase and ruin (tests/bodyPassability.test.mjs)."
+    },
+    {
+      "key": "map.rainland_forest_2.reference",
+      "path": "assets/maps/reference/reference/レインランドのもり　その2.png",
+      "status": "reference",
+      "sha256": "8aa95f49df7ed837ee3ca6dbbbd61292fdf6792fad7dd0d41d3d4a483fd86242",
+      "note": "2026-09-19: user-supplied SOURCE artwork for レインランドのもり（その2）, 1448x1086. Copied unmodified into assets/maps/rainland_forest_2/background.png; this original is kept and never overwritten/redrawn."
+    },
+    {
+      "key": "map.rainland_forest_2.background",
+      "path": "assets/maps/rainland_forest_2/background.png",
+      "status": "current",
+      "sha256": "8aa95f49df7ed837ee3ca6dbbbd61292fdf6792fad7dd0d41d3d4a483fd86242",
+      "note": "2026-09-19: CURRENT 1448x1086 high-resolution BACKGROUND for レインランドのもり（その2）, an unmodified copy of map.rainland_forest_2.reference. RainlandForest2Scene loads this image-map package with LINEAR filtering (worldScale 1.5), reusing the No.01 BACKGROUND/COLLISION/EVENT/OBJECT runtime."
+    },
+    {
+      "key": "map.rainland_forest_2.collision",
+      "path": "assets/maps/rainland_forest_2/collision.png",
+      "status": "current",
+      "sha256": "6f885b946c51b5db1a00d60f4b92c2f1d0b195ee429ad80b8320add4c90ea193",
+      "note": "2026-09-19: CURRENT 1448x1086 binary Collision Mask for レインランドのもり（その2） (white=walkable, black=blocked). Generated by HSV-thresholding the tan dirt trails / wooden bridges / wooden stairs, then hand-corrected: stone stairs and ruin altar platforms added, trail gaps hidden by tree canopies bridged, trail ends extended to the map border, props/piers/stumps and cells not 4-connected to the entrance on the 16px runtime grid removed. Water, waterfalls, cliffs and forest are blocked. Human-editable PNG; the runtime performs no image analysis. 2026-09-19 update: the walkable area was widened into the grass verge (never into water, waterfalls or grey stone), bridges (planks are only ~29px) and the gaps hidden by tree canopies were widened, and the runtime cell size is now 8px, so the real 24x24 player body can walk every trail, bridge, staircase and ruin (tests/bodyPassability.test.mjs)."
+    },
+    {
+      "key": "map.rainland_castle_town.reference",
+      "path": "assets/maps/reference/reference/レインランドじょうかまち.png",
+      "status": "reference",
+      "sha256": "21d24a648fdfef71281d89c4466336d2d6822ac6c122f8b41e547e1cbc33f7e5",
+      "note": "2026-09-19: user-supplied SOURCE artwork for レインランドじょうかまち (top-down castle-town map), 1447x1087. Copied unmodified into assets/maps/rainland_castle_town/background.png; this original is kept and never overwritten/redrawn."
+    },
+    {
+      "key": "map.rainland_castle_town.background",
+      "path": "assets/maps/rainland_castle_town/background.png",
+      "status": "current",
+      "sha256": "21d24a648fdfef71281d89c4466336d2d6822ac6c122f8b41e547e1cbc33f7e5",
+      "note": "2026-09-19: CURRENT 1447x1087 high-resolution BACKGROUND for レインランドじょうかまち, an unmodified copy of map.rainland_castle_town.reference. RainlandCastleTownScene loads this image-map package with LINEAR filtering (worldScale 1.5), reusing the No.01 BACKGROUND/COLLISION/EVENT/OBJECT runtime."
+    },
+    {
+      "key": "map.rainland_castle_town.collision",
+      "path": "assets/maps/rainland_castle_town/collision.png",
+      "status": "current",
+      "sha256": "102346a802c5f9e5134899da6d29b245e875aa69a86b53a88a54fff7edc6383d",
+      "note": "2026-09-19: CURRENT 1447x1087 binary Collision Mask (white=walkable, black=blocked). Generated from the cobblestone colour (HSV), joined across seams, then hand-corrected: the two moat-bridge decks and a cobble strip north of the blue house were added; the pier, the small east shop, the castle gate and two dead-end wall-top slivers were removed; the roads were widened by 11px onto the bright lawn verge (never onto canopy, roofs, walls, water or fences); cells not 4-connected to the south gate on the 8px runtime grid were dropped. Houses, fountain, market stalls, moat, walls and the pier are blocked. Verified with the real 24x24 body (tests/bodyPassability.test.mjs)."
+    },
+    {
+      "key": "map.rainland_castle_town.entry_splash_reference",
+      "path": "assets/maps/reference/reference/レインランドじょう_イメージ.png",
+      "status": "reference",
+      "sha256": "83e2ab650e196e599d7127f7ecc8f00e270582568848f98897ae9b5e2b6e500b",
+      "note": "2026-09-19: user-supplied SOURCE artwork (1448x1086 establishing shot of the castle and its waterfalls) for the castle-town entry projection. Copied unmodified into assets/maps/rainland_castle_town/entry_splash.png; this original is kept and never overwritten/redrawn. It is not a walkable background."
+    },
+    {
+      "key": "map.rainland_castle_town.entry_splash",
+      "path": "assets/maps/rainland_castle_town/entry_splash.png",
+      "status": "current",
+      "sha256": "83e2ab650e196e599d7127f7ecc8f00e270582568848f98897ae9b5e2b6e500b",
+      "note": "2026-09-19: CURRENT entry-splash image for レインランドじょうかまち, an unmodified copy of map.rainland_castle_town.entry_splash_reference. MapSplashScene fades it in (1s), holds it (3s) and fades it out (1s) - 5s in total - when the player enters from the world map (src/config/mapSplash.ts)."
+    },
+    {
+      "key": "map.rainland_castle.voxel_reference",
+      "path": "assets/maps/reference/reference/レインランドじょう_マイクラ風.png",
+      "status": "reference",
+      "sha256": "580b94bfd9a846f33effaf868b0298d9e917520ded515670cc7ddf121fdea970",
+      "note": "2026-09-19: user-supplied 1448x1086 first-person view of a block-built (Minecraft-style) castle hall. It is NOT a top-down walkable RPG map and is not used as any background. Kept as the visual reference for the planned voxel-castle replacement of No.05 (see docs/MAP_FLOW_SPEC.md 4.13). Never overwritten/redrawn."
+    },
+    {
+      "key": "map.rainland_castle.background",
+      "path": "assets/maps/rainland_castle/background.png",
       "status": "placeholder",
-      "note": "2026-09-18: human-editable 1536x1024 binary collision mask for the ImageMapTestNo01Scene (white=walkable, black=blocked). DEV_PLACEHOLDER authored for runtime validation; future production flow may generate its initial version from background analysis."
+      "sha256": "5461ad30a046f2f9b59606a816bbfbe2ef66e5cd1d123299226abce0ea11bd08",
+      "note": "2026-09-19: DEV_PLACEHOLDER 1448x1086 flat-colour layout diagram (ASCII labels only) for No.05 レインランドじょう. No user-supplied walkable castle interior exists yet. Generated together with collision.png by tools/build_rainland_castle_placeholder.py. Replace with the real background, then rebuild collision.png and update map.json width/height/assetStatus (CURRENT); no code change is needed."
+    },
+    {
+      "key": "map.rainland_castle.collision",
+      "path": "assets/maps/rainland_castle/collision.png",
+      "status": "placeholder",
+      "sha256": "3dccdb0cd2c08d23c2ef28468901c6b778b8381c29eae504b28a1f796ce97c30",
+      "note": "2026-09-19: DEV_PLACEHOLDER 1448x1086 binary Collision Mask (white=walkable, black=blocked) drawn from the same layout description as the placeholder background (rectangles snapped to the 8px runtime cell grid). Verified with the real 24x24 body and the NPC bodies blocked (tests/rainlandCastle.test.mjs). Redo from the real background when it arrives."
+    },
+    {
+      "key": "map.majin_cave.entry_reference",
+      "path": "assets/maps/reference/reference/まじんのどうくつ.png",
+      "status": "reference",
+      "sha256": "b979e24208b60e083aca83683e82104bba963c57841b2a36874c0705a8c1c0de",
+      "note": "2026-09-19: user-supplied 1448x1086 establishing artwork for No.08 まじんのどうくつ. Copied unmodified to map.majin_cave_1.entry_splash for the world-map entry presentation; the original is preserved."
+    },
+    {
+      "key": "map.majin_cave_1.reference",
+      "path": "assets/maps/reference/reference/まじんのどうくつ_その１.png",
+      "status": "reference",
+      "sha256": "9d43e50c34e73ea4b7145823af16b5c39f7e8dbe7b6f5e7e2be598e4e98d1e7c",
+      "note": "2026-09-19: user-supplied 1448x1086 walkable-cave SOURCE for No.08 page 1. Preserved and copied unmodified into the CURRENT background."
+    },
+    {
+      "key": "map.majin_cave_1.background",
+      "path": "assets/maps/majin_cave_1/background.png",
+      "status": "current",
+      "sha256": "9d43e50c34e73ea4b7145823af16b5c39f7e8dbe7b6f5e7e2be598e4e98d1e7c",
+      "note": "2026-09-19: CURRENT 1448x1086 background for No.08 まじんのどうくつ（その1）, an unmodified copy of map.majin_cave_1.reference."
+    },
+    {
+      "key": "map.majin_cave_1.collision",
+      "path": "assets/maps/majin_cave_1/collision.png",
+      "status": "current",
+      "sha256": "0e8e6eb48977c6693168c3d6ab48d3a8ba055d4234fa1e5ff5e2e5c51eefc984",
+      "note": "2026-09-19: CURRENT 1448x1086 binary Collision Mask for No.08 page 1 (white=walkable, black=blocked). A wide, connected initial route follows the pictured stone approach, bridges, and upper passages. Runtime reads only this human-editable mask; visual tuning remains pending."
+    },
+    {
+      "key": "map.majin_cave_1.entry_splash",
+      "path": "assets/maps/majin_cave_1/entry_splash.png",
+      "status": "current",
+      "sha256": "b979e24208b60e083aca83683e82104bba963c57841b2a36874c0705a8c1c0de",
+      "note": "2026-09-19: CURRENT 1448x1086 entry splash, an unmodified copy of map.majin_cave.entry_reference. It fades in and out in 3.5 seconds when entering No.08 from the world map."
+    },
+    {
+      "key": "map.majin_cave_2.reference",
+      "path": "assets/maps/reference/reference/まじんのどうくつ_その2.png",
+      "status": "reference",
+      "sha256": "1107d59cf2264571211f26f9db1ee0bc6c518a2876d65514aa75f8c5710b924a",
+      "note": "2026-09-19: user-supplied 1448x1086 walkable-cave SOURCE for No.08 page 2. Preserved and copied unmodified into the CURRENT background."
+    },
+    {
+      "key": "map.majin_cave_2.background",
+      "path": "assets/maps/majin_cave_2/background.png",
+      "status": "current",
+      "sha256": "1107d59cf2264571211f26f9db1ee0bc6c518a2876d65514aa75f8c5710b924a",
+      "note": "2026-09-19: CURRENT 1448x1086 background for No.08 まじんのどうくつ（その2）, an unmodified copy of map.majin_cave_2.reference."
+    },
+    {
+      "key": "map.majin_cave_2.collision",
+      "path": "assets/maps/majin_cave_2/collision.png",
+      "status": "current",
+      "sha256": "023591d85aa481fae5a8cfa2325aca5be5bbc1dddf54f2fad7a5a723c46d7ebb",
+      "note": "2026-09-19: CURRENT 1448x1086 binary Collision Mask for No.08 page 2 (white=walkable, black=blocked). A wide, connected initial route follows the pictured stone approaches, bridge, and stairs. Runtime reads only this human-editable mask; visual tuning remains pending."
+    },
+    {
+      "key": "map.majin_cave_3.reference",
+      "path": "assets/maps/reference/reference/まじんのどうくつ_その3.png",
+      "status": "reference",
+      "sha256": "1d23b3ff12fe75fb48cc6819ebe0f79abdcd4f0ed5c115634b292f0409a6d56c",
+      "note": "2026-09-19: user-supplied 1448x1086 walkable-cave SOURCE for No.08 page 3. Preserved and copied unmodified into the CURRENT background."
+    },
+    {
+      "key": "map.majin_cave_3.background",
+      "path": "assets/maps/majin_cave_3/background.png",
+      "status": "current",
+      "sha256": "1d23b3ff12fe75fb48cc6819ebe0f79abdcd4f0ed5c115634b292f0409a6d56c",
+      "note": "2026-09-19: CURRENT 1448x1086 background for No.08 まじんのどうくつ（その3）, an unmodified copy of map.majin_cave_3.reference."
+    },
+    {
+      "key": "map.majin_cave_3.collision",
+      "path": "assets/maps/majin_cave_3/collision.png",
+      "status": "current",
+      "sha256": "24361fcbda7e586ab410a377ab4449e1b2fa38e282da58e27a982159e0ee1b01",
+      "note": "2026-09-19: CURRENT 1448x1086 binary Collision Mask for No.08 page 3 (white=walkable, black=blocked). A wide, connected initial route follows the pictured stone approach to the upper ritual platform. Runtime reads only this human-editable mask; visual tuning remains pending."
     },
     {
       "key": "map.tileset.dev_placeholder_outdoor",
@@ -88,6 +328,18 @@
       "note": "2026-09-15, first pass at a real outdoor tileset (1448x1086 RGB). Measured native cell pitch is ~71-72px, not 32px or a clean multiple of it; no alpha channel; cliff/long-bridge art is drawn as one continuous mural rather than independent repeatable tiles. Good style/color/tree-size direction, but not sliceable into a production .tsj as-is. See docs/PHASE_NO01_OUTDOOR_TILESET_SPEC.md for the full evaluation and the regeneration checklist. Do not treat as ready_to_import until re-exported at a clean 32px multiple with transparency and modular cliff/bridge pieces."
     },
     {
+      "key": "battle.monster.tamago_ghost",
+      "path": "assets/monsters/source/portraits/mq0_monster_001_0d78a307c8.png",
+      "status": "reference",
+      "note": "2026-09-19: user-confirmed たまゴースト portrait. BattleScene currently uses this transparent source image for the はじまりのもり DEV encounter; final battle statistics remain TBD."
+    },
+    {
+      "key": "battle.monster.purin",
+      "path": "assets/monsters/source/portraits/mq0_monster_003_1e2e150bba.png",
+      "status": "reference",
+      "note": "2026-09-19: user-confirmed プリン portrait. BattleScene currently uses this transparent source image for the はじまりのもり DEV encounter; final battle statistics remain TBD."
+    },
+    {
       "key": "battle.monster.demas",
       "path": "assets/monsters/source/portraits/mq0_monster_030_54c4041dec.png",
       "status": "reference",
@@ -98,6 +350,12 @@
       "path": "assets/battle/backgrounds/reference/mq0_battle_bg_008_c44a414baf.png",
       "status": "reference",
       "note": "Existing boss arena reused for DEV Demas battle, per user request 2026-09-14. Not a finalized No.16 tower interior/background."
+    },
+    {
+      "key": "battle.bg.starting_forest",
+      "path": "assets/battle/backgrounds/reference/mq0_battle_bg_013_5ecb71635c.png",
+      "status": "reference",
+      "note": "Reused as the はじまりのもり (starting_forest) random-encounter battle background for DEV_BATTLE_MONSTERS 001/003, per user request 2026-09-19. Not a finalized MONSTER_SPEC.md background."
     },
     {
       "key": "title.logo.main",
@@ -141,26 +399,105 @@
       "note": "CURRENT title background adopted by user 2026-09-13; originally cataloged as a world map REFERENCE image, repurposed behind the title logo. Original retained, do not delete. Runtime copy: public/assets/ui/title/mq0_title_background.png. Old placeholder path assets/title/title_background.png was never created."
     },
     {
-      "key": "char.hero.walk",
+      "key": "title.opening_memory.01",
+      "path": "assets/title/opening_memories/memory_01.png",
+      "status": "current",
+      "sha256": "f0524ab5c0aa1e9252b74ec478d0927c6fc651a498f861704cce6b76a081b69e",
+      "note": "Opening memory montage image 1/6 (1672x941), provided by user 2026-09-19. Byte-identical copy of assets/title/reference/A.png (original retained). Loaded by OpeningIntroScene (Produced by ARROWARE -> memories -> title). C.png does not exist; the user's list is A,B,D,E,F,G."
+    },
+    {
+      "key": "title.opening_memory.02",
+      "path": "assets/title/opening_memories/memory_02.png",
+      "status": "current",
+      "sha256": "95a69d05928640f9ccc20c3aa61b910b3ef0bab4762c9f987b68331f5ccb123d",
+      "note": "Opening memory montage image 2/6 (1672x941), provided by user 2026-09-19. Byte-identical copy of assets/title/reference/B.png (original retained). Loaded by OpeningIntroScene (Produced by ARROWARE -> memories -> title). C.png does not exist; the user's list is A,B,D,E,F,G."
+    },
+    {
+      "key": "title.opening_memory.03",
+      "path": "assets/title/opening_memories/memory_03.png",
+      "status": "current",
+      "sha256": "42bb9ae3218421be7712b8b08444d8d894f83b357182cb0a9c2fc93b339acb5a",
+      "note": "Opening memory montage image 3/6 (1672x941), provided by user 2026-09-19. Byte-identical copy of assets/title/reference/D.png (original retained). Loaded by OpeningIntroScene (Produced by ARROWARE -> memories -> title). C.png does not exist; the user's list is A,B,D,E,F,G."
+    },
+    {
+      "key": "title.opening_memory.04",
+      "path": "assets/title/opening_memories/memory_04.png",
+      "status": "current",
+      "sha256": "a44e4ec1db4da842838bcb867a13ff280a84f2d219678b905964deebed342fa5",
+      "note": "Opening memory montage image 4/6 (1672x941), provided by user 2026-09-19. Byte-identical copy of assets/title/reference/E.png (original retained). Loaded by OpeningIntroScene (Produced by ARROWARE -> memories -> title). C.png does not exist; the user's list is A,B,D,E,F,G."
+    },
+    {
+      "key": "title.opening_memory.05",
+      "path": "assets/title/opening_memories/memory_05.png",
+      "status": "current",
+      "sha256": "1ceb957188d354aa063dda505d529802aee0037fdd8c17ccff3369bc170e4c14",
+      "note": "Opening memory montage image 5/6 (1672x941), provided by user 2026-09-19. Byte-identical copy of assets/title/reference/F.png (original retained). Loaded by OpeningIntroScene (Produced by ARROWARE -> memories -> title). C.png does not exist; the user's list is A,B,D,E,F,G."
+    },
+      {
+        "key": "title.opening_memory.06",
+        "path": "assets/title/opening_memories/memory_06.png",
+        "status": "current",
+        "sha256": "31ca4b7b2c84e776739b9c826c41d3f053198b85c9d5025156f42ee4a948b8bb",
+        "note": "Opening memory montage image 6/6 (1672x941), provided by user 2026-09-19. Byte-identical copy of assets/title/reference/G.png (original retained). Loaded by OpeningIntroScene (Produced by ARROWARE -> memories -> title). C.png does not exist; the user's list is A,B,D,E,F,G."
+      },
+      {
+        "key": "ui.gacha.jump_coin_turn",
+        "path": "assets/title/reference/I.png",
+        "status": "current",
+        "sha256": "73957f79481b82ffcb18ea353e5b8a239e0c8dd2c53c39236e344c16698b4476",
+        "note": "User-supplied 2026-09-19. Current pre-card Jump Card gacha image: insert one ジャンコイン and turn the lever. Loaded directly by JumpCardGachaScene; original path retained. 1093x1439."
+      },
+      {
+        "key": "ui.gacha.jump_coin_insert",
+        "path": "assets/title/reference/H.png",
+        "status": "current",
+        "sha256": "57bb6dc480a283eab095c426b232dcdbdbdc6d099f800040177686441df5e4bb",
+        "note": "User-supplied 2026-09-19. Current pre-card Jump Card gacha image: ジャンコイン insertion. Loaded directly by JumpCardGachaScene after ui.gacha.jump_coin_turn; original path retained. 1024x1536."
+      },
+      {
+        "key": "char.hero.walk",
       "path": "assets/characters/playable/hero_walk.png",
       "status": "superseded",
       "note": "Old female hero-style protagonist. Do not use for current protagonist."
     },
     {
+      "key": "char.protagonist.reference",
+      "path": "assets/characters/reference/reference/主人公/",
+      "status": "reference",
+      "note": "2026-09-19: user-supplied 12-image walk-cycle reference (正面/うしろ/右/左 x 3 frames each, 1254x1254 RGBA renders). Source for char.protagonist.walk via tools/build_protagonist_sheet.py. Kept unmodified; do not overwrite."
+    },
+    {
       "key": "char.protagonist.walk",
       "path": "assets/characters/playable/protagonist_walk.png",
-      "status": "needs_review",
-      "note": "Current male protagonist asset must be created/approved."
+      "status": "current",
+      "sha256": "9c931b340de782747e9f5fce469af62d37504444baf709e6667b799f33242216",
+      "note": "2026-09-19: CURRENT male protagonist walk sheet, built from char.protagonist.reference by tools/build_protagonist_sheet.py (alpha-trim -> scale-normalize -> premultiplied downscale to 64px character height -> common 54x70 cell, feet baseline-aligned). 3 columns (frame1-3) x 4 rows (down/left/right/up); Player.ts reads it via src/config/protagonistSprite.ts. Supersedes char.hero.walk. Regenerated same day: alpha_trim originally used the raw alpha channel's bounding box, which several reference renders' scattered near-invisible noise specks inflated to near full-canvas, throwing off the per-frame height normalization and making 左3 render visibly oversized; alpha_trim now thresholds at alpha>=128 before computing the bbox (tools/character_walk_sheet.py)."
+    },
+    {
+      "key": "char.tarosa.reference",
+      "path": "assets/characters/reference/reference/タロサ/",
+      "status": "reference",
+      "note": "2026-09-19: user-supplied 12-image walk-cycle reference (正面/うしろ/右/左 x 3 frames each, ~1254x1254 RGBA renders). Source for char.tarosa.walk via tools/build_tarosa_sheet.py. Kept unmodified; do not overwrite."
     },
     {
       "key": "char.tarosa.walk",
       "path": "assets/characters/playable/tarosa_walk.png",
-      "status": "ready_to_import"
+      "status": "current",
+      "sha256": "51eb50e9bb6e7b2c1fa57e0f4bdc6aaf50eca00fca2db05c8d0c8d84eef49d11",
+      "note": "2026-09-19: CURRENT Tarosa walk sheet, built from char.tarosa.reference by tools/build_tarosa_sheet.py (same pipeline as char.protagonist.walk: alpha-trim -> scale-normalize -> premultiplied downscale to 64px character height -> feet baseline-aligned cell). 3 columns (frame1-3) x 4 rows (down/left/right/up), 44x70 cell. PartyFollowers.ts reads it via src/config/tarosaSprite.ts and animates walk/idle based on whether she's currently moving along the leader's trail. Regenerated same day alongside char.protagonist.walk to pick up the alpha_trim noise-speck fix in tools/character_walk_sheet.py."
+    },
+    {
+      "key": "char.mirei.reference",
+      "path": "assets/characters/reference/reference/ミレイ/",
+      "status": "reference",
+      "note": "2026-09-19: user-supplied 12-image walk-cycle reference (正面/うしろ/右/左 x 3 frames each, ~1254x1254 RGBA renders). Source for char.mirei.walk via tools/build_mirei_sheet.py. 左3.png is fully opaque (a solid black background baked in, not real transparency); kept unmodified per source-of-truth policy, but build_mirei_sheet.py substitutes a second copy of 左1.png in that slot instead of using it. Do not overwrite."
     },
     {
       "key": "char.mirei.walk",
       "path": "assets/characters/playable/mirei_walk.png",
-      "status": "ready_to_import"
+      "status": "current",
+      "sha256": "c351f14e13d45100746c965e480b82c58fbde10d8e4580f380a693be6c6b5608",
+      "note": "2026-09-19: CURRENT Mirei walk sheet, built from char.mirei.reference by tools/build_mirei_sheet.py (same pipeline as char.protagonist.walk/char.tarosa.walk). 3 columns (frame1-3) x 4 rows (down/left/right/up), 54x70 cell, 64px character height. PartyFollowers.ts reads it via src/config/mireiSprite.ts; replaces the DEV_PARTY_PLACEHOLDER_SPRITE solid-color Rectangle fallback."
     },
     {
       "key": "char.watabe.walk",
@@ -186,15 +523,15 @@
     },
     {
       "key": "map.starting_place.night",
-      "path": null,
-      "status": "needs_review",
-      "note": "No.01 はじまりのばしょ night version. Implementation may reuse tiles with lighting."
+      "path": "assets/maps/starting_place/background.png",
+      "status": "current",
+      "note": "2026-09-19: No.01 はじまりのばしょ CURRENT night background (the opening scene). It is the BACKGROUND source of the image-map package; see map.starting_place.background."
     },
     {
       "key": "map.starting_place.day",
-      "path": null,
-      "status": "needs_review",
-      "note": "No.01 はじまりのばしょ day version."
+      "path": "assets/maps/reference/reference/はじまりのばしょ.png",
+      "status": "reference",
+      "note": "2026-09-19: No.01 はじまりのばしょ day/dusk variant (same composition as the night background). Provided as SOURCE artwork only; switching the runtime to it after the night section is TBD (see map.starting_place.source_day)."
     },
     {
       "key": "effect.campfire",

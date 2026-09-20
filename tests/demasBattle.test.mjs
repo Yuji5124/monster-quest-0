@@ -146,9 +146,17 @@ test("Demas NPC uses the existing event contract and Tiled properties resolve to
   assert.ok(town.npcs.some(npc => npc.dialogueId === "dev_demas_battle_npc"));
   const spawn = town.spawns[event.returnSpawnId];
   assert.ok(spawn);
-  // Return body clears all NPCs and the top/bottom buildings in the existing plaza.
+  // Return body clears all NPCs and every building's footprint in the current town layout.
   assert.ok(town.npcs.every(npc => Math.abs(npc.position.y - spawn.y) > 42));
-  assert.ok(spawn.y > 234 && spawn.y < 486);
+  const halfW = 15;
+  const halfH = 21;
+  for (const building of town.buildings) {
+    const f = building.footprint;
+    const overlap =
+      spawn.x + halfW > f.x && spawn.x - halfW < f.x + f.width &&
+      spawn.y + halfH > f.y && spawn.y - halfH < f.y + f.height;
+    assert.equal(overlap, false, `${building.id} overlaps the Demas return spawn`);
+  }
   for (const props of [{}, { eventType: "battle", eventId: "x", enemyId: "toString" }, { eventType: "battle", eventId: "", enemyId: "demas" }]) {
     assert.equal(battleEventFromProperties(props, { returnSceneKey: "StartingTownScene", returnSpawnId: event.returnSpawnId }), undefined);
   }

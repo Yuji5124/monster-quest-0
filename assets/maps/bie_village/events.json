@@ -1,0 +1,17 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_bie_village_north_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 679, "y": 0, "width": 63, "height": 110 },
+      "commands": [
+        {
+          "type": "world-map",
+          "worldMapEntryId": "from_bie_village"
+        }
+      ]
+    }
+  ]
+}

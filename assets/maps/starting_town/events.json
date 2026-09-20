@@ -1,0 +1,17 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_starting_town_west_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 0, "y": 535, "width": 35, "height": 85 },
+      "commands": [
+        {
+          "type": "world-map",
+          "worldMapEntryId": "from_starting_town"
+        }
+      ]
+    }
+  ]
+}

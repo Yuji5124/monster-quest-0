@@ -10,7 +10,10 @@ export interface WorldMapManifest {
   readonly destinations: string;
   /** Stable local-map exit IDs mapped to their current point on this background. */
   readonly entryDestinationIds: Readonly<Record<string, string>>;
-  /** DEV scene only. Production resolves unlocks from the save-data flag set. */
+  /**
+   * Interim stand-in for the saved flag set (DATA_CONTRACTS.md §8.1) while the SaveSystem exposes no flags.
+   * Read through readInterimUnlockedFlags(); once real flags exist this value stops being progress state.
+   */
   readonly developmentUnlockedFlags: readonly string[];
   readonly assetStatus: "NEEDS_REVIEW" | "CURRENT";
 }
@@ -115,6 +118,14 @@ export function resolveWorldMapDestinations(
         displayName: unlocked ? definition.name : "？？？",
       };
     });
+}
+
+/**
+ * The single place that stands in for "flags from the save data" until the SaveSystem provides them.
+ * Replace only this function's body (and its callers' arguments) when real flags are wired in.
+ */
+export function readInterimUnlockedFlags(manifest: WorldMapManifest): ReadonlySet<string> {
+  return new Set(manifest.developmentUnlockedFlags);
 }
 
 /** Resolves a local-map exit entry ID to the corresponding destination definition. */
