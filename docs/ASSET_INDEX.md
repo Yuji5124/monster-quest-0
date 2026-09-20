@@ -237,16 +237,17 @@ Collisionは石床・橋・階段を結ぶ広めの初期導線として作成�
 
 ### レインランドじょう（No.05）
 
-2026-09-19追加。`MAP_FLOW_SPEC.md` §4.13。城内の歩行用の正式画像は未提供のため、背景・Collisionは**DEV_PLACEHOLDER**である。
+2026-09-19追加、2026-09-20に正式背景へ差し替え。`MAP_FLOW_SPEC.md` §4.13。
 
 | パス | 用途 | 状態 |
 |---|---|---|
-| `assets/maps/rainland_castle/background.png` | 単色レイアウトの仮背景（1448×1086、ASCIIラベルのみ）。`tools/build_rainland_castle_placeholder.py`が生成。正式背景が届いたら差し替える | DEV_PLACEHOLDER |
-| `assets/maps/rainland_castle/collision.png` | 同じ定義から生成した仮の二値Collision Mask（8pxセル格子に揃えてある）。正式背景から作り直す | DEV_PLACEHOLDER |
+| `assets/maps/reference/reference/レインランドじょう_城内.png` | ユーザー提供のSOURCE原画（城内の俯瞰マップ、1448×1086）。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/rainland_castle/background.png` | 上記原画の無加工コピー（バイト一致）。CURRENT背景 | CURRENT |
+| `assets/maps/rainland_castle/collision.png` | CURRENT二値Collision Mask。`tools/build_rainland_castle_collision.py`が背景から測った歩行領域・障害物の矩形から生成（8pxセル格子に揃え、壁より少し内側）。白=歩行可能／黒=歩行不可 | CURRENT |
 | `assets/maps/reference/reference/レインランドじょう_マイクラ風.png` | ユーザー提供の参照画像（ブロック城の一人称視点、1448×1086）。歩行背景ではなく、将来のブロック城化の見た目の参照。削除・上書き・再描画はしない | REFERENCE |
 | `assets/maps/reference/reference/レインランドじょう_イメージ.png` | 城の外観（町の入場演出用、上記「レインランドじょうかまち」参照）。城内の背景としては使わない | REFERENCE |
 
-差し替え手順: 正式背景を`background.png`へ置く → その画像からCollisionを作って`collision.png`を置く（画像解析＋人間の修正、`MAP_SYSTEM.md`）→ `map.json`の`width`/`height`と`assetStatus`（CURRENT）を更新（Sceneのコードは変更しない）→ `maps.ts`のspawn・NPC座標と`events.json`を測り直す → `tests/rainlandCastle.test.mjs`の仮背景前提を更新する。
+差し替え手順（背景をもう一度差し替える場合）: 新しい背景を`background.png`へ置く（原本は`assets/maps/reference/reference/`へ保存）→ `tools/build_rainland_castle_collision.py`の矩形を新しい絵に合わせて測り直し、実行して`collision.png`を作り直す（`--preview`で確認）→ `map.json`の`width`/`height`を更新（Sceneのコードは変更しない）→ `maps.ts`のspawn・NPC座標と`events.json`の座標を置き直す → `tests/rainlandCastle.test.mjs`の歩行可否の確認地点を更新する。
 
 ### ビーエのむら
 

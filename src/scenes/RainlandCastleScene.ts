@@ -1,8 +1,8 @@
 import { RainlandImageMapScene } from "./RainlandForestScene.ts";
 import type { RainlandMapPackage } from "./RainlandForestScene.ts";
 
-// 背景・Collisionは現在DEV_PLACEHOLDER(map.jsonのassetStatus、tools/build_rainland_castle_placeholder.pyが生成する単色レイアウト)。
-// 正式な城内背景が届いたら assets/maps/rainland_castle/ の画像とmap.jsonを差し替えるだけでよく、このファイルは変更しない。
+// 背景はユーザー提供の城内背景(CURRENT)、collision.pngはtools/build_rainland_castle_collision.pyが生成する。
+// 背景を差し替える場合は assets/maps/rainland_castle/ の画像とmap.jsonを差し替えるだけでよく、このファイルは変更しない。
 const CASTLE: RainlandMapPackage = {
   mapId: "map_05_rainland_castle",
   keyPrefix: "image-map.rainland-castle",
