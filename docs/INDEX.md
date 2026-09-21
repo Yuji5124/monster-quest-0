@@ -1,6 +1,6 @@
 # モンスタークエスト0 仕様書インデックス
 
-最終更新: 2026-09-20 JST
+最終更新: 2026-09-21 JST
 
 このファイルはAI・人間が仕様を読むための入口。
 
@@ -9,14 +9,16 @@
 2. `GAME_SPEC.md` — ゲーム全体仕様
 3. `CREATIVE_DIRECTION.md` — 作り込み密度・二重構造・元設定への敬意
 4. `OPENING_SPEC.md` — 暗闇→焚き火の明転 → **No.01 はじまりのばしょ**
-5. `STORY_FLOW.md` — 物語全体 / 「もういちど」 / 真エンディング
-6. `MAP_FLOW_SPEC.md` — **正式No.01〜No.20**
-7. `MAP_SYSTEM.md` — **背景画像正本 / Collision生成 / 4レイヤー / ワールドマップ**
-8. `SPECIAL_GAMEPLAY_SPEC.md` — **特殊ゲームプレイ / シューティング / ブロック城 / まじん巨大化 / アクション区間**
-9. `AI_EXECUTION_PROTOCOL.md` — AIの作業手順
+5. `PLAY_ORDER_SPEC.md` — **物語上の確定プレイ順。互換No.より優先**
+6. `STORY_FLOW.md` — 物語全体 / 「もういちど」 / 真エンディング
+7. `MAP_FLOW_SPEC.md` — **既存No.01〜20の互換管理 / 地域情報**
+8. `MAP_SYSTEM.md` — **背景画像正本 / Collision生成 / 4レイヤー / ワールドマップ**
+9. `SPECIAL_GAMEPLAY_SPEC.md` — **特殊ゲームプレイ / シューティング / ブロック城 / まじん巨大化 / アクション区間**
+10. `AI_EXECUTION_PROTOCOL.md` — AIの作業手順
 
 ## ストーリー・世界
 - `OPENING_SPEC.md` — タイトルからNo.01〜No.02への導入
+- `PLAY_ORDER_SPEC.md` — P01〜P09の確定プレイ順、P10以降TBD、拠点→イベント→解放の基本ループ
 - `STORY_FLOW.md` — 元NPC主人公 / 複数世界断片 / 裏ワザ / エンディング
 - `MAP_FLOW_SPEC.md` — No.01〜20、No.01再訪、No.20再戦
 - `MAP_SYSTEM.md` — 新規ローカルマップとワールドマップの制作・データ方針
@@ -73,7 +75,7 @@
 
 ## 読み方
 ### Claude Code / Phaser Game Agent
-`PROJECT_STATUS` → `GAME_SPEC` → `CREATIVE_DIRECTION` → `OPENING_SPEC` → `STORY_FLOW` → `MAP_FLOW_SPEC` → `MAP_SYSTEM`（マップ作業時は必須）→ `SPECIAL_GAMEPLAY_SPEC`（特殊区間作業時は必須）→ 対象SPEC → `SAVE_FLAG_SPEC`（進行に関係する場合）→ `TBD_REGISTRY` → `DEFINITION_OF_DONE`
+`PROJECT_STATUS` → `GAME_SPEC` → `CREATIVE_DIRECTION` → `OPENING_SPEC` → `PLAY_ORDER_SPEC` → `STORY_FLOW` → `MAP_FLOW_SPEC` → `MAP_SYSTEM`（マップ作業時は必須）→ `SPECIAL_GAMEPLAY_SPEC`（特殊区間作業時は必須）→ 対象SPEC → `SAVE_FLAG_SPEC`（進行に関係する場合）→ `TBD_REGISTRY` → `DEFINITION_OF_DONE`
 
 ### Codex
 上記 + `QA_SPEC` + `PERFORMANCE_BUDGET`
