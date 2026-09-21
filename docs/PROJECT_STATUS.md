@@ -303,12 +303,13 @@ Phase 8.6では既存世界地図REFERENCEを背景にしたROUGH_FIELDを追加
 3. `GAME_SPEC.md`
 4. `CREATIVE_DIRECTION.md`
 5. `OPENING_SPEC.md`
-6. `STORY_FLOW.md`
-7. `MAP_FLOW_SPEC.md`
-8. `SPECIAL_GAMEPLAY_SPEC.md`（特殊区間を扱う場合は必須）
-9. 作業対象SPEC
-10. `TBD_REGISTRY.md`
-11. `DEFINITION_OF_DONE.md`
+6. `PLAY_ORDER_SPEC.md`
+7. `STORY_FLOW.md`
+8. `MAP_FLOW_SPEC.md`
+9. `SPECIAL_GAMEPLAY_SPEC.md`（特殊区間を扱う場合は必須）
+10. 作業対象SPEC
+11. `TBD_REGISTRY.md`
+12. `DEFINITION_OF_DONE.md`
 
 ## 17. 情報の優先順位
 1. 日付が新しいユーザー確定仕様
