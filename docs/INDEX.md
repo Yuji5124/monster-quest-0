@@ -1,6 +1,6 @@
 # モンスタークエスト0 仕様書インデックス
 
-最終更新: 2026-09-21 JST
+最終更新: 2026-09-22 JST
 
 このファイルはAI・人間が仕様を読むための入口。
 
@@ -13,8 +13,9 @@
 6. `STORY_FLOW.md` — 物語全体 / 「もういちど」 / 真エンディング
 7. `MAP_FLOW_SPEC.md` — **既存No.01〜20の互換管理 / 地域情報**
 8. `MAP_SYSTEM.md` — **背景画像正本 / Collision生成 / 4レイヤー / ワールドマップ**
-9. `SPECIAL_GAMEPLAY_SPEC.md` — **特殊ゲームプレイ / シューティング / ブロック城 / まじん巨大化 / アクション区間**
-10. `AI_EXECUTION_PROTOCOL.md` — AIの作業手順
+9. `MAP_CANDIDATES.md` — **追加サブマップ候補。最新1〜20は変更しない**
+10. `SPECIAL_GAMEPLAY_SPEC.md` — **特殊ゲームプレイ / シューティング / ブロック城 / まじん巨大化 / アクション区間**
+11. `AI_EXECUTION_PROTOCOL.md` — AIの作業手順
 
 ## ストーリー・世界
 - `OPENING_SPEC.md` — タイトルからNo.01〜No.02への導入
@@ -22,6 +23,7 @@
 - `STORY_FLOW.md` — 元NPC主人公 / 複数世界断片 / 裏ワザ / エンディング
 - `MAP_FLOW_SPEC.md` — No.01〜20、No.01再訪、No.20再戦
 - `MAP_SYSTEM.md` — 新規ローカルマップとワールドマップの制作・データ方針
+- `MAP_CANDIDATES.md` — ザボンの狩り場／ダコハ海岸／バトラス砦周辺などの未採用候補
 - `SPECIAL_GAMEPLAY_SPEC.md` — 世界混線に伴うジャンル切替・特殊操作区間
 - `NPC_SPEC.md` — NPC会話方針
 - `GLITCH_SPEC.md` — 終盤異常 / 「もういちど」
