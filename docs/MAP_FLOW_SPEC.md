@@ -1,9 +1,10 @@
 # モンスタークエスト0 マップ進行仕様
 
-最終更新: 2026-09-19 JST
+最終更新: 2026-09-24 JST
 
 このファイルは各地域・ダンジョンの**正式な管理番号、役割、接続、進行条件**を整理する正本。
-2026-09-11の再整理により、採用済み全地域をNo.01〜No.20へ連番で振り直した。
+
+> **2026-09-22 優先規則:** 本書§2および`PLAY_ORDER_SPEC.md`の正式No.・表示名・物語順が最優先。下記の旧No.、旧名称、既存`mapId`、Scene名、アセットディレクトリはローカル実装を守るための互換情報であり、番号変更だけで改名・削除しない。本文の旧順序と衝突する箇所は`SUPERSEDED`。
 
 ## 1. 基本方針
 - **全体ワールドマップ、主要地域の位置関係、世界全体の大枠は変更しない。**
@@ -20,25 +21,25 @@
 | No. | 地域 | 区分 | 役割 / 備考 |
 |---:|---|---|---|
 | 01 | はじまりのばしょ | イベント専用 | 夜版／昼版。主人公が焚き火で目覚める。終盤「もういちど」後にも再訪 |
-| 02 | はじまりのまち | 町 | 最初の通常拠点。基本導線・交易町 |
-| 03 | ビーエのむら | 村 | 山間の小村。林業・木こり救出系イベント |
-| 04 | レインランドのまち | 町 | 水と商業の城下町。王家・ミレイ伏線 |
-| 05 | レインランドじょう | 城 | 王家・政治・ミレイの中心 |
-| 06 | ザボンのむら | 村 | 狩り・自然。タロサに関係する中盤主要地域 |
-| 07 | いしのむら | 村 | 石・岩・地形に由来する個性の強い村 |
-| 08 | まじんのどうくつ | ダンジョン | 強敵「まじん」に関係する洞窟 |
-| 09 | かくれざと | 村 | 閉鎖性・秘密性を持つ地域 |
-| 10 | みずうみの古城 | ダンジョン | 湖周辺の古城ダンジョン |
-| 11 | いわやまのどうくつ | ダンジョン | 岩山系ダンジョン |
+| 02 | はじまりのまち | 町 | 最初の通常拠点。モンスター増加と王の情報収集を知る |
+| 03 | ビーエのもり | フィールド | 地域事件・異変。旧「はじまりのもり」は表示名としてSUPERSEDED |
+| 04 | ビーエのむら | 村 | 山間の小村。林業・木こり救出系イベント |
+| 05 | レインランドのもり | フィールド | 最初の王への報告につながる異変 |
+| 06 | レインランドじょうかまち／レインランドじょう | 町／城 | 王への報告、No.07調査依頼。城下町と城内は同一正式地域の別ローカルマップ |
+| 07 | まじんのどうくつ | 特殊ダンジョン | 主人公一人の全10層ターン制Dungeon RPG。撃破後に城へ再報告 |
+| 08 | ザボンのむら | 村 | 狩り・魔物討伐経験者の地域。タロサの故郷 |
+| 09 | いわやまのどうくつ | 特殊ダンジョン | タロサ一時参加→正式同行。縦スクロール（見下ろし型）の崩落シューティング要素 |
+| 10 | かくれざと | 村 | ミレイと出会う地域 |
+| 11 | みずうみの古城 | ダンジョン | ミレイが同行し、3人パーティーになる |
 | 12 | 港町ダコハ | 町 | 港・交易・人・物・噂が集まる町 |
-| 13 | コタンカイムの洞窟 | ダンジョン | 採用済み追加ダンジョン |
-| 14 | ポサロ城 | 城 / 拠点 | 採用済み追加拠点 |
-| 15 | ふっかつのほこら | ほこら | 重要拠点 |
-| 16 | デーマスの塔 | 塔 / ダンジョン | 勇者装備と関係する入場条件。デーマス戦 |
+| 13 | コタンカイムの洞窟 | ダンジョン | ゆうしゃのたてを得る中盤ダンジョン |
+| 14 | ポサロ城 | 城 / 拠点 | ミレイの過去と世界に一致しない記憶が進む。バクラー戦とゆうしゃのけん |
+| 15 | ふっかつのほこら | ほこら | ゆうしゃのかんむりを得る。反射を連想できる薄いヒント。ミラーの答えを直言しない |
+| 16 | デーマスのとう | 塔 / ダンジョン | ダイダインをミラーで反射する本戦 |
 | 17 | ぬまちのどうくつ | ダンジョン | 終盤へ向かうダンジョン |
-| 18 | バトラスのとりで | 砦 | 終盤の砦。バトラス関連 |
-| 19 | オロチのしろ | 城 | 終盤の大ボス地域 |
-| 20 | 最終地点 | 特殊地点 | 内部名「オロチゾンビのま」。裏ボス。公開時は重大ネタバレ注意 |
+| 18 | いしのまち | 町 | 世界そのものの異常に気づき始める。旧「いしのむら」はSUPERSEDED |
+| 19 | バトラスのとりで | 砦 | 毒の矢が正規攻略の鍵となるタロサの見せ場 |
+| 20 | オロチへの道／オロチのしろ／最終地点 | 終章 | 縦シューティング要素→コマンドRPGの終章。裏ボスは公開時に伏せる |
 
 **No.01〜No.20を今後の正式なマップ管理番号とする。**
 旧No.18「はじまりのばしょ」等の旧番号は、過去履歴の参照以外では使用しない。
@@ -69,6 +70,8 @@
 - 最初の通常拠点。
 - 内部マップ設計データは `assets/maps/data/no02_start_town_interiors.json` で管理する。
 - 宿屋、道具屋、武器屋、教会、民家をコンパクトに構成する。2026-09-19、CURRENT背景画像(`assets/maps/starting_town/background.png`)に実在する建物が5棟（やどや/どうぐや/ぶきや/きょうかい/民家A）のみだったため、正式建物数を6→5へ縮小した（民家Bを統合終了、ユーザー確認済み）。詳細は本書§4.9。
+- 2026-09-23、注釈画像の青ポイント（西端）を町の外へ出る唯一の出口、緑ポイント（南端）をフィールド側から入る出現地点として確定した。`fromField`と`fromWorldMap`はともにこの南端spawnを使う。
+- 赤ポイント7か所は村人配置。どうぐや／ぶきや／民家A／やどや前の4人は固定店主、教会前／噴水西／南の道の3人は各地点の近傍だけをランダムに歩く。
 - 実価格・商品一覧・会話等の未確定値はnullのまま扱う。既存内部設計データのタイルGIDはlegacy実装値として保持し、新方式の正本にはしない。
 
 ## 4.5 No.01 / No.02とワールドマップの正式接続
@@ -85,72 +88,130 @@
   `field_starting_region`(DEV_PLACEHOLDER_FIELD)を使用する。正式名称が決まり次第置き換える。
 - 2026-09-18以降、これは新規制作の方針ではない。地域間の通常移動はポイント選択式ワールドマップへ置き換え済みであり、既存`FieldScene`は削除せずlegacy / prototypeとして保持する。
 
-## 4.7 はじまりのもり（追加フィールド、2026-09-18）
-- 「はじまりのもり」はNo.01〜No.20の正式番号表（本書§2）に含まれない追加フィールドである。
+## 4.7 ビーエのもり（旧「はじまりのもり」、内部ID互換、2026-09-18）
+- 表示名はNo.03「ビーエのもり」。`starting_forest`、`destination_starting_forest`などの既存内部IDは互換のため残す。
 - No.01「はじまりのばしょ」・No.02「はじまりのまち」の番号や役割を変更・再割当てするものではない。
 - `WorldMapScene`の目的地の1つとして、No.01/No.02と同じ形式のデータ（`assets/maps/world_map/destinations.json`）で追加する。
 - ローカルマップの実装方式はNo.01と同じBACKGROUND/COLLISION/EVENT/OBJECT（`MAP_SYSTEM.md`）を流用し、距離ベースのランダムエンカウント（`BATTLE_SPEC.md`§11）を持つ最初の地域である。
-- 将来No.03以降を正式割当てする際も、この追加フィールドの存在によってNo.01〜No.20の番号・位置関係を変更しない。
+- 正式No.03として扱う。旧「番号なし追加フィールド」方針はSUPERSEDEDであり、既存内部IDのみを互換として残す。
+- 2026-09-24: ユーザー注釈の緑ポイントに`objects.json`の`boss_starting_forest_erimaki_tokage`を配置する。既存のエリマキヘビ戦闘素材／BattleSceneを使い、撃破時だけ`boss.starting_forest_erimaki_tokage_defeated`と`story.rainland_castle_town_unlocked`を保存する。後者により`destination_rainland_castle_town`（No.06）が世界地図で選択可能になる。No.05レインランドのもりは常時選択可能とする。
+- 青ポイントの`chest_starting_forest_kaifukuyaku`は`kaifukuyaku`を1個渡し、`chest.starting_forest_kaifukuyaku_opened`で再取得を防ぐ。北の石アーチ（オレンジポイント）は既存の世界地図出口を維持する。
+- 撃破後の帰還時だけ、北側ワープ領域に収まる`arrival_starting_forest_tarosa`からタロサが現れ「おれも　えりまきとかげを追っていた」と短く話す。会話後は同じワープ領域から去る。`event.starting_forest_tarosa_hunt_talked`で一度限りにし、この会話は加入イベントではない。
 
-## 4.8 No.03 ビーエのむら（画像マップ実装、2026-09-18）
-- No.03「ビーエのむら」を、No.01と同じBACKGROUND/COLLISION/EVENT/OBJECT画像マップ方式（`MAP_SYSTEM.md`）で実装した最初の正式番号付き地域とする。
-- `BieVillageScene`がNo.01/はじまりのもりと同じPlayer/InputSystem/Collision/Camera/Transitionをそのまま再利用する。新しいCollision方式は作っていない。
+## 4.8 No.04 ビーエのむら（旧No.03実装との互換、2026-09-18）
+- 正式No.は04。既存`map_03_bie_village`、`destination_bie_village`、Scene名・テスト名は旧No.03由来の互換IDとして残す。
+- `BieVillageScene`がNo.01/ビーエのもり（内部`starting_forest`）と同じPlayer/InputSystem/Collision/Camera/Transitionをそのまま再利用する。新しいCollision方式は作っていない。
 - `assets/maps/world_map/destinations.json`へ`destination_bie_village`を追加し、本書§4.5の方針どおり`unlockFlag: "story.bie_village_unlocked"`を持たせた（No.01/No.02のような`null`＝常時解放にはしていない）。
-- 本番`WorldMapScene`はSaveSystemの`flags`にまだ接続していない。2026-09-19以降は`DATA_CONTRACTS.md`§8.1に従い、`world_map/map.json`の`developmentUnlockedFlags`を暫定の解放状態として本番でも使う（`WorldMapData.ts`の`readInterimUnlockedFlags()`）。フラグ設計(`unlockFlag`)は変えておらず、SaveSystem接続後にこの関数だけを差し替える。`WorldMapTestScene`は同関数を既定とし、`?worldMapFlags=`でロック状態のDEV確認もできる。
+- 本番`WorldMapScene`は2026-09-23から共有`GameStateRepository.flags`を解放判定へ加える。既存`developmentUnlockedFlags`はビーエのむらなどの開発用初期解放としてだけ残し、ボス撃破など実際の進行では使わない。`WorldMapTestScene`は`?worldMapFlags=`で明示した状態を確認できる。
 - NPC・会話・木こり救出イベントは`docs/NPC/02_bie_no_mura.md`が`SOURCE_DRAFT_EXISTS / REDUCING`（人数・台詞本文とも未確定）のため今回は実装しない。ランダムエンカウントも今回は追加しない。
+- 2026-09-23 マップ構成変更: 背景をユーザー提供`ビーエのむら更新.png`（1536×1024、建物配置は旧版とほぼ同じで道が広く・つながりが明快になった版）へ差し替え、Collisionを`tools/build_bie_village_collision.py`で再生成した。北門の位置・`fromWorldMap` spawn・北門Eventの座標は新背景でもそのまま一致するため変更していない。
+- 2026-09-23 小さな異変: ビーエのもりから続く地域の異変として、背景の一部が一瞬だけ乱れる演出（チリチリした点ノイズ・背景の横帯のずれ・小さな四角が一瞬別の絵になる「マップチップ化け」）を常時重ねる。木こりの家・広場の大木・北門・水車小屋の滝の周辺で起きやすい。設定は`src/config/bieVillageAnomaly.ts`、表示は`src/systems/MapAnomalyAmbience.ts`（背景とキャラクターの間に重なり、Collision・入力・進行フラグ・セーブには触れない）。文字・画面全体の乱れ・音は使わない（`GLITCH_SPEC.md`§11-2）。
+- 2026-09-23 入場演出: 世界地図から入るとき（spawn `fromWorldMap`）だけ、ユーザー指定の`ビーエのむら_イメージ.png`（無加工コピー`assets/maps/bie_village/entry_splash.png`）をレインランドじょうかまちと同じ`MapSplashScene`で5秒投影し、地名「ビーエのむら」を表示してから村へ入る。
 - 出入口は北門1か所のみを`WorldMapScene`への正式接続として実装。背景に描かれた東・南東方向へ続く道は行き止まりのまま残し、正式な接続先は今回定めない。
 
 ## 4.9 No.02 はじまりのまち 画像マップ移行（2026-09-19）
-- No.02をDEV_PLACEHOLDER表示（単色背景＋単色矩形の建物）からCURRENT背景画像方式（`MAP_SYSTEM.md`）へ移行した。`StartingTownScene`はNo.01/はじまりのもり/ビーエのむらと同じ4レイヤー・同じ実行時ランタイムを再利用する。
-- NPC・会話・パーティ加入（タロサ/ミレイ）・戦闘イベント（DEV_BATTLE_EVENT/デーマス）・建物内部（InteriorScene）接続は既存実装（Phase 7〜8-B）をそのまま再利用し、外観の描画とCollisionだけを置き換えた。
+- No.02をDEV_PLACEHOLDER表示（単色背景＋単色矩形の建物）からCURRENT背景画像方式（`MAP_SYSTEM.md`）へ移行した。`StartingTownScene`はNo.01/ビーエのもり（内部`starting_forest`）/ビーエのむらと同じ4レイヤー・同じ実行時ランタイムを再利用する。
+- 建物内部（InteriorScene）接続は既存実装を再利用する。NPCは2026-09-23に、四角形のDEV_PLACEHOLDERとNo.02内のDEV戦闘／仲間加入NPCを撤去し、ユーザー提供の村人素材を使う7人の配置へ更新した。店の価格・商品・店UI、正式な加入・戦闘イベントは別途TBD。
 - reference画像(`はじまりのまち.png`)に実在する建物は5棟（やどや/どうぐや/ぶきや/きょうかい/民家A）のみで、旧DEV_PLACEHOLDER時代の6棟目（民家B）に対応する建物は描かれていない。ユーザー確認のうえ、正式建物数を6→5へ縮小し、`assets/maps/data/no02_start_town_interiors.json`・`src/config/interiors.ts`・`src/config/maps.ts`から`map_02_house_b`関連データを削除した。
-- 出入口は西端1か所のみを`WorldMapScene`への正式接続として実装（本書§4.5の記述と一致）。建物のドア判定は`building.door`（背景ピクセル座標）と既存の`createExitZone`をそのまま使う。
+- 出入口は注釈画像の青ポイントに当たる西端1か所のみを`WorldMapScene`への正式接続として実装（本書§4.5の記述と一致）。戻りは緑ポイントに当たる南端spawn。建物のドア判定は`building.door`（背景ピクセル座標）と既存の`createExitZone`をそのまま使う。
 - カメラは他の画像マップと同じ`configureMapCamera`（追従）へ変更した。旧実装は960×720に固定表示でスクロールしなかったため、`DialogueBox`にスクロール追従しない`setScrollFactor(0)`を追加した。
 
-## 4.10 レインランドのもり（追加フィールド、2026-09-19）
-- 「レインランドのもり」は、はじまりのもり(§4.7)と同じくNo.01〜No.20の正式番号表（本書§2）に含まれない追加フィールドである。No.04レインランドのまち等の番号・位置関係を変更・再割当てするものではない。
+## 4.10 No.05 レインランドのもり（旧追加フィールド実装との互換、2026-09-19）
+- 正式No.は05。既存`rainland_forest_1/2`、`destination_rainland_forest`、Scene名は番号なし追加フィールドだった時点の互換IDとして残す。
 - ユーザー提供の背景画像2枚（`レインランドのもり　その１.png`／`その2.png`、いずれも1448×1086）を、同一エリアの連続する2画面として実装した。`assets/maps/rainland_forest_1/`（`map_rainland_forest_1`、`RainlandForest1Scene`）と`rainland_forest_2/`（`map_rainland_forest_2`、`RainlandForest2Scene`）。No.01と同じBACKGROUND/COLLISION/EVENT/OBJECT方式（`MAP_SYSTEM.md`）を流用し、`worldScale: 1.5`を適用する。
 - 導線: `WorldMapScene`の`destination_rainland_forest` → その1の南の石門内側(`fromWorldMap`)。その1の南口 → 世界地図(`from_rainland_forest`)。その1の北の木の階段 → その2の南の木の階段の上(`fromForest1`)。その2の南口 → その1の北の階段の下(`fromForest2`)。
-- 背景に描かれた「その2」の北・西・東へ続く道、および「その1」の途切れた小道の先は、接続先未定の行き止まりとして残した（ビーエのむらの東の道と同じ扱い）。北のレインランド方面（No.04〜05）への正式な接続は今回定めない。
-- 地点は`unlockFlag: null`（はじまりのもりと同じ常時選択可）、座標は`DEV_PLACEHOLDER_POSITION`。正式な解放条件・世界地図上の位置・出現モンスター・NPC・正式名称・BGMはTBD（`TBD_REGISTRY.md`）。ランダムエンカウントは出現モンスターが未確定のため持たない。
-- 仲間（タロサ・ミレイ）は、通常フィールドの画像マップ全て（No.01/No.02/はじまりのもり/ビーエのむら/レインランドのもり）で主人公に付いてくる。
+- 背景に描かれた「その2」の北・西・東へ続く道、および「その1」の途切れた小道の先は、接続先未定の行き止まりとして残した（ビーエのむらの東の道と同じ扱い）。No.06レインランドじょうかまち／じょうへの最終ローカル接続は今回定めない。
+- 地点は`unlockFlag: null`で常時選択可能。南口から世界地図へ戻れる。位置は`FINAL_POSITION`。出現モンスター・NPC・BGMはTBD。ランダムエンカウントは出現モンスターが未確定のため持たない。
+- 仲間（タロサ・ミレイ）は、通常フィールドの画像マップ全て（No.01/No.02/ビーエのもり（内部`starting_forest`）/ビーエのむら/レインランドのもり）で主人公に付いてくる。
 
-## 4.11 No.08 まじんのどうくつ（画像マップ初期実装、2026-09-19）
+## 4.11 No.07 まじんのどうくつ（旧No.08実装との互換、特殊ターン制Dungeon RPG、2026-09-20）
 
-- 正式No.08「まじんのどうくつ」を、ユーザー提供の内部背景3枚（その1〜その3、各1448×1086）で構成するコンパクトな連結ダンジョンとして追加した。`map_08_majin_cave_1` → `map_08_majin_cave_2` → `map_08_majin_cave_3` の順で進み、入口側へ戻れる。
-- `WorldMapScene`の`destination_majin_cave`からその1へ入り、同じ世界地図へ戻れる。世界地図上の座標は`DEV_PLACEHOLDER_POSITION`であり、正式な地理を確定したものではない。
-- 世界地図から入るときだけ、別のユーザー提供キービジュアルを3.5秒でフェードイン→表示→フェードアウトする。地名「まじんのどうくつ」は右下へ表示する。
-- 背景・Collision・Event・Objectは`MAP_SYSTEM.md`の4レイヤー方式で管理する。出現モンスター、まじんとの戦闘、宝箱、NPC、BGM、正式解放条件と最終的な分岐は未実装／TBDであり、今回それらを推測して追加しない。
+- 到達目安は**Lv8前後**。正式No.07だけは`MAP_SYSTEM.md`の明示的な特殊例外で、連続歩行の画像マップではなく、32×32論理グリッドを一手ずつ進むターン制Dungeon RPGとして実装する。主人公が有効な移動／攻撃／待機を1回行うたび、可視敵が各1回行動する。壁への無効移動とメニュー操作はターンを消費しない。
+- `map_08_majin_cave` / `MajinCaveScene`は旧No.08由来の互換IDで、正式No.07の実装。seed付きで決定的に1〜9Fを生成し、10Fは入口→短い探索→広いボス部屋という固定要素を持つ。全主要部屋、入口、階段は論理的に接続される。Tiled TMJ/TSJと通常の`background.png` / Collision Maskは使わない。
+- 敵編成は1〜3Fがプリン／たまゴースト、4〜6Fがおばけつむり／ファンシーダック／スノーボム、7〜10Fがこあくま／エリマキヘビ／ダイジャ。10Fの最深部には必ずまじんを置く。通常敵・まじんともこのDungeon側の近接戦闘で扱い、通常の`BattleScene`へ遷移しない。数値は`DEV_MAJIN_CAVE_BALANCE`で隔離する。
+- まじんを撃破すると`descent`から`ascent`へ切り替わる。プレイヤーはワープで外へ出ず、生成済みで敵の撃破状態を保持した10F→9F→…→1Fを実際に戻って洞窟出口へ出る。
+- 1 runにつき4〜9Fのseed決定フロア1つだけをモンスターハウスにする。通常敵数の2倍を当該階の敵表から配置し、初回入場後だけ`モンスターハウス`を表示する。帰路では同一FloorStateを使うため、敵・宝箱（将来実装）・探索済みミニマップ・表示状態を保持する。専用報酬は宝箱／アイテムシステム未実装のためTBDであり、現時点では攻略進行を妨げない。
+- 通常のポイント選択式`WorldMapScene`に`destination_majin_cave`を追加し、正式No.07へ直接入る。位置は旧試作の座標`(1200, 220)`を再利用した`DEV_PLACEHOLDER_POSITION`であり、正式な地理・解放条件はTBD。1F出口からは同じ世界地図のNo.07地点へ戻る。`?mapTest=majin-cave`も単体確認用に維持する。REFERENCEキービジュアルはランタイム表示しない。下り／上り階段のmain画面markerは探索圏に入ってから表示し、未探索フロアの目的地を先出ししない。
 
-## 4.12 レインランドじょうかまち（追加フィールド、2026-09-19）
+## 4.12 No.06 レインランドじょうかまち（旧追加フィールド実装との互換、2026-09-19）
 - ユーザー提供の俯瞰マップ`レインランドじょうかまち.png`(1447×1087)を、世界地図から入る町として追加した。`assets/maps/rainland_castle_town/`（`map_rainland_castle_town`、`RainlandCastleTownScene`）。No.01と同じBACKGROUND/COLLISION/EVENT/OBJECT方式（`MAP_SYSTEM.md`）で`worldScale: 1.5`。
-- **番号の扱い**: 本書§2のNo.04「レインランドのまち」(水と商業の城下町)に相当する可能性が高いが、対応づけ・正式名称はユーザー確認待ちのため、はじまりのもり(§4.7)・レインランドのもり(§4.10)と同じ**番号なしの追加フィールド**として扱い、No.04〜05の番号・位置関係は変更していない。
-- 導線: 世界地図の`destination_rainland_castle_town` → 南門の道の内側(`fromWorldMap`)。南門(`events.json`の`world-map`、`from_rainland_castle_town`) → 世界地図。北の城門(`events.json`の`transfer`) → No.05レインランドじょう(`fromCastleTown`)、城から出ると北の城門前(`fromCastle`)へ戻る（§4.13、2026-09-20）。西・東の堀の橋の先は接続先未定の行き止まり。
+- **番号の扱い**: 正式No.06「レインランドじょうかまち／レインランドじょう」の城下町側。`map_rainland_castle_town`等は旧番号なし追加フィールド由来の互換ID。旧No.04「レインランドのまち」対応の解釈はSUPERSEDED。
+- 導線: 世界地図の`destination_rainland_castle_town` → 南門の道の内側(`fromWorldMap`)。南門(`events.json`の`world-map`、`from_rainland_castle_town`) → 世界地図。北の城門(`events.json`の`transfer`) → 同じ正式No.06のレインランドじょう(`fromCastleTown`)、城から出ると北の城門前(`fromCastle`)へ戻る（§4.13、2026-09-20）。西・東の堀の橋の先は接続先未定の行き止まり。
 - **入場演出**: 世界地図から入るときだけ、`レインランドじょう_イメージ.png`(1448×1086)を5秒(フェードイン1秒→保持3秒→フェードアウト1秒)で投影してから町へ入る。汎用の`MapSplashScene`＋`src/config/mapSplash.ts`(画像・秒数・対象spawnId・地名)で管理し、対象外のspawnや退場時は挟まない。
 - 地点は`unlockFlag: null`（常時選択可）、座標は`DEV_PLACEHOLDER_POSITION`。NPC・店・建物内部・BGMは未実装／TBD（`docs/NPC/03_rainland_no_machi.md`に会話原案があるが人数・台詞は未確定）。
 
-## 4.13 No.05 レインランドじょう（通常RPG方式の城内、2026-09-19着手・2026-09-20導線確定）
-- 本書§2のNo.05「レインランドじょう」を、城内を歩ける画像マップとして追加した。`assets/maps/rainland_castle/`（`map_05_rainland_castle`、`RainlandCastleScene`）。No.01と同じBACKGROUND/COLLISION/EVENT/OBJECT方式（`MAP_SYSTEM.md`）で`worldScale: 1.5`。
+## 4.13 No.06 レインランドじょう（旧No.05実装との互換、通常RPG方式の城内、2026-09-19着手・2026-09-20導線確定）
+- 正式No.06の城内側を、歩ける画像マップとして追加した。`assets/maps/rainland_castle/`（`map_05_rainland_castle`、`RainlandCastleScene`）。`map_05_rainland_castle`は旧No.05由来の互換ID。No.01と同じBACKGROUND/COLLISION/EVENT/OBJECT方式（`MAP_SYSTEM.md`）で`worldScale: 1.5`。
 - **導線（正式）**: レインランドじょうかまち(§4.12)の**北の城門**(`event_rainland_castle_town_castle_gate`、`transfer`) → 城門を入った入口ホール(`fromCastleTown`、上向き)。城の出口(`event_rainland_castle_exit`、`transfer`) → 町の北の城門前(`map_rainland_castle_town`の`fromCastle`、下向き)。**世界地図には城を直接載せない**（町が世界地図の地点であり、城は町の北の城門の先という既存の世界構造を優先した）。
 - 構成（コンパクトな1フロア）: 城門・入口ホール・中央ホール・王の間へ向かう絨毯の通路と扉（扉の先は未実装）・西翼（階段の位置）・東翼（小部屋）。NPCは仮5人。イベント点: 入口／王の間の入口／階段／東の小部屋(将来のイベント用の予約地点、内容と名称はストーリー非依存のIDで場所だけ確保)／出口。
 - **背景は正式**（2026-09-20）: ユーザー提供の城内背景`レインランドじょう_城内.png`(1448×1086)を無加工でCURRENT背景にした（`map.json`の`assetStatus: CURRENT`）。`collision.png`は`tools/build_rainland_castle_collision.py`が背景から測った矩形で生成する。差し替えは画像2枚と`map.json`の更新のみ（`ASSET_INDEX.md`）。`レインランドじょう_イメージ.png`（外観）と`レインランドじょう_マイクラ風.png`（一人称のブロック城）は歩行背景ではない。
-- **将来のブロック城化**: 城内だけをブロック構成の特殊な城へ切り替える場合は、新Sceneを作ってmain.tsへ登録し、`config/maps.ts`の`map_05_rainland_castle.sceneKey`を切り替える。町の北門Eventと出口Eventは`MapId`と`spawnId`しか知らないため変更不要。NPC・台詞・イベントIDはデータ側に残る。
+- **3D（ブロック城）**（2026-09-23ユーザー指示「レインランドじょう3Dを実装。2Dと3Dを切り替えられると楽しい」）: `RainlandCastle3DScene`。`レインランドじょう_マイクラ風.png`を見た目の参考に、城内をブロックで組み立てた一人称の3D表示。**2Dが既定**で、V/右上の「3D」ボタンで**今いる場所・向きのまま**3Dへ、V/「2D」で2Dへ戻る。
+  - 同じ城のデータをそのまま使う: 歩ける場所は2Dと同じ`collision.png`の8pxセル判定（3Dの壁ブロックは判定に使わないので通れる場所は2Dと完全一致）、NPC5人と台詞、Event（出口でじょうかまちの北の城門前へ戻る、DEVメッセージの各点）。
+  - 見た目の組み立て（`src/config/rainlandCastle3D.ts`・`src/systems/Castle3DLayout.ts`）: 1ブロック=背景16px。歩ける床（絨毯は2Dの青い絨毯の範囲、紋章2か所）、床に接する歩けないブロックを高さ5の壁、2Dの障害物の位置に台座・植木・街灯・長椅子と絵・机、壁面に旗・燭台・王の間の扉・絵、西翼の階段は北へ上がる段差（目の高さも上がる）。NPCはブロック人形（兵士は青い服と兜）。テクスチャは画像を増やさずコードで描くドット絵（`Castle3DTextures.ts`）。
+  - 2026-09-23追加指示「イメージはマイクラ風の参考画像のような感じ。仲間は見せない。天井も作る」: **天井**（高さ6。壁から離れた所は2×2の青い格間の格天井、壁ぎわは2段の張り出しで段々）、天井から鎖で下がる**ランタン**8個（暖かい光源）、暖かい日差しの照明、**絨毯の金の縁取り**、台座を**青い紋章の板つきの柱＋白い花のプランター**に、植木を白い花に、外の景色（青空・雪山・塔）が見える**アーチ窓**8か所（3Dだけの飾り）。参考画像の噴水は2Dの城に無いため置いていない（2Dと3Dで配置をそろえる）。
+  - 2026-09-23画質向上: 等倍解像度＋アンチエイリアス、32×32の面取りテクスチャ、床の壁ぎわの陰影、燭台とランタンの光の輪、ミップマップ・異方性フィルタ、フィルミックのトーンマッピング。
+  - 2026-09-23グレードアップ: 壁の付け柱・つた・扉のアーチ枠・窓からの光の筋・漂うほこり・床のつや。人物は顔・髪・服・持ち物を描いたブロック人形で、息づかい・まばたき・見回し・話しかけると向き直る（見た目は役割に合わせた仮のもの）。
+  - **王の間**（2026-09-23、ユーザー提供`レインランドじょう_城内2.png`）: 城の北の王の間の扉（`event_rainland_castle_throne_room_entrance`、`transfer`）→ 王の間の南の入口（`map_rainland_throne_room`の`fromCastle`、上向き）。王の間の南の出口（`event_rainland_throne_room_exit`）→ 城の扉の前（`fromThroneRoom`、下向き）。2D（`RainlandThroneRoomScene`）と3D（`RainlandThroneRoom3DScene`）をV/「3D」「2D」で切り替えられる。構成: 南の入口 → 燭台の台座が並ぶ広間 → 左右の翼 → 絨毯の階段 → 一段高い壇（手すり・燭台・植木）→ 玉座と大きな紋章の垂れ幕。3Dでは壇と階段が1ブロック高く、目の高さも上がる。王（玉座に座る）と近衛兵2人はDEV_PLACEHOLDER_NPC（仮台詞、`[仮]`付き）。王への報告・依頼イベント、正式台詞、人数はTBD。`?mapTest=rainland-throne-room`で単体確認。
+  - 3D表示は共通の`Castle3DScene`（城内・王の間）で、マップごとの違いは`src/config/rainlandCastle3D.ts`の`Castle3DConfig`（絨毯・壇・低い壁・壁飾り・置物・ランタン・人物）だけに書く。
+  - **仲間（タロサ・ミレイ）は3Dでは表示しない**（2026-09-23ユーザー確定）。2Dへ戻ると従来どおり付いてくる。
+  - 操作: ↑↓前進・後退、←→旋回、Zで正面のNPCと話す、Cメニュー。右上にミニマップ（2Dの城の絵に現在地と向き）。タッチ用の十字・Z・C・「2D」ボタンあり。
+  - 城下町の北門から入ると2Dの城に入る（3Dを既定にする場合は`config/maps.ts`の`map_05_rainland_castle.sceneKey`を`RainlandCastle3DScene`へ変えるだけでよい）。単体確認は`?mapTest=rainland-castle-3d`。
 - 未実装／TBD: NPCの正式人数・台詞（`docs/NPC/04_rainland_castle.md`）、王の間・上階、各イベント本編、BGM。
+
+## 4.14 No.08 ザボンのむら（2026-09-23）
+- ユーザー提供`ザボンのむら　新.png`（1448×1086）を無加工でCURRENT背景にした画像マップ。`assets/maps/zabon_village/`（`map_zabon_village`、`ZabonVillageScene`）。旧番号由来の`map_08_majin_cave`（正式No.07）と紛らわしいため、MapIdに番号を付けていない。レインランドの各マップと同じ共通画像マップScene（`RainlandImageMapScene`）を使い、`worldScale: 1.5`。
+- 構成（背景に描かれたもの）: 中央の広場とトーテム、北の族長の家（石段つき）、民家6棟（うち2棟は壊れた家）、井戸、弓の練習場、獣皮の干し場、畑3面、西の滝と吊り橋、南西の桟橋と小舟、北東の山のどうくつ。
+- **導線**: 世界地図の`destination_zabon_village`（`implemented`、`unlockFlag: null`）→ 北東の山道の内側（`fromWorldMap`、下向き）。ザボンは世界地図の最南にあり北のレインランド方面から来るため、画像上端へ抜ける北東の山道を正式な出入口とした。北口Event(`event_zabon_village_north_exit`) → 世界地図(`from_zabon_village`)。
+- 世界地図から入るときだけ、`ザボンのむら_イメージ.png`（`entry_splash.png`）を5秒の入場演出として挟む（`config/mapSplash.ts`、レインランドじょうかまちと同じ）。
+- Collisionは`tools/build_zabon_village_collision.py`で生成（土の道の色→8pxセル→穴埋め・孤立点除去→道の縁へ1セル拡幅（水と障害物には広げない）→吊り橋・桟橋・石段・どうくつ前・西の道を手測定矩形で追加→トーテムと井戸を除外→北東の入口につながる道だけ残す）。歩ける場所は実際のプレイヤー判定で`tests/bodyPassability.test.mjs`が確認する。
+- 北東のどうくつの入口はDEVメッセージだけのEvent（`event_zabon_village_cave_mouth`）。接続先（No.09いわやまのどうくつか等）はTBD。西の吊り橋・南東の道・南の道・桟橋の先は接続先未定の行き止まり。
+- 未実装／TBD: NPC（`NPC_SPEC.md`で構成・人数を再検討中）、族長の家などの建物内部、店・宿、BGM。戦闘なし。
+
+## 4.15 No.09 いわやまのどうくつ（2026-09-23）
+- ユーザー提供の縦長原画2枚（1024×1536）を無加工でCURRENT背景にした2フロアの画像マップ。1F=`いわやまのどうくつ_1.png`（`assets/maps/iwayama_cave_1/`、`map_iwayama_cave_1`、`IwayamaCave1Scene`）、2F=`いわやまのどうくつ_3.png`（`assets/maps/iwayama_cave_2/`、`map_iwayama_cave_2`、`IwayamaCave2Scene`）。`_2.png`は`_1.png`とバイト一致のため、ユーザー判断で2フロア構成とした。共通画像マップScene（`RainlandImageMapScene`）を使い、`worldScale: 1.5`。
+- **導線**: 世界地図の`destination_iwayama_cave`（`implemented`、`unlockFlag: null`）→ 1F南西の階段（`fromWorldMap`、上向き）。1F入口Event → 世界地図（`from_iwayama_cave`）。1F北東の階段の上 → 2F南の階段（`fromCaveFloor1`、背景の青い三角の上、上向き）。2F南の階段の下 → 1F北東の階段（`fromCaveFloor2`、下向き）。**入口は世界地図からのみ**（ザボンのむら北東のどうくつとは接続しない、ユーザー確定）。世界地図から入るときだけ`いわやまのどうくつ_イメージ.png`の入場演出（5秒）を挟む。
+- 構成: 1F=燭台のある岩棚を木の階段と吊り橋でつないだ回廊（地底湖つき）。2F=外周の輪の回廊と中央の台地（左右の吊り橋・中央の階段）、北の階段の上が最奥。2F南の階段の下にある岩棚は階段とつながっていないため歩行不可。
+- **ランダムエンカウント**（1F・2F共通）: こあくま・エリマキヘビ・ダイジャ（`ENCOUNTER_TABLES.iwayama_cave`、均等出現）。頻度はビーエのもりと同じ`IWAYAMA_CAVE_RANDOM_ENCOUNTER`。戦闘背景は洞窟（`mq0_battle_bg_009`）。敵の構成・出現率はTEMP_TEST_VALUE（まじんのどうくつ7〜10Fの敵を引き継いだ仮構成）。
+- Collisionは`tools/build_iwayama_cave_collision.py`で生成（石畳の色→8pxセル→穴埋め・孤立点除去→床の縁の小石ぶん2セル拡幅（床をほぼ含まない岩・暗闇には広げない）→木の階段・吊り橋を手測定矩形で追加→入口につながる床だけ残す）。歩ける場所は実際のプレイヤー判定で`tests/bodyPassability.test.mjs`が確認する。
+- 2F北の階段の上（最奥）はDEVメッセージだけのイベント予約地点（`event_iwayama_cave_2_inner_point`）。**タロサ一時参加・共闘・正式同行、ボスは未実装**（`SPECIAL_GAMEPLAY_SPEC.md` §2でTBD）。1F北東の階段手前の赤い丸から縦スクロール（見下ろし型）の崩落シューティング（`IwayamaShootingScene`、§2.1）を実装済み。NPC・宝箱なし。
+
+## 4.16 No.10 かくれざと（2026-09-24）
+
+- ユーザー提供`かくれざと.png`（1536×1024）を無加工でCURRENT背景にした画像マップ。`assets/maps/hidden_village/`（`map_hidden_village`、`HiddenVillageScene`）で、BACKGROUND / COLLISION / EVENT / OBJECTの4レイヤーと`worldScale: 1.5`を使う。
+- **導線**: 世界地図の`destination_hidden_village`（`implemented`、現在の`unlockFlag: null`）→ 北西の木門内側（`fromWorldMap`、下向き）。北西門のEvent（`event_hidden_village_northwest_exit`）→ 世界地図（`from_hidden_village`）。入場演出、建物内部、店、BGMは未実装／TBD。
+- ミレイとの出会い、身分を隠した会話、No.11への導線はこのマップの実装済み住民会話で先取りしない。本編イベントとしてTBDのまま残す。
+- 最新のNPC目安は**住民5人 + ミレイ**。現コードには生活会話だけの仮住民8人があり、この目安および`NPC_DIALOGUE_MASTER.md`未提供の状態と競合する。会話本文・配置は現行正式データとして確定せず、`NPC_SPEC.md` / `TBD_REGISTRY.md`で管理する。
+
+## 4.16 No.10 かくれざと（2026-09-24）
+
+- ユーザー提供`かくれざと.png`（1536×1024）を無加工でCURRENT背景にした画像マップ。`assets/maps/hidden_village/`（`map_hidden_village`、`HiddenVillageScene`）。No.01と同じBACKGROUND/COLLISION/EVENT/OBJECT方式、共通`RainlandImageMapScene`、`worldScale: 1.5`を使う。
+- **導線**: 北西の門から世界地図へ戻る（`event_hidden_village_northwest_exit` → `from_hidden_village`）。世界地図の`destination_hidden_village`は実装済みで、同じ門の内側`fromWorldMap`へ到着する。解放条件は未確定のため常時選択可としており、進行条件を仮定していない。
+- Collisionは`tools/build_hidden_village_collision.py`で生成する。道色を8pxセルへ抽出し、北西の門・石段・神社前・広場・家前・木橋・水車前・洞窟前を手測定領域で補い、建物・神社・水・滝・崖・森を除外して北西入口につながる経路だけを残す。実プレイヤーの当たり判定で全spawn・出口・主要地点までの到達性をテストする。
+- 現在のコードには家・神社・水車の前の固定6人と、広場・西の花壇の小道を歩く住民2人の**仮配置**がある。全員は`assets/characters/reference/reference/村人たち/`由来の既存ランタイム村人シートを使うが、最新目安の「5人＋ミレイ」と一致しない。`NPC_DIALOGUE_MASTER.md` が未提供のため、正式会話・正式配置へ自動置換しない。
+- 未実装／TBD: ミレイが身分を隠して主人公・タロサと出会う本編イベント、建物内部・店・BGM、正式な会話本文、正式な解放条件、洞窟の接続先。
 
 ## 5. 基本進行の大枠
 No.01 はじまりのばしょ
-→ ワールドマップ（目的地ポイント選択）
 → No.02 はじまりのまち
-→ No.03 ビーエのむら
-→ No.04〜05 レインランド方面
-→ No.06 ザボンのむら
-→ No.07〜14 中盤地域
+→ No.03 ビーエのもり
+→ No.04 ビーエのむら
+→ No.05 レインランドのもり
+→ No.06 レインランドじょうかまち／レインランドじょう
+→ No.07 まじんのどうくつ
+→ レインランドじょうへ再報告
+→ No.08 ザボンのむら
+→ No.09 いわやまのどうくつ
+→ No.10 かくれざと
+→ No.11 みずうみの古城
+→ No.12 港町ダコハ
+→ No.13 コタンカイムの洞窟
+→ No.14 ポサロ城
 → No.15 ふっかつのほこら
-→ No.16 デーマスの塔
+→ No.16 デーマスのとう
 → No.17 ぬまちのどうくつ
-→ No.18 バトラスのとりで
-→ No.19 オロチのしろ
-→ No.20 最終地点
+→ No.18 いしのまち
+→ No.19 バトラスのとりで
+→ No.20 オロチへの道／オロチのしろ／最終地点
 → オロチゾンビ1回目
 → 「もういちど」
 → **No.01 はじまりのばしょ再訪**

@@ -56,6 +56,12 @@ export class PartySystem {
     return true;
   }
 
+  /** 「はじめから」用。主人公1人だけのパーティへ戻す(永続化はGameStateRepository側で行う)。 */
+  resetToLeaderOnly(): void {
+    this.joinedIds.clear();
+    this.joinedIds.add("hero");
+  }
+
   getActiveMembers(): readonly PartyMember[] {
     return PARTY_MEMBERS
       .filter((member) => this.joinedIds.has(member.id))

@@ -45,14 +45,51 @@ test("starting-forest background and collision share the same pixel dimensions a
   assert.deepEqual(collisionSize, { width: manifest.width, height: manifest.height });
 });
 
-test("starting-forest package routes its north-archway event to the point-selection world map", () => {
+test("starting-forest package routes its north archway to the world map and keeps boss/chest/arrival state as objects", () => {
   const events = readImageMapEvents(JSON.parse(readFileSync(path.join(MAP_DIR, "events.json"), "utf-8")));
   const objects = readImageMapObjects(JSON.parse(readFileSync(path.join(MAP_DIR, "objects.json"), "utf-8")));
   assert.equal(events.length, 1);
   assert.equal(events[0].trigger, "enter");
   assert.equal(events[0].commands[0].type, "world-map");
   assert.equal(events[0].commands[0].worldMapEntryId, "from_starting_forest");
-  assert.deepEqual(objects, []);
+  const boss = objects.find((object) => object.id === "boss_starting_forest_erimaki_tokage");
+  assert.deepEqual(boss && {
+    type: boss.type,
+    label: boss.label,
+    monsterId: boss.type === "boss" ? boss.monsterId : undefined,
+    victoryFlag: boss.type === "boss" ? boss.victoryFlag : undefined,
+    unlockFlag: boss.type === "boss" ? boss.unlockFlag : undefined,
+  }, {
+    type: "boss",
+    label: "えりまきとかげ",
+    monsterId: "erimaki_hebi",
+    victoryFlag: "boss.starting_forest_erimaki_tokage_defeated",
+    unlockFlag: "story.rainland_castle_town_unlocked",
+  });
+  const chest = objects.find((object) => object.id === "chest_starting_forest_kaifukuyaku");
+  assert.deepEqual(chest && {
+    type: chest.type,
+    itemId: chest.type === "chest" ? chest.itemId : undefined,
+    openedFlag: chest.type === "chest" ? chest.openedFlag : undefined,
+  }, {
+    type: "chest",
+    itemId: "kaifukuyaku",
+    openedFlag: "chest.starting_forest_kaifukuyaku_opened",
+  });
+  const arrival = objects.find((object) => object.id === "arrival_starting_forest_tarosa");
+  assert.deepEqual(arrival && {
+    type: arrival.type,
+    characterId: arrival.type === "arrival" ? arrival.characterId : undefined,
+    consumedFlag: arrival.type === "arrival" ? arrival.consumedFlag : undefined,
+  }, {
+    type: "arrival",
+    characterId: "tarosa",
+    consumedFlag: "event.starting_forest_tarosa_hunt_talked",
+  });
+  assert.ok(arrival && arrival.x >= events[0].bounds.x && arrival.y >= events[0].bounds.y
+    && arrival.x + arrival.width <= events[0].bounds.x + events[0].bounds.width
+    && arrival.y + arrival.height <= events[0].bounds.y + events[0].bounds.height,
+  "Tarosa must enter and leave through the actual north warp zone");
 });
 
 test("starting-forest collision mask keeps the south gate and north archway walkable and reaches both map edges", () => {
@@ -64,6 +101,8 @@ test("starting-forest collision mask keeps the south gate and north archway walk
   const isBlocked = (x, y) => collisionRects.some((rect) => x >= rect.x && x < rect.x + rect.width && y >= rect.y && y < rect.y + rect.height);
   assert.equal(isBlocked(770, 970), false, "the fromWorldMap spawn near the south gate must be walkable");
   assert.equal(isBlocked(770, 30), false, "the north archway exit zone must be walkable");
+  assert.equal(isBlocked(864, 217), false, "the green boss point must be reachable on the trail");
+  assert.equal(isBlocked(718, 399), false, "the blue chest point must be reachable beside the waterfall");
   // Deep forest corners must stay blocked.
   assert.equal(isBlocked(50, 50), true);
   assert.equal(isBlocked(1480, 970), true);

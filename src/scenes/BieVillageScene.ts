@@ -14,6 +14,8 @@ import { MIREI_SPRITE } from "../config/mireiSprite.ts";
 import { ensureWalkAnimations, preloadWalkSprite } from "../systems/CharacterWalkSprite.ts";
 import { PartyFollowers } from "../systems/PartyFollowers.ts";
 import { FieldMenu } from "../ui/FieldMenu.ts";
+import { BIE_VILLAGE_ANOMALY } from "../config/bieVillageAnomaly.ts";
+import { startMapAnomalyAmbience } from "../systems/MapAnomalyAmbience.ts";
 
 const MAP_ID = "map_03_bie_village";
 const MANIFEST_KEY = "image-map.bie-village.manifest";
@@ -35,7 +37,9 @@ export interface BieVillageSceneData {
 }
 
 /**
- * No.03「ビーエのむら」。StartingPlaceScene(No.01)と同じBACKGROUND/COLLISION/EVENT/OBJECT
+ * No.04「ビーエのむら」(内部IDは旧No.03由来)。背景はビーエのむら更新.png、collision.pngはtools/build_bie_village_collision.pyが生成する。
+ * ビーエのもりから続く地域の異変として、背景の一部が一瞬だけ乱れる小さな異変(config/bieVillageAnomaly.ts)を常時重ねる。
+ * StartingPlaceScene(No.01)と同じBACKGROUND/COLLISION/EVENT/OBJECT
  * 画像マップ方式をそのまま再利用する。NPC・会話・木こり救出イベント・ランダムエンカウントは
  * docs/NPC/02_bie_no_mura.md が SOURCE_DRAFT_EXISTS / REDUCING のため今回は未実装(follow-up)。
  */
@@ -82,6 +86,8 @@ export class BieVillageScene extends Phaser.Scene {
     }
     // background.pngはネイティブ解像度のまま(参照画像とバイト一致)を変更せず、worldScaleぶんだけ拡大表示する。
     background.setScale(worldScale);
+    // 小さな異変(チリチリ・横ずれ・マップチップ化け)。背景の上・キャラクターの下に重なり、判定や進行には触れない。
+    const anomaly = startMapAnomalyAmbience(this, BACKGROUND_KEY, worldScale, manifest, BIE_VILLAGE_ANOMALY);
 
     const mask = readCollisionMaskImageData(this, COLLISION_KEY);
     if (mask.width !== manifest.width || mask.height !== manifest.height) {
@@ -178,6 +184,7 @@ export class BieVillageScene extends Phaser.Scene {
         scene: this,
         player: this.player,
         collisionRectCount: collisionRects.length,
+        anomaly,
         setCollisionVisible: (visible: boolean): void => this.collisionRuntime.setDebugVisible(visible),
       };
       // eslint-disable-next-line no-console

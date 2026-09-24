@@ -6,10 +6,14 @@ export interface BattleDialogueEvent {
   readonly type: "battle";
   readonly eventId: string;
   readonly monsterId: DevBattleMonsterId;
+  /** Optional local-map name for this encounter; the shared battle stats and sprite stay keyed by monsterId. */
+  readonly monsterDisplayName?: string;
   readonly returnSceneKey: string;
   readonly returnSpawnId: string;
-  /** TODO: GameState/SaveSystem integration; not persisted in the DEV event. */
+  /** Persistent flag committed by BattleScene only on a victory. */
   readonly victoryFlag?: string;
+  /** Additional persistent flags committed with victory only (for a boss's world-state unlock, etc.). */
+  readonly victoryFlags?: readonly string[];
   /**
    * Random-field encounters (e.g. starting_forest) return the player to the exact
    * pre-battle position instead of a named spawn. NPC-triggered events leave these unset

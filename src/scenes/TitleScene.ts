@@ -6,6 +6,9 @@ import type { TitleSceneData } from "../config/openingIntro.ts";
 import { TITLE_PRESENTATION } from "../config/titlePresentation.ts";
 import { InputSystem } from "../systems/InputSystem.ts";
 import { openingCampfireAudio } from "../systems/OpeningCampfireAudio.ts";
+import { GameStateRepository } from "../systems/GameStateRepository.ts";
+import { DEV_STARTING_ITEMS, inventory } from "../systems/Inventory.ts";
+import { partySystem } from "../systems/PartySystem.ts";
 
 const LOGO_KEY = "titleLogo";
 const LOGO_PATH = "assets/ui/title/mq0_title_logo.png";
@@ -419,7 +422,7 @@ export class TitleScene extends Phaser.Scene {
     if (this.gameStarting) return;
     this.gameStarting = true;
     this.actions.setLocked(true);
-    // 「はじめから」を押したその入力中にAudioContextを許可する。演出本体はNo.01で開始する。
+    // 「はじめから」を押したその入力中にAudioContextを許可する。導入の音はNo.01で開始する。
     if (item.action === "START_GAME") openingCampfireAudio.prepareFromUserGesture();
     this.cursorTween?.stop();
     const selectedText = this.itemTexts[this.selectedIndex];
@@ -433,9 +436,20 @@ export class TitleScene extends Phaser.Scene {
     });
   }
 
+  /**
+   * 「つづきから」未実装の間も、はじめからは必ず主人公1人・Lv1から始める
+   * (以前の加入状態・EXP・所持金・道具・ジャンカードを持ち越さない)。
+   */
+  private resetForNewGame(): void {
+    new GameStateRepository().startNewGame();
+    partySystem.resetToLeaderOnly();
+    inventory.reset(DEV_STARTING_ITEMS);
+  }
+
   private runMenuAction(action: string): void {
     console.log(`[TitleScene] action: ${action}`);
-    if (action === "START_GAME") this.scene.start("StartingPlaceScene", { openingSequence: true });
+    if (action === "START_GAME") this.resetForNewGame();
+    if (action === "START_GAME") this.scene.start("OpeningGlitchScene");
     if (action === "JANCARD_GACHA") this.scene.start("JumpCardGachaScene");
     if (action === "JANCARD_BOOK") this.scene.start("JumpCardEncyclopediaScene");
     // 未接続項目は、既存どおり入力解除してタイトルへ留まる。

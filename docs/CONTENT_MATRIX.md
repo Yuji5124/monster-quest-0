@@ -1,6 +1,8 @@
 # モンスタークエスト0 コンテンツ進捗表
 
-最終更新: 2026-09-19 JST
+最終更新: 2026-09-24 JST
+
+> **2026-09-24 同期済み:** 地域表は最新の正式No.01〜20・表示名・実装状態へ更新した。本文に残るPhase 8.6 / Tiled / ROUGH_FIELDの記録は履歴であり、`PLAY_ORDER_SPEC.md`、`MAP_FLOW_SPEC.md`、`STORY_FLOW.md`と衝突する仕様には使わない。内部`mapId`は互換のため残す。
 
 > 2026-09-18以降、新規ローカルマップの正式方針は `MAP_SYSTEM.md`（背景画像正本 + Collision / Event / Object）である。本表にあるTiled / ROUGH_FIELD / FieldSceneの項目は既存実装の進捗記録として保持し、新規制作の標準とはしない。
 
@@ -14,7 +16,7 @@ Phase 8.6では既存世界地図REFERENCEを背景にしたROUGH_FIELDを追加
 - `DIALOGUE_DRAFT`: 会話原案あり。実装人数・台詞は再編集対象を含む
 - `DIALOGUE_READY`: 実装用会話として再編集済み
 - `ASSET_READY`: ChatGPT等で素材制作済み
-- `IN_GITHUB`: 正式パスへ配置済み
+- `IN_DESKTOP`: デスクトップ正本の正式パスへ配置済み
 - `SUPERSEDED`: 旧仕様により現行実装へ使用しない
 - `IMPLEMENTED`: Phaser実装済み
 - `PLAYTESTED`: 実機 / ブラウザで確認済み
@@ -34,40 +36,35 @@ Phase 8.6では既存世界地図REFERENCEを背景にしたROUGH_FIELDを追加
 ## 地域
 | No. | 地域 | 設定 | NPC会話 | Phaser実装 | 備考 |
 |---:|---|---|---|---|---|
-| 01 | **はじまりのばしょ** | **CONFIRMED** | - | PARTIAL: 夜の仮表示・DEV_PLACEHOLDER歩行/衝突。Phase 8.5でNo.02への導線をフィールド(仮)経由へ変更 | **Phase 5。正式素材・会話・昼版は未実装** |
-| 02 | はじまりのまち | CONFIRMED | DIALOGUE_DRAFT | PARTIAL: 2026-09-19にCURRENT背景画像方式(`StartingTownScene`、No.01と同じBACKGROUND/COLLISION/EVENT/OBJECT)へ移行。建物5棟(reference画像に実在する数へ6→5縮小、やどや/どうぐや/ぶきや/きょうかい/民家A)の外観+Collision・NPC5体(DEV_PLACEHOLDER)・パーティ加入・戦闘イベント・建物内部5室(InteriorScene、出入りあり)・西端でWorldMapSceneへ接続、まで実装。店/宿/教会機能・正式NPC・正式会話は未実装 | 会話原案あり。人数・配置はNPC_SPEC.mdで再検討中 |
-| 03 | ビーエのむら | CONFIRMED | DIALOGUE_DRAFT | PARTIAL: No.01と同じ画像マップ方式(`BieVillageScene`)で背景+Collision+北門Event+WorldMapScene接続まで実装。unlockFlagは実フラグ(`story.bie_village_unlocked`)で、SaveSystem未接続の間は`developmentUnlockedFlags`を暫定の解放状態として本番でも使い、世界地図から出入りできる(2026-09-19)。NPC・木こり救出イベント・ランダムエンカウントは未実装(会話原案が人数未確定のDIALOGUE_DRAFTのため) | 木こり救出事件あり。縮小後マップに合わせ再編集 |
-| 04 | レインランドのまち | CONFIRMED | DIALOGUE_DRAFT | 未実装 | 王家・ミレイ等の伏線あり |
-| 05 | レインランドじょう | CONFIRMED | DIALOGUE_DRAFT | PARTIAL(2026-09-20、正式背景・仮NPC5人) | 王家・政治の中心 |
-| 06 | ザボンのむら | CONFIRMED | DIALOGUE_DRAFT | 未実装 | タロサ関連。ただし全員をタロサ話題にしない |
-| 07 | いしのむら | CONFIRMED | 未作成 | 未実装 | 石・岩の個性 |
-| 08 | まじんのどうくつ | CONFIRMED | - | 未実装 | ダンジョン |
-| 09 | かくれざと | CONFIRMED | 未作成 | 未実装 | 閉鎖性・秘密性 |
-| 10 | みずうみの古城 | CONFIRMED | - | 未実装 | ダンジョン |
-| 11 | いわやまのどうくつ | CONFIRMED | - | 未実装 | ダンジョン |
-| 12 | 港町ダコハ | CONFIRMED | 未作成 | 未実装 | 港・交易 |
-| 13 | コタンカイムの洞窟 | CONFIRMED | - | 未実装 | 採用済み追加ダンジョン。正式番号へ統合 |
-| 14 | ポサロ城 | CONFIRMED | 未作成 | 未実装 | 採用済み追加拠点。正式番号へ統合 |
-| 15 | ふっかつのほこら | CONFIRMED | 未作成 | 未実装 | 重要拠点 |
-| 16 | デーマスの塔 | CONFIRMED | - | 未実装 | 勇者装備が必要、デーマス戦 |
-| 17 | ぬまちのどうくつ | CONFIRMED | - | 未実装 | 終盤へ向かうダンジョン |
-| 18 | バトラスのとりで | CONFIRMED | - | 未実装 | 終盤 |
-| 19 | オロチのしろ | CONFIRMED | - | 未実装 | 終盤 |
-| 20 | 最終地点 | CONFIRMED | - | 未実装 | 内部名オロチゾンビのま、公開ネタバレ注意 |
-
-追加フィールド（正式No.01〜No.20の番号なし、`MAP_FLOW_SPEC.md` §4.7 / §4.10）:
-- はじまりのもり: PARTIAL。画像マップ＋ランダムエンカウント(DEV_BATTLE_BALANCE)。
-- レインランドのもり（その1・その2）: PARTIAL（2026-09-19）。画像マップ2画面(`RainlandForest1Scene`/`RainlandForest2Scene`)＋その1⇄その2の接続＋世界地図接続まで実装。NPC・出現モンスター・正式名称・レインランド方面との正式接続は未実装/TBD。
-- レインランドじょうかまち: PARTIAL（2026-09-19）。俯瞰の町マップ(`RainlandCastleTownScene`)＋世界地図接続＋世界地図から入るときの5秒の入場演出(`MapSplashScene`)まで実装。No.04「レインランドのまち」との対応・北の城門は2026-09-20にNo.05レインランドじょうへ接続済み(`MAP_FLOW_SPEC.md` §4.13)。NPC・店・建物内部は未実装/TBD。
+| 01 | **はじまりのばしょ** | **CONFIRMED** | 0 | PARTIAL: 夜版・焚き火導入・歩行・世界地図出口。昼版／次導線はTBD | No.01の通常NPCは置かない |
+| 02 | はじまりのまち | CONFIRMED | DIALOGUE_DRAFT（7人） | PARTIAL: CURRENT背景、建物5棟・内部5室、世界地図接続、村人7人 | 店／宿／教会機能、正式会話はTBD |
+| 03 | ビーエのもり | CONFIRMED | - | PARTIAL: 背景、ランダム戦闘、宝箱、えりまきとかげ、タロサの一度限りの到着会話 | タロサ加入ではない |
+| 04 | ビーエのむら | CONFIRMED | DIALOGUE_DRAFT（目安6人） | PARTIAL: 背景、Collision、北門、入場演出、小さな景観異常 | 木こりイベント・正式会話はTBD |
+| 05 | レインランドのもり | CONFIRMED | - | PARTIAL: 2画面の画像マップ、世界地図接続、ランダム戦闘 | NPC・BGM・No.06への本編接続はTBD |
+| 06 | レインランドじょうかまち／レインランドじょう | CONFIRMED | DIALOGUE_DRAFT（町8／城7目安） | PARTIAL: 城下町、城、王の間、2D／3D切替を実装 | 王への正式報告・正式NPC会話はTBD |
+| 07 | まじんのどうくつ | CONFIRMED | - | PARTIAL: 10層ターン制Dungeon RPG | 正式解放・攻略手段・BGMはTBD。`map_08_majin_cave`は互換ID |
+| 08 | ザボンのむら | CONFIRMED | DIALOGUE_DRAFT（目安6人） | PARTIAL: 背景、Collision、世界地図接続、入場演出 | タロサ関係イベント・NPC・内部はTBD |
+| 09 | いわやまのどうくつ | CONFIRMED | - | PARTIAL: 2フロア、ランダム戦闘、縦スクロール（見下ろし型）崩落シューティング | タロサ一時参加／正式同行、ボスはTBD |
+| 10 | かくれざと | CONFIRMED | PROVISIONAL | PARTIAL: 背景、Collision、世界地図接続 | 住民5人 + ミレイが最新目安。現行仮住民8人・ミレイイベントは未確定 |
+| 11 | みずうみの古城 | CONFIRMED | - | 未実装 | ミレイ正式同行 |
+| 12 | 港町ダコハ | CONFIRMED | 未作成（目安7人） | 未実装 | 港・交易 |
+| 13 | コタンカイムの洞窟 | CONFIRMED | - | 未実装 | ゆうしゃのたて |
+| 14 | ポサロ城 | CONFIRMED | 未作成（目安4人） | 未実装 | バクラー戦・ゆうしゃのけん |
+| 15 | ふっかつのほこら | CONFIRMED | 未作成（目安2人） | 未実装 | ゆうしゃのかんむり・薄い反射ヒント |
+| 16 | デーマスのとう | CONFIRMED | - | DEV戦闘のみ | ミラー反射本戦 |
+| 17 | ぬまちのどうくつ | CONFIRMED | - | 未実装 | 小型敵多数のアクション |
+| 18 | いしのまち | CONFIRMED | 未作成（目安7人） | 未実装 | 旧「いしのむら」はSUPERSEDED |
+| 19 | バトラスのとりで | CONFIRMED | - | 未実装 | タロサの毒の矢 |
+| 20 | オロチへの道／オロチのしろ／最終地点 | CONFIRMED | - | 未実装 | 縦シューティング→コマンドRPG。裏ボスは公開時伏せる |
 
 ## 主要キャラクター
-| キャラクター | 設定 | 歩行素材 | GitHub配置 | 実装 |
+| キャラクター | 設定 | 歩行素材 | デスクトップ配置 | 実装 |
 |---|---|---|---|---|
 | **主人公** | **CONFIRMED: 男性 / 別世界NPC出身** | **CURRENT(2026-09-19、`protagonist_walk.png`) / 旧女性素材SUPERSEDED** | 配置済み | 歩行のみ実装(`Player.ts`) |
 | タロサ | CONFIRMED | CURRENT(2026-09-19、`tarosa_walk.png`) | 配置済み | 歩行followerのみ実装(`PartyFollowers.ts`) |
 | ミレイ | CONFIRMED | CURRENT(2026-09-19、`mirei_walk.png`) | 配置済み | 歩行followerのみ実装(`PartyFollowers.ts`) |
 | わたべ | CONFIRMED | ASSET_READY | 要ASSET_INDEX確認 | 未実装 |
-| NPC基本10体 | CONFIRMED | ASSET_READY | 要ASSET_INDEX確認 | 未実装 |
+| NPC基本10体 | CONFIRMED | CURRENT（`villager_{01..10}_walk.png`） | IN_DESKTOP | No.02・No.10で利用中。No.10の配置と会話は仮 |
 
 ## オープニング
 | 要素 | 状態 | 備考 |
@@ -102,7 +99,7 @@ Phase 8.6では既存世界地図REFERENCEを背景にしたROUGH_FIELDを追加
 
 ## ジャンカード
 - 総数: 45枚
-- 1回ジャンコイン1枚
+- 1回20円
 - No.01→No.45の固定順
 - ランダムではない
 - ダブりなし
@@ -132,21 +129,19 @@ GitHub実ファイル状態は `ASSET_INDEX.md` を確認する。
 | 解像度・画面追従 | 正式値TBD | 仮960×720(旧320×240の3倍,4:3) / FIT | PC表示確認 / iPhone実機未確認 |
 | キー入力基盤 | 共通action / 配列は仮 | IMPLEMENTED: InputSystem | 単体5件 / PCキー操作確認 |
 | タイトル | CONFIRMED | IMPLEMENTED: TitleScene（ロゴ + 6項目メニュー選択/決定。はじめからのみ冒頭演出へ接続） | PC起動 / 型チェック / ビルド / リサイズ確認 |
-| オープニング（No.01焚き火導入） | **最新仕様あり** | IMPLEMENTED: タイトル→StartingPlaceSceneの`openingSequence`。黒→焚き火の明転→6行ナレーション→主人公の無言→環境音だけで入力解放 | PC起動 / 型チェック / ビルド / タイミング・入力・音確認 |
+| オープニング（No.01焚き火導入） | **最新仕様あり** | PARTIAL: タイトル→5秒の制御済み起動ノイズ→StartingPlaceSceneの`openingSequence`。黒→焚き火の明転→6行ナレーション→主人公の無言→環境音だけで入力解放 | PC確認済み。iPhone実機・昼版は未確認／未実装 |
 | はじまりのばしょ夜／昼 | **仕様あり** | PARTIAL: 夜の仮表示と歩行のみ。昼版未実装 | Chrome表示・衝突確認 |
 | フィールド歩行 | 最終方式TBD | PARTIAL: No.01内のDEV_PLACEHOLDERで4方向移動・Arcade Physics | 入力・停止・同時押し・壁抜け・再入場確認 |
-| マップ遷移(No.01⇔フィールド⇔No.02) | 出入口座標TBD | PARTIAL: config駆動のexit/spawnでDEV_PLACEHOLDER往復。Phase 8.5でNo.01⇔No.02の直接接続をSUPERSEDEDにし、フィールド(仮)経由へ変更。No.02正式内容は未実装 | 自動テスト20件+13件(Phase 8.5) / Chrome・Edge実機で往復確認済み(Phase 6.1、旧経路) |
-| フィールド(仮、No.01-No.02間) | 正式名称・地形TBD | PARTIAL: Phase 8.5でDEV_PLACEHOLDER_FIELD(仮mapId `field_starting_region`)を追加。960×720より大きい仮空間+主人公追従Camera+仮Collision(山/水辺) | 自動テスト13件 / ブラウザ実機は今回未完了(Scene状態検証+実キーイベントで代替) |
-| NPC会話 | 仕様あり / 再編集中 | PARTIAL: DEV_PLACEHOLDER_NPC1体+DEV_PLACEHOLDER_DIALOGUEで会話システム基盤のみ実装。正式NPC/台詞は未着手 | 自動テスト10件 / ブラウザ実機は今回未完了(下記参照) |
+| 地域間マップ遷移 | ポイント選択式ワールドマップ | PARTIAL: `WorldMapScene`と画像マップのworld-map Eventで実装。`FieldScene`はlegacy | 自動テストあり。実解放順とiPhone実機はTBD |
+| フィールド(legacy) | 新規制作には使用しない | PARTIAL: `field_starting_region`を互換・回帰確認用に保持 | 新規正本ではない |
+| NPC会話 | 仕様あり / 再編集中 | PARTIAL: 会話システム基盤に加え、No.02は村人7人（固定店主4／歩行住民3）の素材・配置・短い初稿会話を実装。他地域の正式NPC・会話は未着手 | 自動テスト＋No.02ブラウザ表示確認（2026-09-23） |
 | 建物内部＋出入り(No.02) | 内部機能TBD | PARTIAL: 共通InteriorScene+interiorIdデータ駆動により5室(DEV_PLACEHOLDER_INTERIOR、2026-09-19に6→5室へ縮小)の入退室を実装。店/宿/教会機能・内部NPCは未実装 | 自動テスト / ブラウザ実機で入口→内部→退出→建物前復帰を確認済み(2026-09-19) |
-| EventSystem | 仕様あり | 未実装 | - |
-| ランダムエンカウント | 仕様あり | PARTIAL: はじまりのもりのみ。距離ベース抽選(`RandomEncounter.ts`)+地域encounter table(`encounterTables.ts`)、1戦闘1体、戦闘後クールダウンあり。他地域は未実装 | 自動テスト(distance/roll/table/monster解決)+ブラウザ実機(`?mapTest=starting-forest`)で確認 |
-| コマンド戦闘 | 仕様あり | 未実装 | - |
-| レベルアップ | 仕様あり / 数値TBD | 未実装 | - |
-| 魔法 | 主要名称確定 / 数値TBD | 未実装 | - |
-| アイテム / 装備 | 主要名称確定 / 数値TBD | 未実装 | - |
-| セーブ / ロード | 仕様あり | 未実装 | - |
-| ジャンカード | 仕様あり | 未実装 | - |
+| EventSystem | 仕様あり | PARTIAL: 会話、宝箱、戦闘、転送は個別実装。統一ランナーは未実装 | 自動テストあり |
+| ランダムエンカウント | 仕様あり | PARTIAL: No.03／No.05／No.09で距離ベース抽選。値・地域拡張はTBD | 自動テストあり |
+| コマンド戦闘 | 仕様あり | PARTIAL: 1〜3人パーティ、EXP、毒、だいヒットを実装 | 全地域・全ボス・iPhone実機は未完 |
+| レベルアップ／魔法／アイテム | 仕様あり / 一部数値TBD | PARTIAL: 成長、戦利品、主要魔法、アイテム基盤を実装 | 装備UI等は未実装 |
+| セーブ / ロード | 仕様あり | PARTIAL: `GameStateRepository`で進捗・パーティ・所持品・フラグを保存 | 完全なSaveSystem・ロードUIは未完 |
+| ジャンカード | 仕様あり | PARTIAL: ガチャ／図鑑／固定順の基盤あり | 本番コイン入手導線・全内容確認は未完 |
 | 終盤異常演出 | 仕様あり | 未実装 | - |
 | iPhone操作 | 仕様あり | 未実装 | - |
 

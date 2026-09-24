@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_hidden_village_northwest_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 112, "y": 0, "width": 80, "height": 48 },
+      "commands": [{ "type": "world-map", "worldMapEntryId": "from_hidden_village" }]
+    }
+  ]
+}

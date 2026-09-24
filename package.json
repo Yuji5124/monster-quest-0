@@ -15,9 +15,11 @@
     "sync:maps": "node tools/mq0-map-ai/sync-map-for-phaser.js"
   },
   "dependencies": {
-    "phaser": "3.90.0"
+    "phaser": "3.90.0",
+    "three": "0.186.0"
   },
   "devDependencies": {
+    "@types/three": "0.186.0",
     "typescript": "5.9.3",
     "vite": "8.3.0"
   }

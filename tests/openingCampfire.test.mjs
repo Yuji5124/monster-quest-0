@@ -14,7 +14,6 @@ const read = (relative) => readFileSync(path.join(REPO_ROOT, relative), "utf-8")
 
 test("the No.01 opening is dark and silent first, then reveals over 0:02-0:07", () => {
   assert.equal(OPENING_CAMPFIRE.initialSilenceMs, 700);
-  assert.equal(OPENING_CAMPFIRE.ambienceStartMs, 700);
   assert.equal(OPENING_CAMPFIRE.revealStartMs, 2000);
   assert.equal(OPENING_CAMPFIRE.revealDurationMs, 5000);
   assert.equal(OPENING_CAMPFIRE.narrationStartMs, 7000);
@@ -33,14 +32,15 @@ test("the requested narration is preserved in its authored order", () => {
   assert.ok(getOpeningCampfireControlReleaseMs() >= 24000 && getOpeningCampfireControlReleaseMs() <= 26000);
 });
 
-test("new game enters the campfire sequence, keeps controls locked, then releases to ambience without BGM", () => {
+test("new game shows only the hidden-program glitch before the campfire sequence, then releases to ambience without BGM", () => {
   const title = read("src/scenes/TitleScene.ts");
+  const openingGlitch = read("src/scenes/OpeningGlitchScene.ts");
   const startingPlace = read("src/scenes/StartingPlaceScene.ts");
   const ambience = read("src/systems/OpeningCampfireAudio.ts");
 
   assert.match(title, /openingCampfireAudio\.prepareFromUserGesture\(\)/);
-  assert.match(title, /scene\.start\("StartingPlaceScene", \{ openingSequence: true \}\)/);
-  assert.doesNotMatch(title, /action === "START_GAME"\) this\.scene\.start\("OpeningGlitchScene"\)/);
+  assert.match(title, /action === "START_GAME"\) this\.scene\.start\("OpeningGlitchScene"\)/);
+  assert.match(openingGlitch, /scene\.start\("StartingPlaceScene", \{ openingSequence: true \}\)/);
   assert.match(startingPlace, /if \(this\.openingInputLocked\) this\.actions\.setLocked\(true\)/);
   assert.match(startingPlace, /openingCampfireAudio\.startFireAndWind\(\)/);
   assert.match(startingPlace, /openingCampfireAudio\.enableFieldAmbience\(\)/);

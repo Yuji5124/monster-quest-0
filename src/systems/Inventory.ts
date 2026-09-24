@@ -28,6 +28,17 @@ export class Inventory {
     }
   }
 
+  /** 「はじめから」用。メモリ上の所持品を初期所持品へ戻して保存する。 */
+  reset(initial: Readonly<Partial<Record<ItemId, number>>> = {}): void {
+    this.quantities.clear();
+    for (const [itemId, quantity] of Object.entries(initial)) {
+      if (Object.hasOwn(ITEM_DEFINITIONS, itemId) && typeof quantity === "number" && quantity > 0) {
+        this.quantities.set(itemId as ItemId, quantity);
+      }
+    }
+    this.repository?.saveInventory(Object.fromEntries(this.quantities));
+  }
+
   getSlots(): readonly InventorySlot[] {
     return [...this.quantities.entries()]
       .filter(([itemId]) => itemId in ITEM_DEFINITIONS)
@@ -40,6 +51,16 @@ export class Inventory {
     const wholeQuantity = Math.floor(quantity);
     if (wholeQuantity <= 0) return false;
     this.quantities.set(itemId, (this.quantities.get(itemId) ?? 0) + wholeQuantity);
+    this.repository?.saveInventory(Object.fromEntries(this.quantities));
+    return true;
+  }
+
+  /** Consumes a battle/field item. Returns false (and leaves stock untouched) if not enough is held. */
+  remove(itemId: ItemId, quantity = 1): boolean {
+    const current = this.quantities.get(itemId) ?? 0;
+    if (!Number.isFinite(quantity) || quantity <= 0 || current < quantity) return false;
+    const remaining = current - Math.floor(quantity);
+    if (remaining > 0) this.quantities.set(itemId, remaining); else this.quantities.delete(itemId);
     this.repository?.saveInventory(Object.fromEntries(this.quantities));
     return true;
   }

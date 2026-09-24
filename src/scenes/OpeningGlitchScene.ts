@@ -1,188 +1,210 @@
 import Phaser from "phaser";
 import { DISPLAY, SCALE_FACTOR } from "../config/display.ts";
 import {
-  GLITCH_FLICKER_INTERVAL_MS,
-  GLITCH_MAX_FRAME_DELTA_MS,
-  GLITCH_SHIFT_INTERVAL_MS,
-  OPENING_GLITCH_DURATION_MS,
+  OPENING_CORRUPTION_FRAGMENTS,
+  OPENING_DEBUG_BOOT_LINES,
+  OPENING_DEBUG_ERROR_LINES,
   OPENING_GLITCH_STAGES,
 } from "../config/openingGlitch.ts";
-import type { GlitchStage } from "../config/openingGlitch.ts";
+import type { OpeningGlitchStageId } from "../config/openingGlitch.ts";
 
-const GLITCH_TEXT_POOL_SIZE = 3;
-// 文字化け風の記号・数字・半角カナ断片。意味のある文章は作らない。
-const GLITCH_CHARS = "█▓▒░#%&@*■□▲▼◆◇0123456789ｱｲｳｴｵｶｷｸｹｺﾊﾞｸﾞ";
-const SCANLINE_COLORS = [0xffffff, 0x66e0ff, 0xff5ecb, 0x8888aa];
-const FLASH_COLORS = [0xff2255, 0x22ffee, 0xffee22];
-
-// 以下は旧320×240基準のpx値 * SCALE_FACTOR。演出の見た目の比率を解像度移行前と揃える。
-const GLITCH_TEXT_FONT_SIZE = 10 * SCALE_FACTOR;
-const GLITCH_TEXT_MARGIN_X = 40 * SCALE_FACTOR;
-const GLITCH_TEXT_MARGIN_Y = 16 * SCALE_FACTOR;
-const SHIFT_OFFSET_SHIFT_MIN = 2 * SCALE_FACTOR;
-const SHIFT_OFFSET_SHIFT_MAX = 6 * SCALE_FACTOR;
-const SHIFT_OFFSET_INTENSE_MIN = 3 * SCALE_FACTOR;
-const SHIFT_OFFSET_INTENSE_MAX = 10 * SCALE_FACTOR;
-const SHIFT_OFFSET_Y = 2 * SCALE_FACTOR;
+const SMALL_FONT_SIZE = 7 * SCALE_FACTOR;
+const NORMAL_FONT_SIZE = 9 * SCALE_FACTOR;
+const DENSE_FRAGMENT_COUNT = 96;
+const STAGE_DEPTH = 10;
+const BLACK = 0x000000;
+const WHITE = "#d8d8d8";
+const GREY = "#7b7f83";
+const ERROR_RED = "#8c3232";
 
 /**
- * 「はじめから」直後の約5秒異常演出。FC〜初期SFC時代のデータ破損風を狙い、
- * 派手なデジタルグリッチ/VHS/シェーダー演出にはしない。
- * 終了後はNo.01「はじまりのばしょ」夜版へ遷移する。
- * 接続処理は completeOpening() に集約する。
+ * タイトルの直後に、内部の起動情報が一瞬だけ漏れたように見せる5秒の制御演出。
+ * 背景画像・タイトル・ロゴ・人物・地図はロードも表示もしない。
  */
 export class OpeningGlitchScene extends Phaser.Scene {
-  private elapsedMs = 0;
+  private stageObjects: Phaser.GameObjects.GameObject[] = [];
   private finished = false;
-  private blackOutStarted = false;
-  private graphics!: Phaser.GameObjects.Graphics;
-  private glitchTexts: Phaser.GameObjects.Text[] = [];
 
   constructor() {
     super("OpeningGlitchScene");
   }
 
   create(): void {
-    this.elapsedMs = 0;
     this.finished = false;
-    this.blackOutStarted = false;
-
-    this.cameras.main.setBackgroundColor(0x000000);
+    this.cameras.main.setBackgroundColor("#000000");
     this.cameras.main.setScroll(0, 0);
-
-    this.graphics = this.add.graphics();
-    this.glitchTexts = Array.from({ length: GLITCH_TEXT_POOL_SIZE }, () =>
-      this.add
-        .text(0, 0, "", { fontFamily: "monospace", fontSize: `${GLITCH_TEXT_FONT_SIZE}px`, color: "#ffffff" })
-        .setVisible(false)
-    );
+    this.playStage(0);
   }
 
-  update(_time: number, delta: number): void {
+  private playStage(index: number): void {
     if (this.finished) return;
-
-    this.elapsedMs += Math.min(delta, GLITCH_MAX_FRAME_DELTA_MS);
-    const clampedMs = Math.min(this.elapsedMs, OPENING_GLITCH_DURATION_MS);
-    this.render(clampedMs);
-
-    if (this.elapsedMs >= OPENING_GLITCH_DURATION_MS) {
+    const stage = OPENING_GLITCH_STAGES[index];
+    if (!stage) {
       this.completeOpening();
+      return;
+    }
+    this.clearStage();
+    this.renderStage(stage.id);
+    this.time.delayedCall(stage.durationMs, () => this.playStage(index + 1));
+  }
+
+  private renderStage(stageId: OpeningGlitchStageId): void {
+    if (stageId === "boot") this.renderBoot();
+    if (stageId === "debugOverlap") this.renderDebugOverlap();
+    if (stageId === "corruption") this.renderCorruption();
+    if (stageId === "recovery") this.renderRecovery();
+    if (stageId === "blackOut") this.addBackdrop();
+  }
+
+  /** 0.0〜1.0秒: 少数の文字だけが黒から浮く。 */
+  private renderBoot(): void {
+    this.addBackdrop();
+    this.addCrtScanlines(0.035);
+    const positions = [
+      [42, 54], [42, 88], [42, 122], [570, 72], [570, 108], [92, 474], [560, 550],
+    ] as const;
+    OPENING_DEBUG_BOOT_LINES.forEach((line, index) => {
+      const [x, y] = positions[index];
+      const text = this.addText(x, y, line, index === 2 ? GREY : WHITE, SMALL_FONT_SIZE).setAlpha(0);
+      this.tweens.add({ targets: text, alpha: 0.78, duration: 70, delay: index * 95, ease: "Linear" });
+    });
+    this.addDigitalNoise(6, 0.16);
+  }
+
+  /** 1.0〜2.3秒: 断片的なパネルとエラーが重なる。 */
+  private renderDebugOverlap(): void {
+    this.addBackdrop();
+    this.addCrtScanlines(0.055);
+    this.addDebugPanel(34, 48, 344, 182, [
+      "> INIT_PLAYER...", "> LOAD_MAP...", "> MEMORY CHECK...", "0x00A18F  3F 0A FF 7E",
+    ], WHITE);
+    this.addDebugPanel(500, 64, 392, 154, [
+      "> CRC ERROR", "> DATA MISMATCH", "> RETRY...", "> UNKNOWN",
+    ], GREY);
+    this.addDebugPanel(132, 404, 406, 190, [
+      "> 0x804D210 : ??", "> JMP  ???", "> CMP  ??,???", "> NULL",
+    ], GREY);
+    this.addDebugPanel(584, 430, 292, 150, [
+      OPENING_DEBUG_ERROR_LINES[0], OPENING_DEBUG_ERROR_LINES[1], OPENING_DEBUG_ERROR_LINES[5],
+    ], ERROR_RED);
+    this.addDigitalNoise(24, 0.48);
+    this.addDropouts(9);
+  }
+
+  /** 2.3〜3.8秒: 読めない断片を高密度にちらつかせる。 */
+  private renderCorruption(): void {
+    this.addBackdrop();
+    this.addCrtScanlines(0.1);
+    for (let index = 0; index < DENSE_FRAGMENT_COUNT; index += 1) {
+      const text = OPENING_CORRUPTION_FRAGMENTS[Math.floor(Math.random() * OPENING_CORRUPTION_FRAGMENTS.length)];
+      const x = Phaser.Math.Between(12, DISPLAY.width - 210);
+      const y = Phaser.Math.Between(14, DISPLAY.height - 24);
+      const color = index % 13 === 0 ? ERROR_RED : index % 4 === 0 ? GREY : WHITE;
+      const fragment = this.addText(x, y, text, color, Phaser.Math.Between(SMALL_FONT_SIZE - 3, SMALL_FONT_SIZE + 3))
+        .setAlpha(Phaser.Math.FloatBetween(0.22, 0.75));
+      this.tweens.add({
+        targets: fragment,
+        alpha: 0.04,
+        duration: Phaser.Math.Between(70, 150),
+        delay: Phaser.Math.Between(0, 620),
+        yoyo: true,
+        repeat: 2,
+        ease: "Linear",
+      });
+    }
+    this.addDigitalNoise(62, 0.74);
+    this.addDropouts(22);
+    this.addHorizontalTears(11);
+  }
+
+  /** 3.8〜4.6秒: ほとんどの文字を消し、数行だけを点滅させる。 */
+  private renderRecovery(): void {
+    this.addBackdrop();
+    this.addCrtScanlines(0.028);
+    const remaining = [
+      [126, 176, "..."], [486, 334, "???"], [706, 512, "LOAD..."],
+    ] as const;
+    remaining.forEach(([x, y, line], index) => {
+      const text = this.addText(x, y, line, index === 1 ? GREY : WHITE, NORMAL_FONT_SIZE).setAlpha(0.86);
+      this.tweens.add({ targets: text, alpha: 0.08, duration: 95, delay: index * 90, yoyo: true, repeat: 3, ease: "Linear" });
+    });
+    this.addHorizontalTears(2, 610);
+  }
+
+  private addDebugPanel(x: number, y: number, width: number, height: number, lines: readonly string[], color: string): void {
+    const border = this.track(this.add.graphics().setDepth(STAGE_DEPTH));
+    border.lineStyle(1 * SCALE_FACTOR, Phaser.Display.Color.HexStringToColor(color).color, 0.48);
+    border.strokeRect(x, y, width, height);
+    lines.forEach((line, index) => this.addText(x + 18, y + 20 + index * 30, line, color, SMALL_FONT_SIZE));
+  }
+
+  /** 低コントラストの走査線。緑のコード雨にはしない。 */
+  private addCrtScanlines(alpha: number): void {
+    const scanlines = this.track(this.add.graphics().setDepth(STAGE_DEPTH + 20));
+    scanlines.fillStyle(0xffffff, alpha);
+    for (let y = 0; y < DISPLAY.height; y += 12) scanlines.fillRect(0, y, DISPLAY.width, 1);
+  }
+
+  /** 圧縮ブロックと短いRGBの信号ずれ。背景画面にはならない小ささに限定する。 */
+  private addDigitalNoise(count: number, alpha: number): void {
+    const noise = this.track(this.add.graphics().setDepth(STAGE_DEPTH + 16));
+    const colors = [0xe0e0e0, 0x6d2529, 0x264d68, 0x655a30];
+    for (let index = 0; index < count; index += 1) {
+      const width = Phaser.Math.Between(8, 58);
+      const height = Phaser.Math.Between(2, 9);
+      noise.fillStyle(colors[index % colors.length], alpha * Phaser.Math.FloatBetween(0.2, 1));
+      noise.fillRect(Phaser.Math.Between(0, DISPLAY.width - width), Phaser.Math.Between(0, DISPLAY.height - height), width, height);
     }
   }
 
-  private render(elapsedMs: number): void {
-    this.graphics.clear();
-    this.hideGlitchTexts();
-
-    switch (this.currentStageId(elapsedMs)) {
-      case "blackIn":
-        // 何も描かない。黒のまま。
-        break;
-      case "scanlines":
-        this.renderScanlines(elapsedMs);
-        break;
-      case "shift":
-        this.renderScanlines(elapsedMs);
-        this.renderShift(elapsedMs, GLITCH_SHIFT_INTERVAL_MS, SHIFT_OFFSET_SHIFT_MIN, SHIFT_OFFSET_SHIFT_MAX);
-        break;
-      case "intense":
-        this.renderScanlines(elapsedMs);
-        this.renderShift(
-          elapsedMs, GLITCH_SHIFT_INTERVAL_MS * 0.7, SHIFT_OFFSET_INTENSE_MIN, SHIFT_OFFSET_INTENSE_MAX,
-        );
-        this.renderColorFlash(elapsedMs);
-        break;
-      case "blackOut":
-        this.renderBlackOut(elapsedMs);
-        break;
+  private addDropouts(count: number): void {
+    const holes = this.track(this.add.graphics().setDepth(STAGE_DEPTH + 18));
+    holes.fillStyle(BLACK, 1);
+    for (let index = 0; index < count; index += 1) {
+      holes.fillRect(Phaser.Math.Between(8, DISPLAY.width - 120), Phaser.Math.Between(8, DISPLAY.height - 32), Phaser.Math.Between(18, 105), Phaser.Math.Between(8, 28));
     }
   }
 
-  private currentStageId(elapsedMs: number): GlitchStage["id"] {
-    const ratio = Math.min(elapsedMs / OPENING_GLITCH_DURATION_MS, 1);
-    const stage = OPENING_GLITCH_STAGES.find((s) => ratio >= s.startRatio && ratio < s.endRatio);
-    return stage?.id ?? OPENING_GLITCH_STAGES[OPENING_GLITCH_STAGES.length - 1].id;
-  }
-
-  private isOnBeat(elapsedMs: number, intervalMs: number): boolean {
-    return Math.floor(elapsedMs / intervalMs) % 2 === 0;
-  }
-
-  // 断続的な横線ノイズ。オン/オフの切替は決まった間隔、線の位置・色だけ軽い乱数。
-  private renderScanlines(elapsedMs: number): void {
-    if (!this.isOnBeat(elapsedMs, GLITCH_FLICKER_INTERVAL_MS)) return;
-    const barCount = 2 + Math.floor(Math.random() * 3);
-    for (let i = 0; i < barCount; i += 1) {
-      const y = Math.random() * DISPLAY.height;
-      const h = (1 + Math.random() * 2) * SCALE_FACTOR;
-      const color = SCANLINE_COLORS[Math.floor(Math.random() * SCANLINE_COLORS.length)];
-      this.graphics.fillStyle(color, 0.5 + Math.random() * 0.3);
-      this.graphics.fillRect(0, y, DISPLAY.width, h);
+  private addHorizontalTears(count: number, fixedY?: number): void {
+    const tears = this.track(this.add.graphics().setDepth(STAGE_DEPTH + 22));
+    const colors = [0xd6d6d6, 0x812b32, 0x2b5874];
+    for (let index = 0; index < count; index += 1) {
+      const y = fixedY ?? Phaser.Math.Between(28, DISPLAY.height - 28);
+      tears.fillStyle(colors[index % colors.length], index === 0 ? 0.78 : 0.35);
+      tears.fillRect(Phaser.Math.Between(0, 140), y, Phaser.Math.Between(330, DISPLAY.width), Phaser.Math.Between(1, 5));
     }
   }
 
-  // 画面の一部が左右にずれたような表示位置異常 + 文字化け風の断片表示。
-  private renderShift(elapsedMs: number, intervalMs: number, minOffset: number, maxOffset: number): void {
-    if (this.isOnBeat(elapsedMs, intervalMs)) {
-      const magnitude = minOffset + Math.floor(Math.random() * (maxOffset - minOffset + 1));
-      const offsetX = (Math.random() < 0.5 ? -1 : 1) * magnitude;
-      const offsetY = Math.random() < 0.3 ? (Math.random() < 0.5 ? -1 : 1) * SHIFT_OFFSET_Y : 0;
-      this.cameras.main.setScroll(offsetX, offsetY);
-      this.showGlitchText();
-    } else {
-      this.cameras.main.setScroll(0, 0);
+  private addBackdrop(): void {
+    this.track(this.add.rectangle(DISPLAY.width / 2, DISPLAY.height / 2, DISPLAY.width, DISPLAY.height, BLACK, 1).setDepth(0));
+  }
+
+  private addText(x: number, y: number, text: string, color: string, fontSize: number): Phaser.GameObjects.Text {
+    return this.track(this.add.text(x, y, text, {
+      color,
+      fontFamily: "monospace",
+      fontSize: `${fontSize}px`,
+      padding: { x: 1, y: 0 },
+    }).setDepth(STAGE_DEPTH));
+  }
+
+  private track<T extends Phaser.GameObjects.GameObject>(object: T): T {
+    this.stageObjects.push(object);
+    return object;
+  }
+
+  private clearStage(): void {
+    for (const object of this.stageObjects) {
+      this.tweens.killTweensOf(object);
+      object.destroy();
     }
+    this.stageObjects = [];
   }
 
-  // 強い乱れ段階だけの、色がおかしくなる一瞬の全画面フラッシュ。
-  private renderColorFlash(elapsedMs: number): void {
-    if (!this.isOnBeat(elapsedMs, GLITCH_FLICKER_INTERVAL_MS)) return;
-    if (Math.random() >= 0.25) return;
-    const color = FLASH_COLORS[Math.floor(Math.random() * FLASH_COLORS.length)];
-    this.graphics.fillStyle(color, 0.3 + Math.random() * 0.15);
-    this.graphics.fillRect(0, 0, DISPLAY.width, DISPLAY.height);
-  }
-
-  private renderBlackOut(_elapsedMs: number): void {
-    this.cameras.main.setScroll(0, 0);
-    if (this.blackOutStarted) return;
-    this.blackOutStarted = true;
-    const blackOutStage = OPENING_GLITCH_STAGES.find((s) => s.id === "blackOut");
-    const startMs = (blackOutStage?.startRatio ?? 1) * OPENING_GLITCH_DURATION_MS;
-    const remainingMs = Math.max(0, OPENING_GLITCH_DURATION_MS - startMs);
-    this.cameras.main.fadeOut(remainingMs, 0, 0, 0);
-  }
-
-  private showGlitchText(): void {
-    const text = this.glitchTexts[Math.floor(Math.random() * this.glitchTexts.length)];
-    text.setText(this.randomGlitchString());
-    text.setPosition(
-      Math.random() * (DISPLAY.width - GLITCH_TEXT_MARGIN_X),
-      Math.random() * (DISPLAY.height - GLITCH_TEXT_MARGIN_Y),
-    );
-    text.setVisible(true);
-  }
-
-  private hideGlitchTexts(): void {
-    for (const text of this.glitchTexts) text.setVisible(false);
-  }
-
-  private randomGlitchString(): string {
-    const length = 3 + Math.floor(Math.random() * 5);
-    let out = "";
-    for (let i = 0; i < length; i += 1) {
-      out += GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)];
-    }
-    return out;
-  }
-
-  // Phase 4: 演出完了後、No.01夜版へ一度だけ引き渡す。
   private completeOpening(): void {
     if (this.finished) return;
     this.finished = true;
-    this.graphics.clear();
-    this.hideGlitchTexts();
-    this.cameras.main.setScroll(0, 0);
-    this.scene.start("StartingPlaceScene");
+    this.clearStage();
+    this.scene.start("StartingPlaceScene", { openingSequence: true });
   }
 }

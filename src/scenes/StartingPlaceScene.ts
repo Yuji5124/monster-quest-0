@@ -58,6 +58,7 @@ export class StartingPlaceScene extends Phaser.Scene {
   private transitioning = false;
   private openingInputLocked = false;
   private openingAmbienceActive = false;
+  private openingOverlays: Phaser.GameObjects.GameObject[] = [];
 
   constructor(sceneKey = "StartingPlaceScene") {
     super({ key: sceneKey, physics: { arcade: { gravity: { x: 0, y: 0 } } } });
@@ -142,6 +143,7 @@ export class StartingPlaceScene extends Phaser.Scene {
     }
 
     configureMapCamera(this, this.player.visual, { x: 0, y: 0, width: manifest.width * worldScale, height: manifest.height * worldScale });
+    if (this.openingInputLocked) this.frameOpeningCamera();
     this.cameras.main.setBackgroundColor("#101018");
     if (!this.openingInputLocked) this.cameras.main.fadeIn(MAP_TRANSITION_FADE_MS, 0, 0, 0);
 
@@ -220,8 +222,8 @@ export class StartingPlaceScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(4000);
     const fireScreenPosition = {
-      x: DISPLAY.width / 2 + CAMPFIRE_WORLD_POSITION.x - this.player.visual.x,
-      y: DISPLAY.height / 2 + CAMPFIRE_WORLD_POSITION.y - this.player.visual.y,
+      x: CAMPFIRE_WORLD_POSITION.x - this.cameras.main.scrollX,
+      y: CAMPFIRE_WORLD_POSITION.y - this.cameras.main.scrollY,
     };
     const fireHaloOuter = this.add
       .circle(fireScreenPosition.x, fireScreenPosition.y, 150, 0xd3481b, 0)
@@ -233,6 +235,10 @@ export class StartingPlaceScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setBlendMode(Phaser.BlendModes.ADD)
       .setDepth(4002);
+    // 導入専用の画面固定オーバーレイ。releaseOpeningControl()でカメラ追従へ戻す前に
+    // 必ずフェードアウト・破棄する(スクロールに追従しないため、残すと焚き火の光が
+    // 画面に貼りついたまま夜の暗幕も消えなくなる)。
+    this.openingOverlays = [nightVeil, fireHaloOuter, fireHaloInner];
     const narrationPanel = this.add
       .rectangle(DISPLAY.width / 2, DISPLAY.height - 108, DISPLAY.width - 104, 128, 0x07101b, 0)
       .setScrollFactor(0)
@@ -253,7 +259,7 @@ export class StartingPlaceScene extends Phaser.Scene {
       .setAlpha(0);
 
     // 0:00は完全な暗闇・無音。約0.7秒後から、火と遠い風だけを先に感じさせる。
-    this.time.delayedCall(OPENING_CAMPFIRE.ambienceStartMs, () => {
+    this.time.delayedCall(OPENING_CAMPFIRE.initialSilenceMs, () => {
       openingCampfireAudio.startFireAndWind();
       this.tweens.add({ targets: nightVeil, alpha: 0.84, duration: 1100, ease: "Sine.easeOut" });
       this.tweens.add({ targets: fireHaloOuter, alpha: 0.29, duration: 1100, ease: "Sine.easeOut" });
@@ -324,11 +330,16 @@ export class StartingPlaceScene extends Phaser.Scene {
     this.player.setFacing("up");
     this.time.delayedCall(OPENING_CAMPFIRE.lookPauseMs, () => {
       narrationText.setText("…………。");
-      this.tweens.add({ targets: narrationPanel, alpha: 0.78, duration: 260, ease: "Sine.easeOut" });
+      this.tweens.add({
+        targets: narrationPanel,
+        alpha: 0.78,
+        duration: OPENING_CAMPFIRE.protagonistLineFadeInMs,
+        ease: "Sine.easeOut",
+      });
       this.tweens.add({
         targets: narrationText,
         alpha: 1,
-        duration: 260,
+        duration: OPENING_CAMPFIRE.protagonistLineFadeInMs,
         ease: "Sine.easeOut",
         onComplete: () => {
           this.time.delayedCall(OPENING_CAMPFIRE.protagonistLineMs, () => {
@@ -347,9 +358,42 @@ export class StartingPlaceScene extends Phaser.Scene {
 
   private releaseOpeningControl(): void {
     this.openingInputLocked = false;
+    // 導入中だけ見せた遠景フレームから、通常の主人公追従へ戻す。
+    const worldBounds = this.physics.world.bounds;
+    configureMapCamera(this, this.player.visual, {
+      x: worldBounds.x,
+      y: worldBounds.y,
+      width: worldBounds.width,
+      height: worldBounds.height,
+    });
     this.actions.setLocked(false);
     // 操作可能になってもBGMは入れず、火・風にだけ水辺の環境音を重ねる。
     openingCampfireAudio.enableFieldAmbience();
+    // 画面固定の夜の暗幕・焚き火の光はカメラに追従しないため、
+    // 通常追従へ戻す前にフェードアウトして破棄する。
+    const overlays = this.openingOverlays;
+    this.openingOverlays = [];
+    if (overlays.length > 0) {
+      this.tweens.add({
+        targets: overlays,
+        alpha: 0,
+        duration: 500,
+        ease: "Sine.easeIn",
+        onComplete: () => {
+          for (const overlay of overlays) overlay.destroy();
+        },
+      });
+    }
+  }
+
+  /** 主人公と焚き火を残しつつ、右奥の山と水辺を上側へ入れる導入専用の固定フレーム。 */
+  private frameOpeningCamera(): void {
+    const camera = this.cameras.main;
+    camera.stopFollow();
+    const bounds = this.physics.world.bounds;
+    const scrollX = Phaser.Math.Clamp(this.player.visual.x - DISPLAY.width / 2, bounds.x, bounds.right - camera.width);
+    const scrollY = Phaser.Math.Clamp(this.player.visual.y - DISPLAY.height / 2 - 110, bounds.y, bounds.bottom - camera.height);
+    camera.setScroll(scrollX, scrollY);
   }
 
   private handleEvent(event: ImageMapEvent): void {

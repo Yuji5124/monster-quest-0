@@ -58,7 +58,7 @@ test("No.01 and No.02 use the point-selection WorldMapScene as the active round-
   assert.equal(westExit02.commands[0].type, "world-map");
   assert.equal(resolveWorldMapEntryDestination(worldMapManifest, worldMapDestinations, westExit02.commands[0].worldMapEntryId).id, "destination_starting_town");
 
-  for (const destination of worldMapDestinations) {
+  for (const destination of worldMapDestinations.filter((candidate) => candidate.implementationStatus === "implemented")) {
     const target = MAPS[destination.targetMapId];
     assert.ok(target.spawns[destination.targetSpawnId]);
   }
@@ -69,7 +69,7 @@ test("はじまりのまち (map_02_starting_town) is an image-map package with 
   assert.equal(MAPS.map_02_starting_town.sceneKey, "StartingTownScene");
 });
 
-test("はじまりのもり (map_starting_forest) round-trips through the point-selection WorldMapScene", () => {
+test("ビーエのもり (map_starting_forest) round-trips through the point-selection WorldMapScene", () => {
   const northExit = startingForestEvents.find((event) => event.id === "event_starting_forest_north_exit");
   assert.equal(northExit.commands[0].type, "world-map");
   assert.equal(resolveWorldMapEntryDestination(worldMapManifest, worldMapDestinations, northExit.commands[0].worldMapEntryId).id, "destination_starting_forest");
@@ -80,7 +80,7 @@ test("はじまりのもり (map_starting_forest) round-trips through the point-
   assert.equal(target.sceneKey, "StartingForestScene");
   assert.ok(target.spawns[forestDestination.targetSpawnId]);
 
-  // 正式No.01〜No.20の番号は持たない追加フィールドであり、既存の番号付きmapIdと衝突しない。
+  // 正式No.03。内部mapIdは旧名称由来の互換IDとして維持する。
   assert.equal(MAPS.map_starting_forest.id, "map_starting_forest");
   assert.equal(MAPS.map_starting_forest.exits.length, 0);
 });

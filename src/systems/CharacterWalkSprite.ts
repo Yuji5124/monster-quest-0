@@ -28,7 +28,7 @@ export function ensureWalkAnimations(scene: Phaser.Scene, geometry: WalkSpriteGe
     scene.anims.create({
       key,
       frames: scene.anims.generateFrameNumbers(geometry.key, { frames: walkFrames(direction) }),
-      frameRate: 7,
+      frameRate: geometry.walkFrameRate,
       yoyo: true,
       repeat: -1,
     });

@@ -1,0 +1,17 @@
+{
+  "formatVersion": 1,
+  "objects": [
+    {
+      "id": "shooting_iwayama_cave_1_collapse",
+      "type": "shooting",
+      "label": "あかいまる",
+      "x": 886,
+      "y": 452,
+      "width": 36,
+      "height": 36,
+      "blocking": false,
+      "sceneKey": "IwayamaShootingScene",
+      "clearedFlag": "event.iwayama_cave_shooting_cleared"
+    }
+  ]
+}

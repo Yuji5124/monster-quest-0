@@ -8,10 +8,16 @@ export interface RandomEncounterConfig {
   readonly postBattleCooldownDistance: number;
 }
 
-// 2026-09-19: はじまりのもりのworldScale(1.5、StartingForestScene参照)に合わせ、同じ相対頻度を保つため
+// 2026-09-19: No.03ビーエのもり（内部starting_forest）のworldScale(1.5、StartingForestScene参照)に合わせ、同じ相対頻度を保つため
 // stepDistance/postBattleCooldownDistanceも1.5倍(240→360, 300→450)にスケールした。
 export const STARTING_FOREST_RANDOM_ENCOUNTER: RandomEncounterConfig = {
   stepDistance: 360,
   encounterChance: 0.25,
   postBattleCooldownDistance: 450,
 } as const;
+
+// No.05レインランドのもりもworldScale 1.5の画像マップなので、ビーエのもりと同じ頻度を使う。
+export const RAINLAND_FOREST_RANDOM_ENCOUNTER: RandomEncounterConfig = STARTING_FOREST_RANDOM_ENCOUNTER;
+
+// No.09いわやまのどうくつもworldScale 1.5の画像マップなので、ビーエのもりと同じ頻度を使う(TEMP_TEST_VALUE)。
+export const IWAYAMA_CAVE_RANDOM_ENCOUNTER: RandomEncounterConfig = STARTING_FOREST_RANDOM_ENCOUNTER;

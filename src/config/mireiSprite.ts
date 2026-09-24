@@ -13,5 +13,6 @@ export const MIREI_SPRITE: WalkSpriteGeometry = {
   path: new URL("../../assets/characters/playable/mirei_walk.png", import.meta.url).toString(),
   frameWidth: 54,
   frameHeight: 70,
+  walkFrameRate: 7,
   baselineY: 67,
 };

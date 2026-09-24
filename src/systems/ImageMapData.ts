@@ -47,17 +47,57 @@ export interface ImageMapWorldMapCommand {
   readonly worldMapEntryId: string;
 }
 
-export interface ImageMapObject {
+interface ImageMapObjectBase {
   readonly id: string;
-  readonly type: "npc";
   readonly label: string;
+  /** Native background-pixel rectangle, measured from its top-left. */
   readonly x: number;
   readonly y: number;
   readonly width: number;
   readonly height: number;
   readonly blocking: boolean;
+}
+
+/** Legacy/simple talk target. Its text remains data rather than a Scene literal. */
+export interface ImageMapNpcObject extends ImageMapObjectBase {
+  readonly type: "npc";
   readonly message: string;
 }
+
+/** A persistent, interactable normal chest. The opened flag is the authoritative state. */
+export interface ImageMapChestObject extends ImageMapObjectBase {
+  readonly type: "chest";
+  readonly itemId: string;
+  readonly openedFlag: string;
+}
+
+/** A field boss that starts one existing BattleScene encounter. */
+export interface ImageMapBossObject extends ImageMapObjectBase {
+  readonly type: "boss";
+  readonly monsterId: string;
+  readonly victoryFlag: string;
+  /** Story/world flag set alongside victory, such as a newly available destination. */
+  readonly unlockFlag: string;
+}
+
+/** A non-blocking scripted entrance point for a named existing character. */
+export interface ImageMapArrivalObject extends ImageMapObjectBase {
+  readonly type: "arrival";
+  readonly characterId: string;
+  readonly consumedFlag: string;
+}
+
+/**
+ * 調べると特殊ゲームプレイSceneを始める地点(No.09いわやまのどうくつの赤い丸)。
+ * `clearedFlag`が立った後は表示も判定もしない(初回のみの強制イベント)。
+ */
+export interface ImageMapShootingObject extends ImageMapObjectBase {
+  readonly type: "shooting";
+  readonly sceneKey: string;
+  readonly clearedFlag: string;
+}
+
+export type ImageMapObject = ImageMapNpcObject | ImageMapChestObject | ImageMapBossObject | ImageMapArrivalObject | ImageMapShootingObject;
 
 export interface ImageMapBounds {
   readonly x: number;
@@ -147,20 +187,52 @@ export function readImageMapObjects(value: unknown): ImageMapObject[] {
   if (!Array.isArray(objects)) throw new Error("objects data objects must be an array");
   return objects.map((value, index) => {
     const object = requireRecord(value, `objects data objects[${index}]`);
-    if (requireString(object, "type", `objects data objects[${index}]`) !== "npc") {
-      throw new Error("image-map object type must be npc");
-    }
-    return {
+    const label = `objects data objects[${index}]`;
+    const type = requireString(object, "type", label);
+    const common: ImageMapObjectBase = {
       id: requireString(object, "id", `objects data objects[${index}]`),
-      type: "npc",
       label: requireString(object, "label", `objects data objects[${index}]`),
       x: requireNonNegativeNumber(object, "x", `objects data objects[${index}]`),
       y: requireNonNegativeNumber(object, "y", `objects data objects[${index}]`),
       width: requirePositiveInteger(object, "width", `objects data objects[${index}]`),
       height: requirePositiveInteger(object, "height", `objects data objects[${index}]`),
       blocking: requireBoolean(object, "blocking", `objects data objects[${index}]`),
-      message: requireString(object, "message", `objects data objects[${index}]`),
     };
+    if (type === "npc") return { ...common, type, message: requireString(object, "message", label) };
+    if (type === "chest") {
+      return {
+        ...common,
+        type,
+        itemId: requireString(object, "itemId", label),
+        openedFlag: requireSaveFlag(object, "openedFlag", label),
+      };
+    }
+    if (type === "boss") {
+      return {
+        ...common,
+        type,
+        monsterId: requireString(object, "monsterId", label),
+        victoryFlag: requireSaveFlag(object, "victoryFlag", label),
+        unlockFlag: requireSaveFlag(object, "unlockFlag", label),
+      };
+    }
+    if (type === "arrival") {
+      return {
+        ...common,
+        type,
+        characterId: requireString(object, "characterId", label),
+        consumedFlag: requireSaveFlag(object, "consumedFlag", label),
+      };
+    }
+    if (type === "shooting") {
+      return {
+        ...common,
+        type,
+        sceneKey: requireString(object, "sceneKey", label),
+        clearedFlag: requireSaveFlag(object, "clearedFlag", label),
+      };
+    }
+    throw new Error("image-map object type must be npc, chest, boss, arrival, or shooting");
   });
 }
 
@@ -207,5 +279,13 @@ function readOptionalPositiveNumber(record: Record<string, unknown>, key: string
 function requireBoolean(record: Record<string, unknown>, key: string, label: string): boolean {
   const value = record[key];
   if (typeof value !== "boolean") throw new Error(`${label}.${key} must be a boolean`);
+  return value;
+}
+
+function requireSaveFlag(record: Record<string, unknown>, key: string, label: string): string {
+  const value = requireString(record, key, label);
+  if (!/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/.test(value)) {
+    throw new Error(`${label}.${key} must be a dot-separated lower-case save flag`);
+  }
   return value;
 }

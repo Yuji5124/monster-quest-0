@@ -4,6 +4,7 @@ import test from "node:test";
 import { DEV_BATTLE_PLAYER, readDevBattleMonsterId } from "../src/config/battle.ts";
 import { calculateDamage, BattleSystem, rollBattleReward } from "../src/battle/BattleSystem.ts";
 import { DEV_BATTLE_MONSTERS, getDevBattleMonster } from "../src/data/monsters.ts";
+import { MAGIC_HEAT } from "../src/data/battleActions.ts";
 
 test("starting-forest enemies keep their confirmed names, assets, and DEV stats", () => {
   assert.equal(DEV_BATTLE_MONSTERS["001"].displayName, "たまゴースト");
@@ -39,8 +40,8 @@ test("a defeated enemy does not counterattack and reaches VICTORY after acknowle
   battle.confirm();
   assert.equal(battle.getSnapshot().state, "VICTORY");
   assert.equal(battle.getSnapshot().player.hp, playerHp);
-  assert.deepEqual(battle.getSnapshot().reward, { experience: 4, money: 3, itemId: "dokukeshi" });
-  assert.match(battle.getSnapshot().message, /4 EXPと　3G/);
+  assert.deepEqual(battle.getSnapshot().reward, { experience: 8, money: 3, itemId: "dokukeshi" });
+  assert.match(battle.getSnapshot().message, /8 EXPと　3G/);
 });
 
 test("battle rewards sanitize values and make an item drop probabilistic through an injected roll", () => {
@@ -55,6 +56,16 @@ test("a player at zero HP reaches DEFEAT", () => {
   battle.confirm();
   assert.equal(battle.getSnapshot().player.hp, 0);
   assert.equal(battle.getSnapshot().state, "DEFEAT");
+});
+
+test("ヒート deals damage through the generic magic_damage pipeline and spends its MP (MAGIC_SPEC.md §5.1)", () => {
+  const caster = { id: "hero", displayName: "主人公", maxHp: 50, maxMp: 20, attack: 5, defense: 0, learnedMagic: [MAGIC_HEAT] };
+  const enemy = { id: "enemy", displayName: "てき", maxHp: 999, attack: 0, defense: 0 };
+  const battle = new BattleSystem(caster, enemy, () => 1); // no だいヒット interference; magic damage never crits
+  const s = battle.confirm("magic", MAGIC_HEAT.id);
+  assert.match(s.message, /ヒート/);
+  assert.equal(s.enemy.hp, enemy.maxHp - MAGIC_HEAT.power);
+  assert.equal(s.player.mp, caster.maxMp - MAGIC_HEAT.mpCost);
 });
 
 test("invalid battle query safely chooses monster 003", () => {

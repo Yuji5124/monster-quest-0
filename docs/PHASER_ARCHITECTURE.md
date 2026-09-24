@@ -1,6 +1,6 @@
 # モンスタークエスト0 Phaser実装アーキテクチャ
 
-最終更新: 2026-09-18 JST
+最終更新: 2026-09-20 JST
 
 ## 1. 目的
 Claude Code / Codex / Phaser Game Agentが、同じ責務分離で実装するための基準。
@@ -11,10 +11,11 @@ Claude Code / Codex / Phaser Game Agentが、同じ責務分離で実装する�
 - ASRSは使用しない
 - 汎用RPGエンジンを新規開発しない
 - 汎用RPGエンジンや汎用マップエディタを作らない。将来のMQ0 Map Editorは、`BACKGROUND` / `COLLISION` / `EVENT` / `OBJECT`だけを扱う小さな制作補助ツールに限定する
-- 約5時間の本編完成を最優先する
+- 初見約4時間30分 / 寄り道込み約5時間30分の本編完成を最優先する
 - AI 80% + 人間の視覚・テンポ調整20%
 - iPhone Safariを後付け対応にしない
 - 既存の正式素材を優先し、仮素材への置換を避ける
+- 例外（2026-09-23ユーザー指示「レインランドじょう3D」）: 3D表示が必要なScene（現在は`RainlandCastle3DScene`だけ）に限り**three.js**（`three@0.186.0`、固定）を使う。three.jsは`await import("three")`でそのSceneに入ったときだけ読み込み（ビルドでは別チャンク）、Phaserの描画・入力・UI・Scene管理は置き換えない。three.jsはオフスクリーンのCanvasへ描き、PhaserがそのCanvasをテクスチャとして毎フレーム更新して表示する（会話ウィンドウ・メニュー・タッチ操作はPhaserのまま）。歩ける場所・NPC・Eventは2Dと同じデータ（`collision.png`・`maps.ts`・`events.json`）を使い、3D専用の判定やマップデータを作らない。Sceneを離れるとWebGLコンテキストを確実に解放する（iPhone Safariのコンテキスト数上限対策）。WebGLが使えない場合は同じ場所の2Dへ戻す。
 
 ## 3. Scene責務
 ### BootScene
@@ -37,6 +38,11 @@ Claude Code / Codex / Phaser Game Agentが、同じ責務分離で実装する�
 - ジャンカード図鑑
 - たびのあいことば
 - 設定
+
+### OpeningGlitchScene
+- 「はじめから」後の5秒の起動ノイズ
+- 黒背景のプログラム断片・デジタルノイズ・完全な暗闇を順に表示する。背景・タイトル・人物・マップアセットはロードしない
+- 入力・セーブ・進行フラグを変更せず、終了時は`StartingPlaceScene`の`openingSequence`へ一度だけ引き渡す
 
 ### WorldScene
 - 町 / 村 / 城 / ダンジョン等のローカルマップ移動

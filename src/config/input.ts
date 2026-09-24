@@ -7,6 +7,10 @@ export const INPUT_BINDINGS = {
   confirm: ["KeyZ", "Enter"],
   cancel: ["KeyX", "Escape"],
   menu: ["KeyC"],
+  /** No.08 consumes this as the explored-floor map overlay; other scenes ignore it. */
+  map: ["KeyM"],
+  /** 2D⇄3Dの表示切替。3D表示を持つマップ(レインランドじょう)だけが使い、他のSceneは無視する。 */
+  view: ["KeyV"],
 } as const;
 
 export type InputAction = keyof typeof INPUT_BINDINGS;

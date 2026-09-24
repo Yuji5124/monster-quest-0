@@ -6,30 +6,28 @@ import type { BattleDialogueEvent } from "./BattleEventData.ts";
 import type { InputSystem } from "../systems/InputSystem.ts";
 
 const EFFECT_DEPTH = 10_000;
-const DARK_BLUE = 0x07122b;
-const FLASH_COLOR = 0xe9f5ff;
-const SHARD_ANGLES = [-2.65, -2.1, -1.58, -1.04, -0.48, 0.02, 0.55, 1.08, 1.62, 2.15, 2.68, 3.05] as const;
-const SHARD_COLORS = [0x57d8ff, 0xffcc66, 0xb994ff] as const;
+const VOID_COLOR = 0x05070d;
+const PIXEL_COLUMNS = 24;
+const PIXEL_ROWS = 18;
+const PIXEL_COLORS = [0x182233, 0x273a4b, 0x42333f, 0x28434a] as const;
 
-/** Timing helper, so the four-second contract stays unit-testable. */
+/** Timing helper, so the entrance duration stays unit-testable. */
 export function battleEntranceProgress(elapsedMs: number): number {
   return Phaser.Math.Clamp(elapsedMs / BATTLE_ENTRANCE_DURATION_MS, 0, 1);
 }
 
 /**
- * Keeps the field visible and turns it into a short "prism breach" rather than a black-screen spiral.
+ * Pulls the field into a restrained, slightly corrupted pixel vortex. The transient muted
+ * red/teal fragments suggest the world's instability without using a late-game-strength glitch.
  * Input stays locked throughout; only the caller decides whether a battle may begin.
  */
 export function beginBattleEntrance(scene: Phaser.Scene, actions: InputSystem, event: BattleDialogueEvent): void {
   actions.setLocked(true);
   const centerX = DISPLAY.width / 2;
   const centerY = DISPLAY.height / 2;
-  const maxDistance = Math.hypot(DISPLAY.width, DISPLAY.height) * 0.62;
-  const overlay = scene.add.rectangle(centerX, centerY, DISPLAY.width, DISPLAY.height, DARK_BLUE, 0).setScrollFactor(0).setDepth(EFFECT_DEPTH);
-  const flash = scene.add.rectangle(centerX, centerY, DISPLAY.width, DISPLAY.height, FLASH_COLOR, 0).setScrollFactor(0).setDepth(EFFECT_DEPTH + 2);
+  const overlay = scene.add.rectangle(centerX, centerY, DISPLAY.width, DISPLAY.height, VOID_COLOR, 0).setScrollFactor(0).setDepth(EFFECT_DEPTH);
   const graphics = scene.add.graphics().setScrollFactor(0).setDepth(EFFECT_DEPTH + 1);
   let elapsedMs = 0;
-  let flashTriggered = false;
   let disposed = false;
 
   const cleanup = (): void => {
@@ -40,22 +38,13 @@ export function beginBattleEntrance(scene: Phaser.Scene, actions: InputSystem, e
     scene.events.off(Phaser.Scenes.Events.DESTROY, cleanup);
     overlay.destroy();
     graphics.destroy();
-    flash.destroy();
   };
 
   const update = (_time: number, delta: number): void => {
     elapsedMs = Math.min(BATTLE_ENTRANCE_DURATION_MS, elapsedMs + Math.max(0, delta));
     const progress = battleEntranceProgress(elapsedMs);
-    const veil = Math.min(0.78, 0.78 * easeOutCubic(progress / 0.46));
-    overlay.setAlpha(veil);
-    drawPrismBreach(graphics, centerX, centerY, maxDistance, progress);
-
-    if (!flashTriggered && progress >= 0.88) {
-      flashTriggered = true;
-      scene.cameras.main.shake(120, 0.0025);
-      scene.cameras.main.flash(260, 233, 246, 255);
-    }
-    flash.setAlpha(progress < 0.84 ? 0 : easeInCubic((progress - 0.84) / 0.16) * 0.92);
+    overlay.setAlpha(easeInCubic(progress));
+    drawPixelVortex(graphics, centerX, centerY, progress);
 
     if (progress >= 1) {
       cleanup();
@@ -68,54 +57,44 @@ export function beginBattleEntrance(scene: Phaser.Scene, actions: InputSystem, e
   scene.events.once(Phaser.Scenes.Events.DESTROY, cleanup);
 }
 
-function drawPrismBreach(graphics: Phaser.GameObjects.Graphics, centerX: number, centerY: number, maxDistance: number, progress: number): void {
+function drawPixelVortex(graphics: Phaser.GameObjects.Graphics, centerX: number, centerY: number, progress: number): void {
   graphics.clear();
-  const streakProgress = Phaser.Math.Clamp((progress - 0.08) / 0.72, 0, 1);
-  const inward = easeInOutCubic(streakProgress);
-  for (const [index, angle] of SHARD_ANGLES.entries()) {
-    const color = SHARD_COLORS[index % SHARD_COLORS.length];
-    const distance = maxDistance * (1.08 - inward * 0.88) + (index % 3) * 24;
-    const tail = 64 + (index % 4) * 18;
-    const startX = centerX + Math.cos(angle) * distance;
-    const startY = centerY + Math.sin(angle) * distance;
-    const endX = centerX + Math.cos(angle) * Math.max(44, distance - tail);
-    const endY = centerY + Math.sin(angle) * Math.max(44, distance - tail);
-    const alpha = Math.sin(Math.PI * streakProgress) * 0.92;
-    graphics.lineStyle(3 + (index % 2), color, alpha);
-    graphics.lineBetween(startX, startY, endX, endY);
+  const pull = easeInOutCubic(Phaser.Math.Clamp((progress - 0.03) / 0.9, 0, 1));
+  const tileWidth = DISPLAY.width / PIXEL_COLUMNS;
+  const tileHeight = DISPLAY.height / PIXEL_ROWS;
+  const fragmentAlpha = 0.18 + Math.sin(Math.PI * pull) * 0.5;
+
+  for (let row = 0; row < PIXEL_ROWS; row += 1) {
+    for (let column = 0; column < PIXEL_COLUMNS; column += 1) {
+      const sourceX = (column + 0.5) * tileWidth;
+      const sourceY = (row + 0.5) * tileHeight;
+      const relativeX = sourceX - centerX;
+      const relativeY = sourceY - centerY;
+      const sourceDistance = Math.hypot(relativeX, relativeY);
+      const sourceAngle = Math.atan2(relativeY, relativeX);
+      const direction = (row + column) % 2 === 0 ? 1 : -1;
+      const angle = sourceAngle + direction * (0.08 + sourceDistance / DISPLAY.width * 0.34) * pull;
+      const distance = sourceDistance * (1 - pull * 0.985);
+      const fragmentWidth = Math.max(2, tileWidth * (0.32 + (column % 3) * 0.05) * (1 - pull * 0.48));
+      const fragmentHeight = Math.max(2, tileHeight * (0.22 + (row % 3) * 0.04) * (1 - pull * 0.48));
+      const x = centerX + Math.cos(angle) * distance - fragmentWidth / 2;
+      const y = centerY + Math.sin(angle) * distance - fragmentHeight / 2;
+      const color = PIXEL_COLORS[(column * 3 + row) % PIXEL_COLORS.length];
+      graphics.fillStyle(color, fragmentAlpha * (0.72 + ((row + column) % 4) * 0.07));
+      graphics.fillRect(x, y, fragmentWidth, fragmentHeight);
+    }
   }
 
-  const gateProgress = Phaser.Math.Clamp((progress - 0.3) / 0.6, 0, 1);
-  const gateAlpha = Math.sin(Math.PI * gateProgress) * 0.88;
-  const radius = 42 + gateProgress * 210;
-  drawDiamond(graphics, centerX, centerY, radius, 0x9ae9ff, gateAlpha, 4);
-  drawDiamond(graphics, centerX, centerY, radius * 0.64, 0xffd77a, gateAlpha * 0.75, 2);
-  graphics.fillStyle(0xdff8ff, Phaser.Math.Clamp((progress - 0.68) / 0.2, 0, 1) * 0.7);
-  graphics.fillCircle(centerX, centerY, 14 + gateProgress * 40);
-}
-
-function drawDiamond(
-  graphics: Phaser.GameObjects.Graphics,
-  centerX: number,
-  centerY: number,
-  radius: number,
-  color: number,
-  alpha: number,
-  lineWidth: number,
-): void {
-  graphics.lineStyle(lineWidth, color, alpha);
-  graphics.beginPath();
-  graphics.moveTo(centerX, centerY - radius);
-  graphics.lineTo(centerX + radius, centerY);
-  graphics.lineTo(centerX, centerY + radius);
-  graphics.lineTo(centerX - radius, centerY);
-  graphics.closePath();
-  graphics.strokePath();
-}
-
-function easeOutCubic(value: number): number {
-  const progress = Phaser.Math.Clamp(value, 0, 1);
-  return 1 - (1 - progress) ** 3;
+  // A handful of offset scan lines keep the vortex tied to the world's controlled glitches.
+  const tearAlpha = Math.sin(Math.PI * Phaser.Math.Clamp((progress - 0.18) / 0.45, 0, 1)) * 0.17;
+  if (tearAlpha > 0) {
+    for (const [index, ratio] of [0.24, 0.46, 0.71].entries()) {
+      const y = DISPLAY.height * ratio;
+      const width = DISPLAY.width * (0.18 - index * 0.025) * (1 - pull);
+      graphics.fillStyle(index === 1 ? 0x5a2936 : 0x1c4e54, tearAlpha);
+      graphics.fillRect(centerX - width / 2, y, width, Math.max(2, 4 * (1 - pull)));
+    }
+  }
 }
 
 function easeInCubic(value: number): number {

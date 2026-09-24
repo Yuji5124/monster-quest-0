@@ -23,14 +23,14 @@ test("battle scene start data preserves monster, event, and return spawn identif
     eventId: "dev_battle_event_003",
     monsterId: "003",
     returnSceneKey: "StartingTownScene",
-    returnSpawnId: "spawn_battle_event_return",
+    returnSpawnId: "fromWorldMap",
   });
 });
 
-test("the DEV battle NPC can be re-used because no completion flag is stored", () => {
-  const npc = MAPS.map_02_starting_town.npcs.find(npc => npc.id === "dev_battle_event_npc");
-  assert.equal(npc?.dialogueId, "dev_battle_event_npc");
-  assert.equal("eventCompleted" in (npc ?? {}), false);
+test("No.02 no longer exposes developer battle NPCs among its villager placements", () => {
+  const townNpcIds = MAPS.map_02_starting_town.npcs.map((npc) => npc.id);
+  assert.equal(townNpcIds.some((id) => id.startsWith("dev_")), false);
+  assert.equal(MAPS.map_02_starting_town.npcs.every((npc) => npc.dialogueId.startsWith("npc_start_town_")), true);
 });
 
 test("an absent or unknown dialogue event is ignored safely", () => {

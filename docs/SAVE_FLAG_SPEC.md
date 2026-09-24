@@ -1,6 +1,6 @@
 # モンスタークエスト0 セーブ・進行フラグ仕様
 
-最終更新: 2026-09-19 JST
+最終更新: 2026-09-24 JST
 
 このファイルはセーブデータとストーリー進行フラグの責務を整理する正本。JSONの基本構造は `DATA_CONTRACTS.md` に従う。
 
@@ -51,7 +51,7 @@
 - 一度きりイベント状態
 
 ### ジャンカード
-- ジャンコイン残数
+- ジャンカード購入に使う所持金
 - 取得済みカード
 - 取得枚数
 - 次回排出番号
@@ -99,6 +99,7 @@
 - わたべ加入 / 特殊参加
 - オロチゾンビ再戦開始 / 真の撃破
 - 真エンディング到達
+- 真の最終解決後の主人公選択（`ここに のこる`／`もとの せかいへ かえる`）
 
 推奨キー例:
 ```text
@@ -114,11 +115,30 @@ boss.orochi_zombie_true_defeated
 story.true_ending_reached
 ```
 
-実装済みキー（2026-09-18、`assets/maps/world_map/destinations.json`のNo.03ビーエのむら`unlockFlag`）:
+真の最終解決後の選択は保存対象にする。キーの正確な名称は実装開始時に一度だけ確定するが、既存キーとの混同を避けるため、候補は`ending.route_selected`であり、表示名をキーにしない。残留では主人公が世界の修復とともに徐々に消え、帰還では主人公が一度NPCとして操作不能になった後に自分の意思で歩き出す状態を、再開後も矛盾なく再生できる必要がある。レイはどちらの未来にも生まれるが、誕生までの時系列・父親の詳細は保存仕様へ固定せずTBDとする。分岐条件とイベント粒度はTBD。
+
+実装済みキー（`assets/maps/world_map/destinations.json`の正式No.04ビーエのむら／内部`map_03_bie_village`の`unlockFlag`）:
 ```text
 story.bie_village_unlocked
 ```
 このフラグを実際にtrueへ立てるSaveSystem本体・進行イベントは未実装（TBD_REGISTRY.md参照）。同義のフラグを別名で増やさない。
+
+2026-09-23から、共有`GameStateRepository`の`flags`（true値だけを保存）を一度きりの進行状態に使用する。旧v1セーブに`flags`が無い場合は空として安全に移行する。No.03ビーエのもりでこの境界に初めて保存するキーは次の4つ。
+
+```text
+boss.starting_forest_erimaki_tokage_defeated
+chest.starting_forest_kaifukuyaku_opened
+event.starting_forest_tarosa_hunt_talked
+story.rainland_castle_town_unlocked
+```
+
+No.09いわやまのどうくつ1Fの崩落シューティング（2026-09-24）は、クリア時に次のキーを保存する。立っていれば赤い丸を表示せず、イベントを再生しない。
+
+```text
+event.iwayama_cave_shooting_cleared
+```
+
+ボス戦からは勝利時だけ前者と後者の城下町解放フラグを立てる。宝箱は取得時、タロサは会話を読み終え、北側ワープ領域から去った一度だけそれぞれ保存する。タロサの加入はこのイベントでは扱わない。
 
 正確なキー名は実装開始時に一度だけ確定し、同義キーを増やさない。
 
@@ -138,11 +158,13 @@ story.bie_village_unlocked
 - `item.hero_crown_obtained`
 - `item.hero_shield_obtained`
 
+対応する正式配置は、No.13コタンカイムの洞窟＝たて、No.14ポサロ城＝けん、No.15ふっかつのほこら＝かんむり。既存の内部フラグ名は互換のため変更しない。
+
 塔の条件判定は個別Sceneへ直書きせず、進行条件関数でまとめて判定する。
 
 ## 8. ジャンカード
 - 全45枚。
-- 1回ジャンコイン1枚。
+- 1回20円。
 - 固定順。
 - ダブりなし。
 - 46回目以降は通常ガチャを回せない。
@@ -153,7 +175,6 @@ story.bie_village_unlocked
 ```json
 {
   "cardsCollected": 18,
-  "jumpCoinCount": 12,
   "owned": [1,2,3],
   "nextCard": 19
 }

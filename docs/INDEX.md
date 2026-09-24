@@ -1,6 +1,6 @@
 # モンスタークエスト0 仕様書インデックス
 
-最終更新: 2026-09-18 JST
+最終更新: 2026-09-22 JST
 
 このファイルはAI・人間が仕様を読むための入口。
 
@@ -8,22 +8,26 @@
 1. `PROJECT_STATUS.md` — 現在地点と最新固定値
 2. `GAME_SPEC.md` — ゲーム全体仕様
 3. `CREATIVE_DIRECTION.md` — 作り込み密度・二重構造・元設定への敬意
-4. `OPENING_SPEC.md` — 暗闇→焚き火の明転 → **No.01 はじまりのばしょ**
+4. `OPENING_SPEC.md` — 起動ノイズ→暗闇→焚き火の明転 → **No.01 はじまりのばしょ**
 5. `STORY_FLOW.md` — 物語全体 / 「もういちど」 / 真エンディング
-6. `MAP_FLOW_SPEC.md` — **正式No.01〜No.20**
-7. `MAP_SYSTEM.md` — **背景画像正本 / Collision生成 / 4レイヤー / ワールドマップ**
-8. `AI_EXECUTION_PROTOCOL.md` — AIの作業手順
+6. `PLAY_ORDER_SPEC.md` — **2026-09-22最新の正式No.01〜No.20、内部互換ID**
+7. `MAP_FLOW_SPEC.md` — マップ接続・実装対応
+8. `SPECIAL_GAMEPLAY_SPEC.md` — No.07 / 09 / 16 / 19 / 20の特殊区間
+9. `MAP_SYSTEM.md` — **背景画像正本 / Collision生成 / 4レイヤー / ワールドマップ**
+10. `AI_EXECUTION_PROTOCOL.md` — AIの作業手順
 
 ## ストーリー・世界
 - `OPENING_SPEC.md` — タイトルからNo.01〜No.02への導入
 - `STORY_FLOW.md` — 元NPC主人公 / 複数世界断片 / 裏ワザ / エンディング
+- `PLAY_ORDER_SPEC.md` — 正式No.01〜20、表示名、実装互換ID
 - `MAP_FLOW_SPEC.md` — No.01〜20、No.01再訪、No.20再戦
+- `SPECIAL_GAMEPLAY_SPEC.md` — 特殊ダンジョン・No.09・No.20の縦シューティング・ボス攻略骨格
 - `MAP_SYSTEM.md` — 新規ローカルマップとワールドマップの制作・データ方針
 - `NPC_SPEC.md` — NPC会話方針
 - `GLITCH_SPEC.md` — 終盤異常 / 「もういちど」
 
 ## 戦闘・成長・データ
-- `BATTLE_SPEC.md` — コマンド戦闘、だいヒット、オロチゾンビ裏ボス
+- `BATTLE_SPEC.md` — コマンド戦闘、だいヒット、まじん／デーマス／バトラス／オロチゾンビ
 - `CHARACTER_GROWTH.md` — 男性主人公 / タロサ / ミレイ / わたべ
 - `MAGIC_SPEC.md` — 魔法
 - `MONSTER_SPEC.md` — 25体、公開ネタバレ、裏ボス
@@ -55,6 +59,7 @@
 - `PHASE_IMAGE_MAP_MINIMUM.md` — 背景画像 + Collision + Event + ObjectのNo.01最小検証（DEV）
 - `PHASE_DEV_PARTY_FOLLOWERS.md` — DEV加入NPC / 3人パーティー / 経路追従 / Scene再生成
 - `PHASE_DEMAS_BATTLE.md` — デーマス実戦 / 反射フック / Battle Test / NPC復帰の検証
+- `PHASE_MAJIN_CAVE_DUNGEON_RPG.md` — No.08専用ターン制Dungeon RPG / 10F帰還 / DEV URL
 - `CURRENT_WORK.md`
 - `CONTENT_MATRIX.md`
 - `ROADMAP.md`
@@ -70,7 +75,7 @@
 
 ## 読み方
 ### Claude Code / Phaser Game Agent
-`PROJECT_STATUS` → `GAME_SPEC` → `CREATIVE_DIRECTION` → `OPENING_SPEC` → `STORY_FLOW` → `MAP_FLOW_SPEC` → `MAP_SYSTEM`（マップ作業時は必須）→ 対象SPEC → `SAVE_FLAG_SPEC`（進行に関係する場合）→ `TBD_REGISTRY` → `DEFINITION_OF_DONE`
+`PROJECT_STATUS` → `GAME_SPEC` → `CREATIVE_DIRECTION` → `OPENING_SPEC` → `STORY_FLOW` → `PLAY_ORDER_SPEC` → `MAP_FLOW_SPEC` → `MAP_SYSTEM`（マップ作業時は必須）→ 対象SPEC → `SAVE_FLAG_SPEC`（進行に関係する場合）→ `TBD_REGISTRY` → `DEFINITION_OF_DONE`
 
 ### Codex
 上記 + `QA_SPEC` + `PERFORMANCE_BUDGET`

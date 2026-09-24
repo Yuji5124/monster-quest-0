@@ -1,0 +1,19 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_zabon_village_north_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 1088, "y": 0, "width": 64, "height": 24 },
+      "commands": [{ "type": "world-map", "worldMapEntryId": "from_zabon_village" }]
+    },
+    {
+      "id": "event_zabon_village_cave_mouth",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 1288, "y": 88, "width": 56, "height": 16 },
+      "commands": [{ "type": "message", "text": "[DEV] どうくつの入口（接続先TBD）" }]
+    }
+  ]
+}

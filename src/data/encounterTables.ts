@@ -23,6 +23,24 @@ export const ENCOUNTER_TABLES = {
       { enemies: ["003"], weight: 1 },
     ],
   },
+  // No.05レインランドのもり(その1・その2共通)。出現率は均等のTEMP_TEST_VALUE。
+  rainland_forest: {
+    id: "encounter_rainland_forest",
+    entries: [
+      { enemies: ["obake_tsumuri"], weight: 1 },
+      { enemies: ["fancy_duck"], weight: 1 },
+      { enemies: ["snow_bomb"], weight: 1 },
+    ],
+  },
+  // No.09いわやまのどうくつ(1F・2F共通)。まじんのどうくつ7〜10Fの敵(ユーザーのメモ)を引き継ぐ。構成・出現率は均等のTEMP_TEST_VALUE。
+  iwayama_cave: {
+    id: "encounter_iwayama_cave",
+    entries: [
+      { enemies: ["koakuma"], weight: 1 },
+      { enemies: ["erimaki_hebi"], weight: 1 },
+      { enemies: ["daija"], weight: 1 },
+    ],
+  },
 } as const satisfies Record<string, EncounterTable>;
 
 export type EncounterTableId = keyof typeof ENCOUNTER_TABLES;

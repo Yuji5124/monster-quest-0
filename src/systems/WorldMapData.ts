@@ -18,27 +18,54 @@ export interface WorldMapManifest {
   readonly assetStatus: "NEEDS_REVIEW" | "CURRENT";
 }
 
-/** On-disk destination definition. Visibility and unlock requirements are data, never Scene constants. */
-export interface WorldMapDestinationDefinition {
+export type WorldMapImplementationStatus = "implemented" | "planned";
+
+export interface WorldMapLabelOffset {
+  /** Offset in the same source-pixel coordinate space as x/y. */
+  readonly x: number;
+  readonly y: number;
+}
+
+/** Fields shared by every on-disk destination definition. */
+interface WorldMapDestinationBase {
   readonly id: string;
   readonly name: string;
-  readonly targetMapId: string;
-  readonly targetSpawnId: string;
   readonly x: number;
   readonly y: number;
   /** false omits the point entirely; true + a locked flag shows a non-interactive unknown point. */
   readonly visible: boolean;
   /** null means the location is always available; otherwise this must be a SAVE_FLAG_SPEC-compliant key. */
   readonly unlockFlag: string | null;
-  readonly positionStatus: "DEV_PLACEHOLDER_POSITION" | "CURRENT";
+  /** Final source-pixel placement on the current world-map background. */
+  readonly positionStatus: "FINAL_POSITION";
+  /** Per-point label placement, kept in data so crowded names do not overlap. */
+  readonly labelOffset: WorldMapLabelOffset;
 }
 
+/** A destination is only allowed to name a target after its local-map route is actually shipped. */
+export interface ImplementedWorldMapDestinationDefinition extends WorldMapDestinationBase {
+  readonly implementationStatus: "implemented";
+  readonly targetMapId: string;
+  readonly targetSpawnId: string;
+}
+
+/** Planned destinations are visible map geography, but deliberately have no route to a Scene. */
+export interface PlannedWorldMapDestinationDefinition extends WorldMapDestinationBase {
+  readonly implementationStatus: "planned";
+  readonly targetMapId: null;
+  readonly targetSpawnId: null;
+}
+
+export type WorldMapDestinationDefinition =
+  | ImplementedWorldMapDestinationDefinition
+  | PlannedWorldMapDestinationDefinition;
+
 /** Runtime view of a visible destination after its data-defined unlock condition was evaluated. */
-export interface WorldMapDestination extends WorldMapDestinationDefinition {
+export type WorldMapDestination = WorldMapDestinationDefinition & {
   readonly unlocked: boolean;
   /** Locked points must not reveal their destination name before their flag is set. */
   readonly displayName: string;
-}
+};
 
 /** Parses the world-map manifest without Phaser, so the on-disk contract stays testable. */
 export function readWorldMapManifest(value: unknown): WorldMapManifest {
@@ -82,21 +109,37 @@ export function readWorldMapDestinations(value: unknown, manifest: WorldMapManif
     const y = requireNonNegativeNumber(item, "y", `world map destinations[${index}]`);
     if (x > manifest.width || y > manifest.height) throw new Error(`world map destination ${id} is outside the background`);
     const positionStatus = requireString(item, "positionStatus", `world map destinations[${index}]`);
-    if (positionStatus !== "DEV_PLACEHOLDER_POSITION" && positionStatus !== "CURRENT") {
-      throw new Error("world map destination positionStatus must be DEV_PLACEHOLDER_POSITION or CURRENT");
+    if (positionStatus !== "FINAL_POSITION") {
+      throw new Error("world map destination positionStatus must be FINAL_POSITION");
     }
+    const finalPositionStatus: "FINAL_POSITION" = "FINAL_POSITION";
     const unlockFlag = requireOptionalFlag(item, "unlockFlag", `world map destinations[${index}]`);
-    return {
+    const common = {
       id,
       name: requireString(item, "name", `world map destinations[${index}]`),
-      targetMapId: requireString(item, "targetMapId", `world map destinations[${index}]`),
-      targetSpawnId: requireString(item, "targetSpawnId", `world map destinations[${index}]`),
       x,
       y,
       visible: requireBoolean(item, "visible", `world map destinations[${index}]`),
       unlockFlag,
-      positionStatus,
+      positionStatus: finalPositionStatus,
+      labelOffset: requireLabelOffset(item, "labelOffset", `world map destinations[${index}]`),
     };
+    const implementationStatus = requireString(item, "implementationStatus", `world map destinations[${index}]`);
+    if (implementationStatus === "implemented") {
+      return {
+        ...common,
+        implementationStatus,
+        targetMapId: requireString(item, "targetMapId", `world map destinations[${index}]`),
+        targetSpawnId: requireString(item, "targetSpawnId", `world map destinations[${index}]`),
+      };
+    }
+    if (implementationStatus === "planned") {
+      if (item.targetMapId !== null || item.targetSpawnId !== null) {
+        throw new Error("planned world map destinations must set targetMapId and targetSpawnId to null");
+      }
+      return { ...common, implementationStatus, targetMapId: null, targetSpawnId: null };
+    }
+    throw new Error("world map destination implementationStatus must be implemented or planned");
   });
 }
 
@@ -110,14 +153,21 @@ export function resolveWorldMapDestinations(
 ): WorldMapDestination[] {
   return definitions
     .filter((definition) => definition.visible)
-    .map((definition) => {
+    .map((definition): WorldMapDestination => {
       const unlocked = definition.unlockFlag === null || unlockedFlags.has(definition.unlockFlag);
       return {
         ...definition,
         unlocked,
         displayName: unlocked ? definition.name : "？？？",
       };
-    });
+  });
+}
+
+/** The only destinations that can be selected for a Scene transition. */
+export function isWorldMapDestinationTravelReady(
+  destination: WorldMapDestination,
+): destination is WorldMapDestination & ImplementedWorldMapDestinationDefinition {
+  return destination.implementationStatus === "implemented" && destination.unlocked;
 }
 
 /**
@@ -167,6 +217,19 @@ function requireNonNegativeNumber(record: Record<string, unknown>, key: string, 
 function requireBoolean(record: Record<string, unknown>, key: string, label: string): boolean {
   const value = record[key];
   if (typeof value !== "boolean") throw new Error(`${label}.${key} must be a boolean`);
+  return value;
+}
+
+function requireLabelOffset(record: Record<string, unknown>, key: string, label: string): WorldMapLabelOffset {
+  const value = requireRecord(record[key], `${label}.${key}`);
+  const x = requireFiniteNumber(value, "x", `${label}.${key}`);
+  const y = requireFiniteNumber(value, "y", `${label}.${key}`);
+  return { x, y };
+}
+
+function requireFiniteNumber(record: Record<string, unknown>, key: string, label: string): number {
+  const value = record[key];
+  if (typeof value !== "number" || !Number.isFinite(value)) throw new Error(`${label}.${key} must be a finite number`);
   return value;
 }
 

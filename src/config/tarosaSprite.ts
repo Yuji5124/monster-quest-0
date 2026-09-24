@@ -12,5 +12,6 @@ export const TAROSA_SPRITE: WalkSpriteGeometry = {
   path: new URL("../../assets/characters/playable/tarosa_walk.png", import.meta.url).toString(),
   frameWidth: 44,
   frameHeight: 70,
+  walkFrameRate: 7,
   baselineY: 67,
 };

@@ -13,7 +13,7 @@
       "trigger": "enter",
       "once": true,
       "bounds": { "x": 664, "y": 136, "width": 120, "height": 40 },
-      "commands": [{ "type": "message", "text": "[DEV] 王の間の入口（未実装）" }]
+      "commands": [{ "type": "transfer", "targetMapId": "map_rainland_throne_room", "targetSpawnId": "fromCastle" }]
     },
     {
       "id": "event_rainland_castle_stairs",

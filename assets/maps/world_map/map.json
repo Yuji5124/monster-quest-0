@@ -2,7 +2,7 @@
   "id": "world_map",
   "name": "世界地図",
   "type": "point-selection-world-map",
-  "formatVersion": 1,
+  "formatVersion": 2,
   "coordinateSpace": "background-pixels",
   "width": 1448,
   "height": 1086,
@@ -15,7 +15,10 @@
     "from_bie_village": "destination_bie_village",
     "from_rainland_forest": "destination_rainland_forest",
     "from_rainland_castle_town": "destination_rainland_castle_town",
-    "from_majin_cave": "destination_majin_cave"
+    "from_majin_cave": "destination_majin_cave",
+    "from_zabon_village": "destination_zabon_village",
+    "from_hidden_village": "destination_hidden_village",
+    "from_iwayama_cave": "destination_iwayama_cave"
   },
   "developmentUnlockedFlags": ["story.bie_village_unlocked"],
   "assetStatus": "CURRENT"

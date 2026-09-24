@@ -75,7 +75,8 @@ test("castle town: the world map lists it as a point that lands at the south gat
   assert.equal(entry.name, "レインランドじょうかまち");
   assert.equal(entry.targetMapId, "map_rainland_castle_town");
   assert.equal(entry.targetSpawnId, "fromWorldMap");
-  assert.equal(entry.positionStatus, "DEV_PLACEHOLDER_POSITION");
+  assert.equal(entry.implementationStatus, "implemented");
+  assert.equal(entry.positionStatus, "FINAL_POSITION");
   assert.ok(MAPS[entry.targetMapId].spawns[entry.targetSpawnId]);
 });
 

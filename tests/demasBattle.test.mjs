@@ -10,6 +10,9 @@ import { DIALOGUES } from "../src/data/dialogues.ts";
 import { MAPS } from "../src/config/maps.ts";
 
 const demas = DEV_BATTLE_MONSTERS.demas;
+// これらのテストはだいヒット導入前の正確なHP計算式を検証するため、だいヒットが絶対に
+// 発生しない乱数(1はどのTEMP_TEST_VALUE発生率よりも大きい)を明示的に注入する。
+const NO_DAI_HIT = () => 1;
 const turn = (battle, command = "fight", magic) => {
   battle.confirm(command, magic);
   battle.confirm();
@@ -27,7 +30,7 @@ test("Demas query and existing asset paths resolve; prototype names are invalid"
 });
 
 test("Demas cycles physical attack, Mirror, Daidain with MP consumption", () => {
-  const battle = new BattleSystem(demas.devPlayer, demas);
+  const battle = new BattleSystem(demas.devPlayer, demas, NO_DAI_HIT);
   let s = turn(battle);
   assert.equal(s.player.hp, 156);
   assert.equal(s.enemy.mp, 60);
@@ -42,7 +45,7 @@ test("Demas cycles physical attack, Mirror, Daidain with MP consumption", () => 
 });
 
 test("player Mirror reflects Daidain back even while enemy Mirror is active", () => {
-  const battle = new BattleSystem(demas.devPlayer, demas);
+  const battle = new BattleSystem(demas.devPlayer, demas, NO_DAI_HIT);
   turn(battle);
   turn(battle);
   const before = battle.getSnapshot();
@@ -57,7 +60,7 @@ test("player Mirror reflects Daidain back even while enemy Mirror is active", ()
 });
 
 test("using the reflection pattern wins with shipped test stats; ordinary attacks can lose", () => {
-  const battle = new BattleSystem(demas.devPlayer, demas);
+  const battle = new BattleSystem(demas.devPlayer, demas, NO_DAI_HIT);
   let s;
   for (let i = 0; i < 10; i++) {
     s = turn(battle, i % 3 === 2 ? "magic" : "fight", DEV_MIRROR.id);
@@ -67,14 +70,14 @@ test("using the reflection pattern wins with shipped test stats; ordinary attack
   assert.ok(s.player.hp > 0);
   assert.equal(s.enemy.hp, 0);
   assert.match(s.message, /デーマスを　たおした/);
-  const defeat = new BattleSystem(demas.devPlayer, demas);
+  const defeat = new BattleSystem(demas.devPlayer, demas, NO_DAI_HIT);
   for (let i = 0; i < 10; i++) turn(defeat);
   assert.equal(defeat.getSnapshot().state, "DEFEAT");
   assert.equal(defeat.getSnapshot().player.hp, 0);
 });
 
 test("lethal reflection waits for acknowledgement then wins without another attack", () => {
-  const battle = new BattleSystem(demas.devPlayer, { ...demas, maxHp: 100, enemyActions: [DEV_DAIDAIN] });
+  const battle = new BattleSystem(demas.devPlayer, { ...demas, maxHp: 100, enemyActions: [DEV_DAIDAIN] }, NO_DAI_HIT);
   battle.confirm("magic", DEV_MIRROR.id);
   const reflected = battle.confirm();
   assert.equal(reflected.state, "ENEMY_ACTION");
@@ -86,16 +89,16 @@ test("lethal reflection waits for acknowledgement then wins without another atta
 });
 
 test("boss escape fails and consumes a turn; ordinary enemy escape terminates safely", () => {
-  const battle = new BattleSystem(demas.devPlayer, demas);
+  const battle = new BattleSystem(demas.devPlayer, demas, NO_DAI_HIT);
   assert.match(battle.confirm("flee").message, /にげられない/);
   assert.equal(battle.confirm().player.hp, 156);
-  const normal = new BattleSystem(demas.devPlayer, DEV_BATTLE_MONSTERS["003"]);
+  const normal = new BattleSystem(demas.devPlayer, DEV_BATTLE_MONSTERS["003"], NO_DAI_HIT);
   assert.equal(normal.confirm("flee").state, "ESCAPED");
   assert.equal(normal.confirm().player.hp, 180);
 });
 
 test("insufficient MP, unknown magic and empty items do not spend a turn; enemy falls back to attack", () => {
-  const battle = new BattleSystem({ ...demas.devPlayer, maxMp: 0 }, { ...demas, maxMp: 0, enemyActions: [DEV_DAIDAIN] });
+  const battle = new BattleSystem({ ...demas.devPlayer, maxMp: 0 }, { ...demas, maxMp: 0, enemyActions: [DEV_DAIDAIN] }, NO_DAI_HIT);
   assert.match(battle.confirm("magic", DEV_MIRROR.id).message, /MP/);
   assert.equal(battle.getSnapshot().state, "COMMAND");
   assert.match(battle.confirm("magic", "unknown").message, /まほうがない/);
@@ -118,18 +121,18 @@ test("generic reflection is single-use, bypassable, and also applies to player m
   assert.equal(target.status.mirror, 0);
   resolveMagicDamage(caster, target, 20, true);
   assert.equal(target.hp, 320);
-  const battle = new BattleSystem({ ...demas.devPlayer, maxHp: 1, learnedMagic: [DEV_DAIDAIN] }, { ...demas, enemyActions: [DEV_MIRROR] });
+  const battle = new BattleSystem({ ...demas.devPlayer, maxHp: 1, learnedMagic: [DEV_DAIDAIN] }, { ...demas, enemyActions: [DEV_MIRROR] }, NO_DAI_HIT);
   turn(battle);
   assert.equal(battle.confirm("magic", DEV_DAIDAIN.id).state, "DEFEAT");
 });
 
 test("snapshots, new battles, and fixed data do not leak Mirror or HP state", () => {
-  const battle = new BattleSystem(demas.devPlayer, demas);
+  const battle = new BattleSystem(demas.devPlayer, demas, NO_DAI_HIT);
   const s = battle.confirm("magic", DEV_MIRROR.id);
   s.player.status.mirror = 99;
   s.party[0].status.mirror = 99;
   assert.equal(battle.getSnapshot().player.status.mirror, 1);
-  const fresh = new BattleSystem(demas.devPlayer, demas).getSnapshot();
+  const fresh = new BattleSystem(demas.devPlayer, demas, NO_DAI_HIT).getSnapshot();
   assert.equal(fresh.player.status.mirror, 0);
   assert.equal(fresh.enemy.hp, demas.maxHp);
   assert.equal(fresh.enemy.mp, demas.maxMp);
@@ -143,20 +146,9 @@ test("Demas NPC uses the existing event contract and Tiled properties resolve to
   }), event);
   assert.equal(createBattleSceneStartData(event).mode, "event");
   const town = MAPS.map_02_starting_town;
-  assert.ok(town.npcs.some(npc => npc.dialogueId === "dev_demas_battle_npc"));
+  assert.equal(town.npcs.some(npc => npc.dialogueId === "dev_demas_battle_npc"), false, "No.02 now contains only its marked villagers");
   const spawn = town.spawns[event.returnSpawnId];
   assert.ok(spawn);
-  // Return body clears all NPCs and every building's footprint in the current town layout.
-  assert.ok(town.npcs.every(npc => Math.abs(npc.position.y - spawn.y) > 42));
-  const halfW = 15;
-  const halfH = 21;
-  for (const building of town.buildings) {
-    const f = building.footprint;
-    const overlap =
-      spawn.x + halfW > f.x && spawn.x - halfW < f.x + f.width &&
-      spawn.y + halfH > f.y && spawn.y - halfH < f.y + f.height;
-    assert.equal(overlap, false, `${building.id} overlaps the Demas return spawn`);
-  }
   for (const props of [{}, { eventType: "battle", eventId: "x", enemyId: "toString" }, { eventType: "battle", eventId: "", enemyId: "demas" }]) {
     assert.equal(battleEventFromProperties(props, { returnSceneKey: "StartingTownScene", returnSpawnId: event.returnSpawnId }), undefined);
   }

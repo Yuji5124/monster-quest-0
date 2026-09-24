@@ -1,5 +1,6 @@
 import { getNextJumpCard, JUMP_CARD_COIN_COST, JUMP_CARD_DEFINITIONS } from "../data/jumpCards.ts";
 import type { JumpCardDefinition } from "../data/jumpCards.ts";
+import { getExpForLevel } from "../data/expTable.ts";
 
 /**
  * SaveSystem未実装中の最小GameState境界。
@@ -16,10 +17,13 @@ export interface JumpCardSaveState {
   readonly obtainedJumpCards: readonly string[];
 }
 
-/** Persistent level progress. The complete stat-growth curve is still TBD. */
+/**
+ * Persistent level progress. 2026-09-22の成長／バランス統合で、Lv1〜25累積EXPテーブル
+ * (`expTable.ts`)を正とするcumulative-EXPモデルへ変更した。レベルは`totalExp`から都度算出し、
+ * 二重管理(level/exp)による不整合を避ける。
+ */
 export interface CharacterProgressSaveState {
-  readonly level: number;
-  readonly exp: number;
+  readonly totalExp: number;
 }
 
 export interface GameState {
@@ -35,6 +39,8 @@ export interface GameState {
   };
   /** Item quantities from battle rewards. Item effects remain outside this storage boundary. */
   readonly inventory: Readonly<Record<string, number>>;
+  /** True-only, named progress flags for one-time events, chests, bosses, and world unlocks. */
+  readonly flags: Readonly<Record<string, true>>;
 }
 
 export interface KeyValueStorage {
@@ -75,6 +81,7 @@ export function createDefaultGameState(options: DefaultGameStateOptions = {}): G
     cards: { jumpCoinCount, jumpCardCount: 0, obtainedJumpCards: [] },
     party: { joinedMemberIds: ["hero"], characterProgress: createInitialCharacterProgress() },
     inventory: {},
+    flags: {},
   };
 }
 
@@ -91,6 +98,7 @@ export function normalizeGameState(value: unknown): GameState | undefined {
     cards?: { jumpCoinCount?: unknown; obtainedJumpCards?: unknown };
     party?: { joinedMemberIds?: unknown; characterProgress?: unknown };
     inventory?: unknown;
+    flags?: unknown;
   };
   if (candidate.version !== GAME_STATE_VERSION) return undefined;
 
@@ -108,12 +116,14 @@ export function normalizeGameState(value: unknown): GameState | undefined {
   const joinedMemberIds = normalizePartyMemberIds(savedPartyIds);
   const characterProgress = normalizeCharacterProgress(candidate.party?.characterProgress);
   const inventory = normalizeInventory(candidate.inventory);
+  const flags = normalizeFlags(candidate.flags);
   return {
     version: GAME_STATE_VERSION,
     player: { money },
     cards: { jumpCoinCount, jumpCardCount: uniqueIds.length, obtainedJumpCards: uniqueIds },
     party: { joinedMemberIds, characterProgress },
     inventory,
+    flags,
   };
 }
 
@@ -166,6 +176,18 @@ export class GameStateRepository {
     return { kind: "obtained", card: nextCard, state: nextState };
   }
 
+  /**
+   * 「はじめから」用。パーティを主人公1人・全員Lv1(EXP0)へ戻し、所持金・道具・
+   * ジャンカード(取得済みカード0枚・ジャンコイン初期値)もすべて初期値へ戻す
+   * (2026-09-23ユーザー指示「カード数リセット」)。「もういちど」はNew Gameではないため、
+   * この処理を使わない(CLAUDE.md「ジャンカード取得情報を削除しない」はそちらの制約)。
+   */
+  startNewGame(): GameState {
+    const nextState = createDefaultGameState();
+    this.save(nextState);
+    return nextState;
+  }
+
   /** Preserves the existing card/player fields while persisting party recruitment state. */
   savePartyMemberIds(memberIds: readonly string[]): GameState {
     const state = this.load();
@@ -215,6 +237,24 @@ export class GameStateRepository {
     return nextState;
   }
 
+  /** Reads the saved true-only flags without exposing the mutable storage record. */
+  getFlags(): ReadonlySet<string> {
+    return new Set(Object.keys(this.load().flags));
+  }
+
+  hasFlag(flag: string): boolean {
+    return this.load().flags[flag] === true;
+  }
+
+  /** Idempotently records a valid progress flag while retaining every other saved subsystem. */
+  setFlag(flag: string): GameState {
+    const state = this.load();
+    if (!isSaveFlag(flag) || state.flags[flag] === true) return state;
+    const nextState: GameState = { ...state, flags: { ...state.flags, [flag]: true } };
+    this.save(nextState);
+    return nextState;
+  }
+
   private save(state: GameState): void {
     if (this.storage) this.storage.setItem(GAME_STATE_STORAGE_KEY, JSON.stringify(state));
   }
@@ -230,22 +270,29 @@ function normalizePartyMemberIds(memberIds: readonly unknown[]): string[] {
 
 function createInitialCharacterProgress(): Record<string, CharacterProgressSaveState> {
   return {
-    hero: { level: 1, exp: 0 },
-    tarosa: { level: 1, exp: 0 },
-    mirei: { level: 1, exp: 0 },
+    hero: { totalExp: 0 },
+    tarosa: { totalExp: 0 },
+    mirei: { totalExp: 0 },
   };
 }
 
+/**
+ * 新形式`{totalExp}`はそのまま受け付ける。ExP曲線改定前の旧形式`{level, exp}`は、
+ * そのレベルに到達するのに必要な累積EXPへ一度だけ切り上げ移行する(旧`exp`の端数は
+ * 曲線が別物のため正確には引き継げない。安全側に倒し前進のみを保証する)。
+ */
 function normalizeCharacterProgress(value: unknown): Record<string, CharacterProgressSaveState> {
   const source = value && typeof value === "object" ? value as Record<string, unknown> : {};
   const initial = createInitialCharacterProgress();
   for (const memberId of Object.keys(initial)) {
     const entry = source[memberId];
     if (!entry || typeof entry !== "object") continue;
-    const candidate = entry as { level?: unknown; exp?: unknown };
-    const level = isFiniteNonNegativeNumber(candidate.level) && candidate.level >= 1 ? Math.floor(candidate.level) : 1;
-    const exp = isFiniteNonNegativeNumber(candidate.exp) ? Math.floor(candidate.exp) : 0;
-    initial[memberId] = { level, exp };
+    const candidate = entry as { totalExp?: unknown; level?: unknown; exp?: unknown };
+    if (isFiniteNonNegativeNumber(candidate.totalExp)) {
+      initial[memberId] = { totalExp: Math.floor(candidate.totalExp) };
+    } else if (isFiniteNonNegativeNumber(candidate.level) && candidate.level >= 1) {
+      initial[memberId] = { totalExp: getExpForLevel(Math.floor(candidate.level)) };
+    }
   }
   return initial;
 }
@@ -257,4 +304,18 @@ function normalizeInventory(value: unknown): Record<string, number> {
       .filter(([itemId, quantity]) => itemId.length > 0 && isFiniteNonNegativeNumber(quantity) && quantity > 0)
       .map(([itemId, quantity]) => [itemId, Math.floor(quantity as number)]),
   );
+}
+
+function isSaveFlag(value: unknown): value is string {
+  return typeof value === "string" && /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/.test(value);
+}
+
+/** Missing flags from old v1 saves are a safe empty record; false/unknown entries never unlock content. */
+function normalizeFlags(value: unknown): Record<string, true> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>)
+      .filter(([flag, enabled]) => isSaveFlag(flag) && enabled === true)
+      .map(([flag]) => [flag, true]),
+  ) as Record<string, true>;
 }

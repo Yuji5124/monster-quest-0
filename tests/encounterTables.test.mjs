@@ -40,3 +40,24 @@ test("rollEncounterMonster refuses an empty or non-positive-weight table", () =>
   assert.throws(() => rollEncounterMonster({ id: "empty", entries: [] }), /no positive-weight entries/);
   assert.throws(() => rollEncounterMonster({ id: "zero", entries: [{ enemies: ["001"], weight: 0 }] }), /no positive-weight entries/);
 });
+
+test("rainland_forest encounter table holds おばけつむり・ファンシーダック・スノーボム with roster stats", async () => {
+  const { MONSTER_ROSTER_BY_ID } = await import("../src/data/monsters.ts");
+  const { existsSync } = await import("node:fs");
+  const { fileURLToPath } = await import("node:url");
+  const ids = ENCOUNTER_TABLES.rainland_forest.entries.map((entry) => entry.enemies[0]);
+  assert.deepEqual(ids, ["obake_tsumuri", "fancy_duck", "snow_bomb"]);
+  for (const id of ids) {
+    assert.ok(DEV_BATTLE_MONSTER_IDS.includes(id), id);
+    const monster = getDevBattleMonster(id);
+    const roster = MONSTER_ROSTER_BY_ID[id];
+    assert.equal(monster.displayName, roster.name);
+    assert.deepEqual(
+      [monster.maxHp, monster.attack, monster.defense, monster.speed, monster.reward.experience, monster.reward.money],
+      [roster.hp, roster.attack, roster.defense, roster.speed, roster.exp, roster.gold],
+    );
+    // ビーエのもりと同じ森の戦闘背景。
+    assert.equal(monster.background.key, getDevBattleMonster("001").background.key);
+    assert.ok(existsSync(fileURLToPath(monster.portraitUrl)), `${id} portrait must exist`);
+  }
+});

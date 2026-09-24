@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_rainland_throne_room_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 656, "y": 1032, "width": 144, "height": 24 },
+      "commands": [{ "type": "transfer", "targetMapId": "map_05_rainland_castle", "targetSpawnId": "fromThroneRoom" }]
+    }
+  ]
+}

@@ -9,6 +9,11 @@ export interface WalkSpriteGeometry {
   readonly path: string;
   readonly frameWidth: number;
   readonly frameHeight: number;
+  /**
+   * 歩行中に1秒間で進めるアニメーションフレーム数。
+   * キャラクターごとに、移動速度と足運びの大きさに合わせて明示する。
+   */
+  readonly walkFrameRate: number;
   /** 各セル内で足元(接地ライン)が揃う共通の基準線。Arcade Bodyのoffset計算に使う。 */
   readonly baselineY: number;
 }

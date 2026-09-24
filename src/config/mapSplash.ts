@@ -28,14 +28,32 @@ export const MAP_ENTRY_SPLASHES: Readonly<Partial<Record<MapId, MapEntrySplash>>
     spawnIds: ["fromWorldMap"],
     caption: "レインランドじょうかまち",
   },
-  map_08_majin_cave_1: {
-    imageUrl: new URL("../../assets/maps/majin_cave_1/entry_splash.png", import.meta.url).toString(),
-    fadeInMs: 700,
-    holdMs: 2100,
-    fadeOutMs: 700,
+  // No.04ビーエのむら(内部map_03_bie_village)。画像はビーエのむら_イメージ.pngの無加工コピー。尺はじょうかまちと同じ5秒。
+  map_03_bie_village: {
+    imageUrl: new URL("../../assets/maps/bie_village/entry_splash.png", import.meta.url).toString(),
+    fadeInMs: 1000,
+    holdMs: 3000,
+    fadeOutMs: 1000,
     spawnIds: ["fromWorldMap"],
-    caption: "まじんのどうくつ",
-    captionPosition: "bottom-right",
+    caption: "ビーエのむら",
+  },
+  // No.08ザボンのむら。画像はザボンのむら_イメージ.pngの無加工コピー。尺はじょうかまちと同じ5秒。
+  map_zabon_village: {
+    imageUrl: new URL("../../assets/maps/zabon_village/entry_splash.png", import.meta.url).toString(),
+    fadeInMs: 1000,
+    holdMs: 3000,
+    fadeOutMs: 1000,
+    spawnIds: ["fromWorldMap"],
+    caption: "ザボンのむら",
+  },
+  // No.09いわやまのどうくつ(1F)。画像はいわやまのどうくつ_イメージ.pngの無加工コピー。尺はじょうかまちと同じ5秒。
+  map_iwayama_cave_1: {
+    imageUrl: new URL("../../assets/maps/iwayama_cave_1/entry_splash.png", import.meta.url).toString(),
+    fadeInMs: 1000,
+    holdMs: 3000,
+    fadeOutMs: 1000,
+    spawnIds: ["fromWorldMap"],
+    caption: "いわやまのどうくつ",
   },
 };
 

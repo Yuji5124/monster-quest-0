@@ -1,0 +1,15 @@
+{
+  "id": "map_iwayama_cave_1",
+  "name": "いわやまのどうくつ（1F）",
+  "formatVersion": 1,
+  "coordinateSpace": "background-pixels",
+  "width": 1024,
+  "height": 1536,
+  "background": "background.png",
+  "collision": "collision.png",
+  "events": "events.json",
+  "objects": "objects.json",
+  "collisionCellSize": 8,
+  "assetStatus": "CURRENT",
+  "worldScale": 1.5
+}

@@ -34,9 +34,31 @@ test("entering the castle town from the world map plays the splash; other ways i
 
   assert.equal(findEntrySplash("RainlandCastleTownScene", "someFutureBuildingFront"), undefined, "coming back from a building must not replay it");
   assert.equal(findEntrySplash("RainlandCastleTownScene", undefined), undefined);
-  for (const other of ["StartingPlaceScene", "StartingTownScene", "StartingForestScene", "BieVillageScene", "RainlandForest1Scene", "RainlandForest2Scene", "WorldMapScene", "InteriorScene", "NoSuchScene"]) {
+  for (const other of ["StartingPlaceScene", "StartingTownScene", "StartingForestScene", "RainlandForest1Scene", "RainlandForest2Scene", "WorldMapScene", "InteriorScene", "NoSuchScene"]) {
     assert.equal(findEntrySplash(other, "fromWorldMap"), undefined, `${other} must not have an entry splash`);
   }
+});
+
+test("entering ビーエのむら from the world map plays its own 5-second splash with the user-supplied image", () => {
+  const splash = MAP_ENTRY_SPLASHES.map_03_bie_village;
+  assert.ok(splash);
+  assert.equal(getEntrySplashDurationMs(splash), 5000);
+  assert.equal(splash.caption, "ビーエのむら");
+  const resolved = findEntrySplash("BieVillageScene", "fromWorldMap");
+  assert.equal(resolved?.mapId, "map_03_bie_village");
+  assert.equal(findEntrySplash("BieVillageScene", "someFutureBuildingFront"), undefined);
+  const reference = readFileSync(path.join(REPO_ROOT, "assets/maps/reference/reference/ビーエのむら_イメージ.png"));
+  assert.ok(readFileSync(new URL(splash.imageUrl)).equals(reference), "the splash must be an unmodified copy of the reference image");
+});
+
+test("entering ザボンのむら from the world map plays its own 5-second splash with the user-supplied image", () => {
+  const splash = MAP_ENTRY_SPLASHES.map_zabon_village;
+  assert.ok(splash);
+  assert.equal(getEntrySplashDurationMs(splash), 5000);
+  assert.equal(splash.caption, "ザボンのむら");
+  assert.equal(findEntrySplash("ZabonVillageScene", "fromWorldMap")?.mapId, "map_zabon_village");
+  const reference = readFileSync(path.join(REPO_ROOT, "assets/maps/reference/reference/ザボンのむら_イメージ.png"));
+  assert.ok(readFileSync(new URL(splash.imageUrl)).equals(reference), "the splash must be an unmodified copy of the reference image");
 });
 
 test("the transition helper routes through the splash Scene and the game registers that Scene", () => {

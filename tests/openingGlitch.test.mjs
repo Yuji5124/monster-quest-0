@@ -1,32 +1,49 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import {
+  OPENING_CORRUPTION_FRAGMENTS,
+  OPENING_DEBUG_BOOT_LINES,
+  OPENING_DEBUG_ERROR_LINES,
   OPENING_GLITCH_DURATION_MS,
   OPENING_GLITCH_STAGES,
 } from "../src/config/openingGlitch.ts";
 
-test("duration is approximately 5 seconds", () => {
-  assert.ok(OPENING_GLITCH_DURATION_MS >= 4000 && OPENING_GLITCH_DURATION_MS <= 6000);
+test("the hidden-program glitch lasts exactly five seconds", () => {
+  assert.equal(OPENING_GLITCH_DURATION_MS, 5000);
 });
 
-test("stages cover 0..1 with no gaps or overlaps, in order", () => {
-  assert.equal(OPENING_GLITCH_STAGES[0].startRatio, 0);
-  assert.equal(OPENING_GLITCH_STAGES[OPENING_GLITCH_STAGES.length - 1].endRatio, 1);
-  for (let i = 0; i < OPENING_GLITCH_STAGES.length; i += 1) {
-    const stage = OPENING_GLITCH_STAGES[i];
-    assert.ok(stage.endRatio > stage.startRatio);
-    if (i > 0) {
-      assert.equal(stage.startRatio, OPENING_GLITCH_STAGES[i - 1].endRatio);
-    }
-  }
+test("stages follow boot, overlap, corruption, recovery, and a final pure-black hold", () => {
+  assert.deepEqual(OPENING_GLITCH_STAGES.map((stage) => stage.id), [
+    "boot", "debugOverlap", "corruption", "recovery", "blackOut",
+  ]);
+  assert.ok(OPENING_GLITCH_STAGES.every((stage) => stage.durationMs > 0));
+  assert.equal(OPENING_GLITCH_STAGES.reduce((total, stage) => total + stage.durationMs, 0), OPENING_GLITCH_DURATION_MS);
+  assert.equal(OPENING_GLITCH_STAGES.at(-1)?.durationMs, 400);
 });
 
-test("stage ids are unique", () => {
+test("the visible text stays limited to short boot, error, and corrupted-data fragments", () => {
   const ids = OPENING_GLITCH_STAGES.map((stage) => stage.id);
   assert.equal(new Set(ids).size, ids.length);
+  assert.ok(OPENING_DEBUG_BOOT_LINES.includes("> INIT_PLAYER..."));
+  assert.ok(OPENING_DEBUG_BOOT_LINES.includes("> LOAD_MAP..."));
+  assert.ok(OPENING_DEBUG_ERROR_LINES.includes("> DATA MISMATCH"));
+  assert.ok(OPENING_CORRUPTION_FRAGMENTS.includes("???"));
 });
 
-test("blackIn is first and blackOut is last (starts and ends in darkness)", () => {
-  assert.equal(OPENING_GLITCH_STAGES[0].id, "blackIn");
-  assert.equal(OPENING_GLITCH_STAGES[OPENING_GLITCH_STAGES.length - 1].id, "blackOut");
+test("the glitch scene does not load or render RPG artwork, people, or a title", () => {
+  const sceneSource = readFileSync(new URL("../src/scenes/OpeningGlitchScene.ts", import.meta.url), "utf8");
+
+  for (const prohibitedFragment of [
+    "preloadWalkSprite",
+    "PROTAGONIST_SPRITE",
+    "sourceMap",
+    "sourceNpc",
+    "add.image",
+    "add.sprite",
+    "ＭＱ ０",
+    "MONSTER QUEST 0",
+  ]) {
+    assert.equal(sceneSource.includes(prohibitedFragment), false, prohibitedFragment);
+  }
 });

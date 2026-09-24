@@ -1,9 +1,11 @@
 import { WORLD_LOCATIONS } from "./field.ts";
 import type { Facing } from "../systems/PlayerMovement.ts";
+import type { VillagerSpriteId } from "./villagerSprites.ts";
 
 // ローカルマップとlegacy徒歩Fieldの定義。地域間の正式導線はWorldMapSceneであり、
 // field_starting_region は削除しないlegacy / prototypeの仮IDとして保持する。
-// map_starting_forest / map_rainland_forest_1・2 / map_rainland_castle_town は正式No.01〜No.20の番号を持たない追加フィールド(MAP_FLOW_SPEC.md参照)。
+// map_starting_forest / map_03_bie_village / map_rainland_forest_1・2 / map_rainland_castle_town /
+// map_05_rainland_castle / map_08_majin_cave は旧名称・旧番号由来の内部互換ID。正式表示名・No.はPLAY_ORDER_SPEC.mdを参照する。
 export type MapId =
   | "map_01_starting_place"
   | "field_starting_region"
@@ -14,9 +16,12 @@ export type MapId =
   | "map_rainland_forest_2"
   | "map_rainland_castle_town"
   | "map_05_rainland_castle"
-  | "map_08_majin_cave_1"
-  | "map_08_majin_cave_2"
-  | "map_08_majin_cave_3";
+  | "map_08_majin_cave"
+  | "map_zabon_village"
+  | "map_hidden_village"
+  | "map_rainland_throne_room"
+  | "map_iwayama_cave_1"
+  | "map_iwayama_cave_2";
 
 export interface SpawnPoint {
   readonly x: number;
@@ -50,6 +55,18 @@ export interface NpcDefinition {
   readonly position: { readonly x: number; readonly y: number };
   readonly facing: Facing;
   readonly dialogueId: string;
+  /** Optional user-supplied villager appearance. Omit only for legacy placeholder NPCs. */
+  readonly spriteId?: VillagerSpriteId;
+  /** Shopkeepers stay at their assigned storefront; residents can wander locally. */
+  readonly role?: "shopkeeper" | "resident";
+  /** Native-background-pixel wander radius and speed. The scene applies worldScale. */
+  readonly movement?: {
+    readonly kind: "wander";
+    readonly radius: number;
+    readonly speed: number;
+    readonly minPauseMs: number;
+    readonly maxPauseMs: number;
+  };
 }
 
 // Phase 8-A: 建物は外観+Collisionのみ。内部Sceneはまだ存在しない(DEV_PLACEHOLDER_INTERIOR_PENDING)。
@@ -151,10 +168,10 @@ export const MAPS: Record<MapId, MapDefinition> = {
     id: "map_02_starting_town",
     sceneKey: "StartingTownScene",
     spawns: {
-      // legacy徒歩Fieldから戻る既存spawn。FieldSceneを残すため維持する(西端、fromWorldMapと同座標)。
-      fromField: { x: 90, y: 575, facing: "right" },
-      // WorldMapSceneから戻る正式spawn。西端の出口Event zone(x:0-35,y:535-620)から十分離す。
-      fromWorldMap: { x: 90, y: 575, facing: "right" },
+      // ユーザー指定の緑ポイント: フィールド側から入る南端の道。legacy FieldSceneからも同じ位置へ戻す。
+      fromField: { x: 690, y: 1030, facing: "up" },
+      // ワールドマップは現在の地域間フィールド表現。No.02へ入るときは南端の到着点を共用する。
+      fromWorldMap: { x: 690, y: 1030, facing: "up" },
       // 建物前のspawn。名称はno02_start_town_interiors.jsonの各interior.exit.spawnIdと合わせてある。
       // 全建物の入口が下辺(南向き)にあるため、道側(南)へ出て下向きに立つ。
       // y座標は各建物のdoor zoneの下端+Player半分の高さ(21px)+余裕を確保し、再トリガーを防ぐ。
@@ -164,46 +181,79 @@ export const MAPS: Record<MapId, MapDefinition> = {
       spawn_weapon_shop_front: { x: 1015, y: 455, facing: "down" },
       spawn_house_a_front: { x: 435, y: 755, facing: "down" },
       spawn_inn_front: { x: 1085, y: 755, facing: "down" },
-      // DEV_BATTLE_EVENT_NPCからの復帰専用。NPCのBody・建物入口とPlayer全体が重ならない。
-      spawn_battle_event_return: { x: 680, y: 750, facing: "up" },
-      // DEV placement only; does not establish a No.16 tower coordinate.
-      spawn_demas_battle_return: { x: 760, y: 750, facing: "up" },
     },
     // 正式出口は assets/maps/starting_town/events.json の西端Eventで管理する。
     exits: [],
-    // 正式なNo.02 NPC人数・役割・台詞はNPC_SPEC.mdで再検討中のため未確定。
-    // 既存DEV_PLACEHOLDER_NPCを、新しい広場(噴水中心の十字型)に合わせて再配置しただけで、
-    // 正式NPCとしての新規追加・台詞創作は行っていない。
+    // ユーザー指定の赤ポイント。4軒の前にいる店主は固定、それ以外は各ポイント周辺を歩く。
+    // spriteIdはsrc/config/villagerSprites.tsで一元管理し、参照素材から生成したCURRENTシートを使う。
     npcs: [
       {
-        id: "dev_npc_test",
+        id: "npc_start_town_item_shopkeeper",
         mapId: "map_02_starting_town",
-        position: { x: 600, y: 800 },
+        position: { x: 352, y: 402 },
         facing: "down",
-        dialogueId: "dev_npc_test",
+        dialogueId: "npc_start_town_item_shopkeeper",
+        spriteId: "villager_01",
+        role: "shopkeeper",
       },
       {
-        id: "dev_battle_event_npc",
+        id: "npc_start_town_weapon_shopkeeper",
         mapId: "map_02_starting_town",
-        position: { x: 900, y: 800 },
+        position: { x: 996, y: 402 },
         facing: "down",
-        dialogueId: "dev_battle_event_npc",
+        dialogueId: "npc_start_town_weapon_shopkeeper",
+        spriteId: "villager_03",
+        role: "shopkeeper",
       },
       {
-        id: "dev_demas_battle_npc", mapId: "map_02_starting_town",
-        position: { x: 620, y: 480 },
-        facing: "down", dialogueId: "dev_demas_battle_npc",
-      },
-      // DEV_PARTY_JOIN_TAROSA / DEV_PARTY_JOIN_MIREI: 正式加入イベント実装前の安全なNo.02検証用。
-      {
-        id: "dev_party_join_tarosa_npc", mapId: "map_02_starting_town",
-        position: { x: 830, y: 480 },
-        facing: "down", dialogueId: "dev_party_join_tarosa",
+        id: "npc_start_town_house_a_shopkeeper",
+        mapId: "map_02_starting_town",
+        position: { x: 400, y: 762 },
+        facing: "down",
+        dialogueId: "npc_start_town_house_a_shopkeeper",
+        spriteId: "villager_02",
+        role: "shopkeeper",
       },
       {
-        id: "dev_party_join_mirei_npc", mapId: "map_02_starting_town",
-        position: { x: 720, y: 650 },
-        facing: "down", dialogueId: "dev_party_join_mirei",
+        id: "npc_start_town_inn_shopkeeper",
+        mapId: "map_02_starting_town",
+        position: { x: 1030, y: 762 },
+        facing: "down",
+        dialogueId: "npc_start_town_inn_shopkeeper",
+        spriteId: "villager_04",
+        role: "shopkeeper",
+      },
+      {
+        id: "npc_start_town_church_walker",
+        mapId: "map_02_starting_town",
+        // Church stairs, just below the doorway so the full feet collider is on the path.
+        position: { x: 718, y: 215 },
+        facing: "down",
+        dialogueId: "npc_start_town_church_walker",
+        spriteId: "villager_05",
+        role: "resident",
+        movement: { kind: "wander", radius: 16, speed: 34, minPauseMs: 700, maxPauseMs: 1800 },
+      },
+      {
+        id: "npc_start_town_plaza_walker",
+        mapId: "map_02_starting_town",
+        // The red point's plaza-side path, inset from the flowerbed for a full feet collider.
+        position: { x: 592, y: 506 },
+        facing: "right",
+        dialogueId: "npc_start_town_plaza_walker",
+        spriteId: "villager_06",
+        role: "resident",
+        movement: { kind: "wander", radius: 16, speed: 38, minPauseMs: 600, maxPauseMs: 1600 },
+      },
+      {
+        id: "npc_start_town_south_walker",
+        mapId: "map_02_starting_town",
+        position: { x: 733, y: 823 },
+        facing: "up",
+        dialogueId: "npc_start_town_south_walker",
+        spriteId: "villager_07",
+        role: "resident",
+        movement: { kind: "wander", radius: 24, speed: 40, minPauseMs: 500, maxPauseMs: 1500 },
       },
     ],
     // 建物5棟はreference画像(はじまりのまち.png)に実在が確認できるもののみ配置。
@@ -262,8 +312,7 @@ export const MAPS: Record<MapId, MapDefinition> = {
       },
     ],
   },
-  // はじまりのもり: No.01と同じBACKGROUND/COLLISION/EVENT/OBJECT方式の追加フィールド。
-  // 正式No.01〜No.20の番号は持たず、世界地図から選べる追加ポイントとして統合する(MAP_FLOW_SPEC.md参照)。
+  // 正式No.03ビーエのもり。map_starting_forestは旧「はじまりのもり」由来の内部互換ID。
   map_starting_forest: {
     id: "map_starting_forest",
     sceneKey: "StartingForestScene",
@@ -276,7 +325,7 @@ export const MAPS: Record<MapId, MapDefinition> = {
     npcs: [],
     buildings: [],
   },
-  // No.03「ビーエのむら」。No.01と同じBACKGROUND/COLLISION/EVENT/OBJECT方式を再利用する。
+  // 正式No.04「ビーエのむら」。map_03_bie_villageは旧No.03由来の内部互換ID。
   // NPC・会話・木こり救出イベントはdocs/NPC/02_bie_no_mura.mdがSOURCE_DRAFT_EXISTS/REDUCINGのため未実装(follow-up)。
   map_03_bie_village: {
     id: "map_03_bie_village",
@@ -321,9 +370,8 @@ export const MAPS: Record<MapId, MapDefinition> = {
     npcs: [],
     buildings: [],
   },
-  // レインランドじょうかまち。座標は background.png(レインランドじょうかまち.png、1447×1087)のネイティブ背景ピクセル。
-  // 世界地図から入る際は入場演出(config/mapSplash.ts)を挟む。北の城門の先はNo.05レインランドじょう(map_05_rainland_castle)。
-  // No.04レインランドのまちとの対応・正式名称・NPC・店・建物内部はTBD(TBD_REGISTRY.md)。
+  // 正式No.06レインランドじょうかまち。座標は background.png(レインランドじょうかまち.png、1447×1087)のネイティブ背景ピクセル。
+  // 世界地図から入る際は入場演出(config/mapSplash.ts)を挟む。北の城門の先は同じ正式No.06の城内(map_05_rainland_castle)。
   map_rainland_castle_town: {
     id: "map_rainland_castle_town",
     sceneKey: "RainlandCastleTownScene",
@@ -350,6 +398,8 @@ export const MAPS: Record<MapId, MapDefinition> = {
     spawns: {
       // レインランドじょうかまちの北の城門から入る正式spawn。城門を入った入口ホール、上向き。城外への出口Event zone(y:1050-1086)と重ならない。
       fromCastleTown: { x: 725, y: 960, facing: "up" },
+      // 王の間から戻る位置。王の間の扉の前の絨毯の上、下向き。扉のEvent zone(y:136-176)と重ならない。
+      fromThroneRoom: { x: 725, y: 215, facing: "down" },
     },
     // 正式出口は assets/maps/rainland_castle/events.json の城門Event(レインランドじょうかまちの北の城門前へ)で管理する。
     exits: [],
@@ -364,36 +414,104 @@ export const MAPS: Record<MapId, MapDefinition> = {
     ],
     buildings: [],
   },
-  // No.08「まじんのどうくつ」。3枚の内部背景を順に使うコンパクトな連結ダンジョン。
-  // ボス・出現モンスター・BGM・解放条件は未確定のため、今回の接続は画像マップと出入口のみ。
-  map_08_majin_cave_1: {
-    id: "map_08_majin_cave_1",
-    sceneKey: "MajinCave1Scene",
+  // 正式No.07。map_08_majin_caveは旧No.08由来の互換ID。これは唯一の明示的な32pxグリッドDungeon例外。
+  // Its Scene owns a run's floor data and is entered from the point-selection WorldMapScene.
+  map_08_majin_cave: {
+    id: "map_08_majin_cave",
+    sceneKey: "MajinCaveScene",
     spawns: {
-      fromWorldMap: { x: 1120, y: 900, facing: "up" },
-      fromCave2: { x: 190, y: 125, facing: "down" },
+      fromWorldMap: { x: 0, y: 0, facing: "down" },
     },
     exits: [],
     npcs: [],
     buildings: [],
   },
-  map_08_majin_cave_2: {
-    id: "map_08_majin_cave_2",
-    sceneKey: "MajinCave2Scene",
+  // 正式No.08「ザボンのむら」。旧番号由来のmap_08_majin_cave(正式No.07)と紛らわしいためIDに番号を付けない。
+  // 座標は background.png(ザボンのむら　新.png、1448×1086)のネイティブ背景ピクセル。NPCは docs/NPC_SPEC.md で構成再検討中のため未配置。
+  map_zabon_village: {
+    id: "map_zabon_village",
+    sceneKey: "ZabonVillageScene",
     spawns: {
-      fromCave1: { x: 1240, y: 880, facing: "up" },
-      fromCave3: { x: 190, y: 125, facing: "down" },
+      // WorldMapSceneから入る正式spawn。北東の山道(北のレインランド方面から来る道)の内側、下向き。北口Event zone(y:0-24)と重ならない。
+      fromWorldMap: { x: 1125, y: 72, facing: "down" },
     },
+    // 正式出口は assets/maps/zabon_village/events.json の北口Event(世界地図へ)で管理する。
+    // 西の吊り橋・南東の道・桟橋の先と北東のどうくつは接続先未定(TBD_REGISTRY.md)。
     exits: [],
     npcs: [],
     buildings: [],
   },
-  map_08_majin_cave_3: {
-    id: "map_08_majin_cave_3",
-    sceneKey: "MajinCave3Scene",
+  // 正式No.10「かくれざと」。ユーザー提供背景の北西門から世界地図へ出入りする山あいの村。
+  // ミレイの初登場・正式同行は本編イベントとして別途実装し、ここでは住民の生活会話だけを置く。
+  map_hidden_village: {
+    id: "map_hidden_village",
+    sceneKey: "HiddenVillageScene",
     spawns: {
-      fromCave2: { x: 330, y: 900, facing: "up" },
+      // 北西の木門の内側。出口Event zone(y:0-48)と足元Bodyが重ならない位置。
+      fromWorldMap: { x: 160, y: 80, facing: "down" },
     },
+    exits: [],
+    // No.02と同じ正式村人シート。家や施設の前の人は固定、広場と花畑の人だけ近傍を歩く。
+    npcs: [
+      { id: "npc_hidden_village_shrine_keeper", mapId: "map_hidden_village", position: { x: 724, y: 184 }, facing: "down", dialogueId: "npc_hidden_village_shrine_keeper", spriteId: "villager_08", role: "resident" },
+      { id: "npc_hidden_village_west_householder", mapId: "map_hidden_village", position: { x: 176, y: 416 }, facing: "down", dialogueId: "npc_hidden_village_west_householder", spriteId: "villager_09", role: "resident" },
+      { id: "npc_hidden_village_central_householder", mapId: "map_hidden_village", position: { x: 520, y: 376 }, facing: "down", dialogueId: "npc_hidden_village_central_householder", spriteId: "villager_10", role: "resident" },
+      { id: "npc_hidden_village_east_householder", mapId: "map_hidden_village", position: { x: 1092, y: 376 }, facing: "down", dialogueId: "npc_hidden_village_east_householder", spriteId: "villager_01", role: "resident" },
+      { id: "npc_hidden_village_lower_householder", mapId: "map_hidden_village", position: { x: 364, y: 784 }, facing: "down", dialogueId: "npc_hidden_village_lower_householder", spriteId: "villager_02", role: "resident" },
+      { id: "npc_hidden_village_watermill_keeper", mapId: "map_hidden_village", position: { x: 1112, y: 784 }, facing: "down", dialogueId: "npc_hidden_village_watermill_keeper", spriteId: "villager_03", role: "resident" },
+      { id: "npc_hidden_village_plaza_walker", mapId: "map_hidden_village", position: { x: 790, y: 424 }, facing: "left", dialogueId: "npc_hidden_village_plaza_walker", spriteId: "villager_05", role: "resident", movement: { kind: "wander", radius: 28, speed: 34, minPauseMs: 700, maxPauseMs: 1800 } },
+      { id: "npc_hidden_village_garden_walker", mapId: "map_hidden_village", position: { x: 208, y: 456 }, facing: "left", dialogueId: "npc_hidden_village_garden_walker", spriteId: "villager_06", role: "resident", movement: { kind: "wander", radius: 24, speed: 36, minPauseMs: 600, maxPauseMs: 1600 } },
+    ],
+    buildings: [],
+  },
+  // 王の間(2026-09-23、正式No.06レインランドじょうの一部)。座標は background.png(レインランドじょう_城内2.png、1448×1086)の
+  // ネイティブ背景ピクセル。王・近衛兵はDEV_PLACEHOLDER_NPC(台詞はdata/dialogues.tsの仮台詞)。正式な人数・台詞はTBD。
+  map_rainland_throne_room: {
+    id: "map_rainland_throne_room",
+    sceneKey: "RainlandThroneRoomScene",
+    spawns: {
+      // 城の王の間の扉から入る位置。南の入口の内側、上向き。出口Event zone(y:1032-1056)と重ならない。
+      fromCastle: { x: 725, y: 985, facing: "up" },
+    },
+    // 正式出口は assets/maps/rainland_throne_room/events.json の南の出口Event(城の王の間の扉の前へ)で管理する。
+    exits: [],
+    npcs: [
+      // 王は玉座の前(玉座は通れない)。壇の上、下向き。玉座の正面(y 256前後)から話しかけられる。
+      { id: "rainland_throne_king", mapId: "map_rainland_throne_room", position: { x: 728, y: 232 }, facing: "down", dialogueId: "rainland_throne_king" },
+      { id: "rainland_throne_guard_west", mapId: "map_rainland_throne_room", position: { x: 616, y: 392 }, facing: "down", dialogueId: "rainland_throne_guard_west" },
+      { id: "rainland_throne_guard_east", mapId: "map_rainland_throne_room", position: { x: 832, y: 392 }, facing: "down", dialogueId: "rainland_throne_guard_east" },
+    ],
+    buildings: [],
+  },
+  // 正式No.09「いわやまのどうくつ」(1F・2F)。座標は background.png(1F=いわやまのどうくつ_1.png、2F=いわやまのどうくつ_3.png、
+  // どちらも1024×1536の縦長)のネイティブ背景ピクセル。_2.pngは_1.pngとバイト一致のため2フロア構成(2026-09-23ユーザー確定)。
+  // 入口は世界地図からのみ(ザボンのむら北東のどうくつとは接続しない。同日ユーザー確定)。
+  map_iwayama_cave_1: {
+    id: "map_iwayama_cave_1",
+    sceneKey: "IwayamaCave1Scene",
+    spawns: {
+      // WorldMapSceneから入る正式spawn。南西の暗がりから上がってくる階段の途中、上向き。入口Event zone(y:1224-1248)と重ならない。
+      fromWorldMap: { x: 256, y: 1168, facing: "up" },
+      // 2Fから戻る位置。北東の階段の途中、下向き。2Fへの階段Event zone(y:216-240)と重ならない。
+      fromCaveFloor2: { x: 904, y: 296, facing: "down" },
+      // 崩落シューティング(IwayamaShootingScene)をクリアして戻る位置。北東の階段手前、赤い丸があった場所。上向き。
+      afterShooting: { x: 904, y: 470, facing: "up" },
+    },
+    // 正式出口は assets/maps/iwayama_cave_1/events.json の入口Event(世界地図へ)・北東の階段Event(2Fへ)で管理する。
+    exits: [],
+    npcs: [],
+    buildings: [],
+  },
+  map_iwayama_cave_2: {
+    id: "map_iwayama_cave_2",
+    sceneKey: "IwayamaCave2Scene",
+    spawns: {
+      // 1Fから入る位置。背景の青い三角(到着の目印)の上、南の階段の途中、上向き。1Fへの階段Event zone(y:1224-1248)と重ならない。
+      fromCaveFloor1: { x: 512, y: 1160, facing: "up" },
+    },
+    // 正式出口は assets/maps/iwayama_cave_2/events.json の南の階段Event(1Fへ)で管理する。
+    // 北の階段の上(おく)はイベント予約地点のDEVメッセージのみ。タロサ一時参加はTBD(SPECIAL_GAMEPLAY_SPEC.md §2)。
+    // 崩落シューティングは1Fの赤い丸から(IwayamaShootingScene)。
     exits: [],
     npcs: [],
     buildings: [],

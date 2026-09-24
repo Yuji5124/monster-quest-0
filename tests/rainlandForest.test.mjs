@@ -168,7 +168,8 @@ test("rainland forest is a point on the world map that lands at forest 1's world
   assert.equal(entry.targetMapId, "map_rainland_forest_1");
   assert.equal(entry.targetSpawnId, "fromWorldMap");
   assert.equal(entry.name, "レインランドのもり");
-  assert.equal(entry.positionStatus, "DEV_PLACEHOLDER_POSITION");
+  assert.equal(entry.implementationStatus, "implemented");
+  assert.equal(entry.positionStatus, "FINAL_POSITION");
   assert.ok(MAPS[entry.targetMapId].spawns[entry.targetSpawnId]);
 });
 

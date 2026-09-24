@@ -1,12 +1,14 @@
 # モンスタークエスト0 マップシステム仕様
 
-最終更新: 2026-09-19 JST
+最終更新: 2026-09-20 JST
 
 ## 1. 目的と優先順位
 
 本書はMonster Quest 0における通常マップの制作方式・データの正本・実行時の扱いを定める正式仕様である。地域番号、物語上の接続、進行条件は [MAP_FLOW_SPEC.md](MAP_FLOW_SPEC.md) を正とし、本書はその地域をどのように制作・実装するかを定める。
 
 今後の新規ローカルマップ（町、村、城、ダンジョン、イベント地点）は、**高解像度の背景画像を正本**として制作する。32×32タイルを敷き詰めて背景を構成する方式、およびTiled TMX/TMJをマップの正本とする方式は、新規制作の標準ではない。
+
+**明示的な例外 — No.07「まじんのどうくつ」**: 最新ユーザー仕様により、No.07だけは通常4レイヤーの画像マップではない。`assets/maps/majin_cave/tileset.png`（32px、8×8）と`tileset.json`を用い、`MajinCaveGenerator`が生成する論理32×32グリッドを正本とする、ターン制のプロシージャルDungeon RPGである。walkable/blockedはタイル画像から推測せず論理グリッドが決め、1 run内では1〜10Fの`FloorState`（敵の撃破状態・探索済みセルを含む）を保持して帰路へ再利用する。この例外を他の町・村・城・ダンジョンへ展開しない。既存`map_08_majin_cave`は旧番号由来の互換IDであり、改名しない。Tiled TMJ/TSJは作成しない。
 
 既存のTiled実装、Tiled関連テスト、アセット、ツールは削除しない。No.01「はじまりのばしょ」は本書の最初の移行例として通常Sceneを画像方式へ切り替えたが、Tiled版もlegacyとして保持する。その他の既存実装を直ちに移行・置換する指示ではない。現行Tiled実装の扱いは「旧方式 / legacy / reference」とする。
 
@@ -57,19 +59,19 @@ assets/maps/<mapId>/
 
 現在の最初の正式パッケージは `assets/maps/starting_place/` である。1448×1086の夜版 `background.png`（`assets/maps/reference/reference/はじまりのばしょ_夜.png` の無加工コピー、2026-09-19に旧1536×1024の昼景から差し替え）と同寸法の人間編集可能な `collision.png`、北の小道（石段の先）の世界地図遷移を持つ `events.json`、空でも必ず存在する `objects.json` を、`StartingPlaceScene` が読み込む。同一構図の昼版画像（`はじまりのばしょ.png`）も参照原画として保持しており、`collision.png` は昼版へもそのまま流用できる。背景を縮小表示する時はLINEARフィルタを使用する。
 
-2つ目のパッケージ `assets/maps/starting_forest/`（はじまりのもり）は、`StartingPlaceScene`と全く同じ4レイヤー構成・同じ実行時ランタイム（`ImageMapCollision.ts` / `ImageMapData.ts` / `MapCamera.ts` / `MapTransition.ts`）を再利用した`StartingForestScene`が読み込む。正式No.01〜No.20の番号は持たない追加フィールドであり、`WorldMapScene`の目的地の1つとして接続する（`MAP_FLOW_SPEC.md`参照）。距離ベースのランダムエンカウント（本節末尾参照）を追加で持つ点だけがNo.01との差分で、BACKGROUND/COLLISION/EVENT/OBJECTの読み込み方式そのものは変更していない。
+2つ目のパッケージ `assets/maps/starting_forest/`（正式No.03ビーエのもり、旧「はじまりのもり」由来の内部ID）は、`StartingPlaceScene`と全く同じ4レイヤー構成・同じ実行時ランタイム（`ImageMapCollision.ts` / `ImageMapData.ts` / `MapCamera.ts` / `MapTransition.ts`）を再利用した`StartingForestScene`が読み込む。`WorldMapScene`の目的地の1つとして接続する。距離ベースのランダムエンカウント（本節末尾参照）を追加で持つ点だけがNo.01との差分で、BACKGROUND/COLLISION/EVENT/OBJECTの読み込み方式そのものは変更していない。
 
 ランダムエンカウントを持つマップは、地域ごとのencounter table（`src/data/encounterTables.ts`）と歩行距離ベースの抽選（`src/systems/RandomEncounter.ts`）をSceneへ直書きせず外出しする。1戦闘の敵は1体のみとし、フレーム単位の抽選は行わない（実際に歩いた距離の蓄積→閾値到達時のみ抽選→当選時だけ戦闘開始）。戦闘後は一定距離、再抽選を禁止する。詳細は `BATTLE_SPEC.md` §11。
 
-3つ目のパッケージ `assets/maps/bie_village/`（No.03ビーエのむら）は、正式No.01〜No.20の番号を持つ最初の画像マップ移行例である。`BieVillageScene`はStartingPlaceScene/StartingForestSceneと同じ4レイヤー・同じ実行時ランタイムを再利用し、ランダムエンカウントは持たない（NPC・会話・木こり救出イベントとあわせて `docs/NPC/02_bie_no_mura.md` の会話原案確定後の追加実装とする）。複数の建物を持つマップでも、扉を接続しない段階では建物footprint全体を背景解析でCollisionへ焼き込み、`Building.ts`的な壁+ドア分割の仕組みは導入していない（内部接続が必要になった時点で個別に追加する）。
+3つ目のパッケージ `assets/maps/bie_village/`（正式No.04ビーエのむら、`map_03_bie_village`は旧番号由来の内部ID）は、正式No.01〜No.20の番号を持つ最初の画像マップ移行例である。`BieVillageScene`はStartingPlaceScene/StartingForestSceneと同じ4レイヤー・同じ実行時ランタイムを再利用し、ランダムエンカウントは持たない（NPC・会話・木こり救出イベントとあわせて `docs/NPC/02_bie_no_mura.md` の会話原案確定後の追加実装とする）。複数の建物を持つマップでも、扉を接続しない段階では建物footprint全体を背景解析でCollisionへ焼き込み、`Building.ts`的な壁+ドア分割の仕組みは導入していない（内部接続が必要になった時点で個別に追加する）。
 
-4つ目のパッケージ `assets/maps/starting_town/`（No.02はじまりのまち、2026-09-19移行）は、既存のNPC会話・パーティ加入・戦闘イベント・建物内部（InteriorScene）接続を維持したまま外観だけを画像マップ方式へ置き換えた例である。建物の壁Collisionは背景画像由来のCollision Maskが担うため、旧DEV_PLACEHOLDER時代の`Building.ts`（単色矩形描画＋壁セグメント計算）は削除し、`maps.ts`の`BuildingDefinition.door`（背景ピクセル座標）だけを入口の重なり判定に使う。CollisionMaskの生成時に、各建物の出入口位置だけ帯状に歩行可能な領域として残すことで、建物footprintを塞ぎつつ入口だけ近づけるようにしている。背景画像に描かれた建物の実数（5棟）が既存の内部データ数（6棟）と食い違っていたため、正式な建物数をユーザー確認のうえ5棟へ縮小した。
+4つ目のパッケージ `assets/maps/starting_town/`（No.02はじまりのまち、2026-09-19移行）は、画像背景・Collision・Event・Objectと、`MAPS.map_02_starting_town.npcs`のデータ駆動村人を組み合わせる例である。2026-09-23にNo.02内の四角形DEV_PLACEHOLDER／DEV戦闘・仲間加入NPCを、ユーザー提供の村人素材を使う固定店主4人＋近傍を歩く住民3人へ置換した。建物の壁Collisionは背景画像由来のCollision Maskが担うため、旧DEV_PLACEHOLDER時代の`Building.ts`（単色矩形描画＋壁セグメント計算）は削除し、`maps.ts`の`BuildingDefinition.door`（背景ピクセル座標）だけを入口の重なり判定に使う。CollisionMaskの生成時に、各建物の出入口位置だけ帯状に歩行可能な領域として残すことで、建物footprintを塞ぎつつ入口だけ近づけるようにしている。背景画像に描かれた建物の実数（5棟）が既存の内部データ数（6棟）と食い違っていたため、正式な建物数をユーザー確認のうえ5棟へ縮小した。
 
 5つ目・6つ目のパッケージ `assets/maps/rainland_forest_1/` / `rainland_forest_2/`（レインランドのもり その1・その2、2026-09-19）は、ユーザー提供の背景画像2枚（1448×1086）をそれぞれ無加工コピーした`background.png`と、道（土・木橋・木の階段・遺跡の石段）だけを歩行可能にした`collision.png`を持つ（当初は道の色だけだった歩行範囲を、同日、道の縁の草地まで広げた）。2マップは背景・Collision・Eventだけが異なるため、1つの`RainlandForestScene`をパッケージ設定で切り替える形（`RainlandForest1Scene` / `RainlandForest2Scene`）で読み込み、その1の北口とその2の南口を`events.json`の`transfer`コマンドで相互に接続する。ランダムエンカウントは持たない。Collision生成では、道の色（黄土色）を色相・彩度・明度の閾値で抽出したのち、遺跡の祭壇と石段（灰色のため色では拾えない）、木陰で途切れた道の橋渡し、地図端まで続く道の延長を人間が加え、実行時の8pxセル格子でエントランスから4方向に繋がらないセルを除いて、プレイヤーの実寸(24×24)で全ての出入口・遺跡・橋・階段・道の端に到達できることをテストで保証している（下記「通行可能性の基準」）。
 
 7つ目のパッケージ `assets/maps/rainland_castle_town/`（レインランドじょうかまち、2026-09-19）は、俯瞰の町マップ`レインランドじょうかまち.png`(1447×1087)の無加工コピー`background.png`と、石畳の道・広場・石段・堀の橋だけを歩行可能にした`collision.png`を持つ。共通の`RainlandImageMapScene`（`RainlandForestScene.ts`から公開、もり その1・その2と共有）へ`RainlandCastleTownScene`がパッケージを渡す。町の道は石畳の色（黄土〜クリーム）で抽出し、シーム(継ぎ目)で分断された道を色で補完してつなぎ、石でできた橋の甲板を手で加え、桟橋・外壁の縁・屋根と色が近い部分を手で除き、道を明るい芝の縁へ11px広げた（樹冠・屋根・壁・水・柵には広げない）。
 
-8つ目のパッケージ `assets/maps/rainland_castle/`（No.05レインランドじょう、2026-09-19着手・2026-09-20に正式背景へ差し替え）は、ユーザー提供の城内背景（1448×1086）の無加工コピー`background.png`と、床・絨毯・階段・小部屋を歩行可能にした`collision.png`を持つ。`collision.png`は背景から測った矩形を`tools/build_rainland_castle_collision.py`が8pxセル格子へ揃えて生成する手書き寄りの方式（画像解析を使わず、`--preview`で目視確認）。共通の`RainlandImageMapScene`は、`map.json`の`assetStatus`（DEV_PLACEHOLDER/CURRENT）をそのまま受け入れ（背景の差し替えはデータだけで済む）、`MAPS[mapId].npcs`が空でないマップだけNPC・会話を有効にする。詳細は`MAP_FLOW_SPEC.md` §4.13、`ASSET_INDEX.md`。
+8つ目のパッケージ `assets/maps/rainland_castle/`（正式No.06レインランドじょう、`map_05_rainland_castle`は旧番号由来の内部ID、2026-09-19着手・2026-09-20に正式背景へ差し替え）は、ユーザー提供の城内背景（1448×1086）の無加工コピー`background.png`と、床・絨毯・階段・小部屋を歩行可能にした`collision.png`を持つ。`collision.png`は背景から測った矩形を`tools/build_rainland_castle_collision.py`が8pxセル格子へ揃えて生成する手書き寄りの方式（画像解析を使わず、`--preview`で目視確認）。共通の`RainlandImageMapScene`は、`map.json`の`assetStatus`（DEV_PLACEHOLDER/CURRENT）をそのまま受け入れ（背景の差し替えはデータだけで済む）、`MAPS[mapId].npcs`が空でないマップだけNPC・会話を有効にする。詳細は`MAP_FLOW_SPEC.md` §4.13、`ASSET_INDEX.md`。
 
 #### 入場演出（`MapSplashScene`）
 
@@ -85,7 +87,7 @@ Collisionは「歩行可能セルが繋がっているか」ではなく、**プ
 
 ### 実行時ワールドスケール（`worldScale`）
 
-2026-09-19、ユーザー指示により各画像マップを実プレイ上1.5倍の広さへ拡大した。ただし**No.01「はじまりのばしょ」だけは明示的なイレギュラーとして100%へ戻す**。はじまりのまち・はじまりのもり・ビーエのむら・レインランドのもり（その1／その2）は1.5倍を維持する。`background.png` はユーザー提供の参照画像とバイト一致であることがテスト（`startingPlace.test.mjs`・`startingTown.test.mjs`等）で保証されており、`collision.png` はその背景と同寸法で対応づけて管理している。AIによる再生成・物理リサイズはこの不変条件と「正式素材を仮素材へ置換しない」方針に反するため採用しなかった。
+2026-09-19、ユーザー指示により各画像マップを実プレイ上1.5倍の広さへ拡大した。ただし**No.01「はじまりのばしょ」だけは明示的なイレギュラーとして100%へ戻す**。はじまりのまち・ビーエのもり（内部`starting_forest`）・ビーエのむら・レインランドのもり（その1／その2）は1.5倍を維持する。`background.png` はユーザー提供の参照画像とバイト一致であることがテスト（`startingPlace.test.mjs`・`startingTown.test.mjs`等）で保証されており、`collision.png` はその背景と同寸法で対応づけて管理している。AIによる再生成・物理リサイズはこの不変条件と「正式素材を仮素材へ置換しない」方針に反するため採用しなかった。
 
 代わりに、`map.json` へオプションの `worldScale` を追加し、`events.json` / `objects.json` / `maps.ts` の座標値は**ネイティブ背景ピクセル座標のまま変更していない**。No.01は`1`、他の現行画像マップは`1.5`であり、各Sceneが`create()`時にそのマップ固有の倍率を読み、以下へ一律適用する。
 
@@ -95,7 +97,7 @@ Collisionは「歩行可能セルが繋がっているか」ではなく、**プ
 - `events.json`のEvent zone、`objects.json`のObject marker
 - `maps.ts`のspawn座標、No.02のNPC位置・建物`door`（`footprint`はランタイム未使用のためネイティブのまま）
 
-戦闘から戻る際に厳密な直前座標を使うランダムエンカウント（はじまりのもり、`returnSpawnX/Y`）は、その座標がすでにworldScale適用後のランタイム座標であるため再スケールしない。`worldScale`省略時は`1`（従来どおりネイティブ座標=ワールド座標）。この方式により背景・Collisionのバイト列は変更せず、Collisionと背景の対応(寸法・座標系)も保たれる。
+戦闘から戻る際に厳密な直前座標を使うランダムエンカウント（ビーエのもり、内部`starting_forest`、`returnSpawnX/Y`）は、その座標がすでにworldScale適用後のランタイム座標であるため再スケールしない。`worldScale`省略時は`1`（従来どおりネイティブ座標=ワールド座標）。この方式により背景・Collisionのバイト列は変更せず、Collisionと背景の対応(寸法・座標系)も保たれる。
 
 `map.json` の最小的な概念例は以下である。数値・全フィールドは実装開始時に確定するまで仮定しない。
 
@@ -151,6 +153,8 @@ PNGマスクから抽出した静的Body、グリッド、RLE、polygonなどの
 `events.json` は領域または対象IDに対して、既存の [EVENT_SYSTEM_SPEC.md](EVENT_SYSTEM_SPEC.md) のコマンドを参照する。座標をSceneコードへ直書きしない。`transfer` は `mapId` と `spawnId` を使用し、領域の見た目と遷移先を混同しない。
 
 `objects.json` は表示・当たり判定・状態を持つオブジェクトの定義または参照を持つ。NPCと宝箱のイベント内容を背景画像に焼き込まない。背景に描かれた非対話の木や壁はCollisionで止め、会話・取得・開閉・移動・状態変化があるものはObjectとして定義する。
+
+現行の画像マップObject形式は`npc`に加えて`chest`（`itemId`／`openedFlag`）、`boss`（`monsterId`／`victoryFlag`／`unlockFlag`）、`arrival`（`characterId`／`consumedFlag`）を持てる。いずれも背景左上基準の矩形で、状態は共有GameStateのフラグで保存する。No.03ビーエのもりがこの形式の最初の利用例である。
 
 ## 7. MQ0 Map Editor（将来実装）
 

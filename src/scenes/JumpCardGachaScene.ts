@@ -53,6 +53,8 @@ export class JumpCardGachaScene extends Phaser.Scene {
   private machineGlow!: Phaser.GameObjects.Rectangle;
   private coinPresentation: Phaser.GameObjects.Container | undefined;
   private revealTimer: Phaser.Time.TimerEvent | undefined;
+  private presentationTimers: Phaser.Time.TimerEvent[] = [];
+  private presentationCounter: Phaser.Tweens.Tween | undefined;
   private readonly menuBounds = [
     { x: 24 * SCALE_FACTOR, y: 194 * SCALE_FACTOR, width: 272 * SCALE_FACTOR, height: 18 * SCALE_FACTOR },
     { x: 24 * SCALE_FACTOR, y: 216 * SCALE_FACTOR, width: 272 * SCALE_FACTOR, height: 18 * SCALE_FACTOR },
@@ -202,6 +204,10 @@ export class JumpCardGachaScene extends Phaser.Scene {
     this.renderCard(result.card);
     this.playCardRevealAnimation();
     this.renderInfo();
+    // 演出最後の白フラッシュからカードへ明ける。
+    const whiteout = this.add.rectangle(DISPLAY.width / 2, DISPLAY.height / 2, DISPLAY.width, DISPLAY.height, 0xffffff, 1)
+      .setDepth(12);
+    this.tweens.add({ targets: whiteout, alpha: 0, duration: 420, ease: "Sine.easeOut", onComplete: () => whiteout.destroy() });
   }
 
   private createMachineDisplay(): void {
@@ -245,75 +251,210 @@ export class JumpCardGachaScene extends Phaser.Scene {
     this.machineContainer.add([cabinet, display, slot, dial, label]);
   }
 
-  /** H.pngとI.pngで、コイン投入→レバー操作→発光の順に見せる5秒演出。 */
+  /**
+   * 約6秒のレア演出。H.png(コイン投入)→I.png(ハンドルを回す)→虹色の後光→白フラッシュ。
+   * 秒数は JUMP_CARD_GACHA_PRESENTATION に集約。
+   */
   private playGachaCoinPresentation(): void {
     this.clearCoinPresentation();
+    const timing = JUMP_CARD_GACHA_PRESENTATION;
     const presentation = this.add.container(DISPLAY.width / 2, DISPLAY.height / 2).setDepth(12);
-    const veil = this.add.rectangle(0, 0, DISPLAY.width, DISPLAY.height, 0x04050b, 0.94);
-    const panel = this.add.rectangle(0, 0, 166 * SCALE_FACTOR, 226 * SCALE_FACTOR, 0x101526)
+    const veil = this.add.rectangle(0, 0, DISPLAY.width, DISPLAY.height, 0x04050b, 0.96);
+    const rays = this.createRareRays().setAlpha(0);
+    const panelWidth = 166 * SCALE_FACTOR;
+    const panelHeight = 226 * SCALE_FACTOR;
+    const panel = this.add.rectangle(0, 0, panelWidth, panelHeight, 0x101526)
       .setStrokeStyle(2 * SCALE_FACTOR, 0xe7c84e);
-    const turn = this.add.image(0, 0, GACHA_TURN_KEY).setDisplaySize(150 * SCALE_FACTOR, 218 * SCALE_FACTOR);
-    const insert = this.add.image(22 * SCALE_FACTOR, 0, GACHA_COIN_INSERT_KEY)
-      .setDisplaySize(150 * SCALE_FACTOR, 218 * SCALE_FACTOR)
-      .setAlpha(0);
-    const flash = this.add.rectangle(0, 0, 154 * SCALE_FACTOR, 220 * SCALE_FACTOR, 0xfff8d5, 0);
-    const caption = this.add.text(0, 92 * SCALE_FACTOR, "ジャンコインを　セット！", {
+    const insert = this.addFittedImage(GACHA_COIN_INSERT_KEY, 156 * SCALE_FACTOR, 218 * SCALE_FACTOR).setAlpha(0);
+    const turn = this.addFittedImage(GACHA_TURN_KEY, 156 * SCALE_FACTOR, 218 * SCALE_FACTOR).setAlpha(0);
+    const panelGlow = this.add.rectangle(0, 0, panelWidth, panelHeight, 0xfff3b0, 0).setBlendMode(Phaser.BlendModes.ADD);
+    const caption = this.add.text(0, 100 * SCALE_FACTOR, "", {
       fontFamily: "monospace", fontSize: `${12 * SCALE_FACTOR}px`, color: "#fff6c7",
-      stroke: "#15101d", strokeThickness: 3 * SCALE_FACTOR / 2,
+      stroke: "#15101d", strokeThickness: 2 * SCALE_FACTOR,
     }).setOrigin(0.5);
-    presentation.add([veil, panel, turn, insert, flash, caption]);
+    const whiteout = this.add.rectangle(0, 0, DISPLAY.width, DISPLAY.height, 0xffffff, 0);
+    presentation.add([veil, rays, panel, insert, turn, panelGlow, caption, whiteout]);
+    presentation.setAlpha(0);
     this.coinPresentation = presentation;
 
-    const turnScaleX = turn.scaleX;
-    const turnScaleY = turn.scaleY;
-    turn.setScale(turnScaleX * 0.92, turnScaleY * 0.92).setAlpha(0);
-    this.tweens.add({ targets: presentation, alpha: { from: 0, to: 1 }, duration: 250 });
+    const at = (ms: number, callback: () => void): void => {
+      this.presentationTimers.push(this.time.delayedCall(ms, callback));
+    };
+    const setCaption = (text: string): void => {
+      caption.setText(text).setScale(1.25);
+      this.tweens.add({ targets: caption, scaleX: 1, scaleY: 1, duration: 180, ease: "Back.easeOut" });
+    };
+
+    this.tweens.add({ targets: presentation, alpha: 1, duration: 220 });
+
+    // 1) H.png: コインを持った手が現れ、スロットへ押し込む。
+    const insertX = insert.x;
+    const insertY = insert.y;
+    const insertScale = insert.scaleX;
+    insert.setPosition(insertX + 28 * SCALE_FACTOR, insertY - 18 * SCALE_FACTOR).setScale(insertScale * 0.94);
     this.tweens.add({
-      targets: turn,
+      targets: insert,
+      x: insertX,
+      y: insertY,
+      scaleX: insertScale,
+      scaleY: insertScale,
       alpha: 1,
-      scaleX: turnScaleX,
-      scaleY: turnScaleY,
-      duration: 620,
+      delay: timing.coinShowStartMs,
+      duration: 560,
       ease: "Back.easeOut",
+      onStart: () => setCaption("ジャンコインを　いれる…"),
     });
+    this.tweens.add({
+      targets: insert,
+      y: insertY + 7 * SCALE_FACTOR,
+      scaleX: insertScale * 1.03,
+      scaleY: insertScale * 1.03,
+      delay: timing.coinPushStartMs,
+      duration: timing.coinDropMs - timing.coinPushStartMs,
+      ease: "Cubic.easeIn",
+    });
+    // H.png内のコイン投入口(元画像比 x≈0.39, y≈0.43)で火花を散らす。
+    const slotX = insertX + (0.39 - 0.5) * insert.displayWidth;
+    const slotY = insertY + 7 * SCALE_FACTOR + (0.43 - 0.5) * insert.displayHeight;
+    at(timing.coinDropMs, () => {
+      setCaption("チャリン！");
+      this.cameras.main.shake(140, 0.006);
+      this.burstSparkles(presentation, slotX, slotY, 10, 0xffe066, 34 * SCALE_FACTOR);
+      this.tweens.add({ targets: panelGlow, alpha: { from: 0.55, to: 0 }, duration: 320, ease: "Sine.easeOut" });
+    });
+
+    // 2) I.png: 画面が切り替わり、ハンドルを3段で回す。
+    this.tweens.add({ targets: insert, alpha: 0, delay: timing.turnStartMs, duration: 320, ease: "Sine.easeIn" });
+    const turnScale = turn.scaleX;
+    turn.setScale(turnScale * 1.08);
     this.tweens.add({
       targets: turn,
-      alpha: 0,
-      delay: JUMP_CARD_GACHA_PRESENTATION.instructionHoldMs,
-      duration: 340,
-      ease: "Sine.easeIn",
-    });
-    this.tweens.add({
-      targets: insert,
-      x: 0,
       alpha: 1,
-      delay: JUMP_CARD_GACHA_PRESENTATION.coinInsertStartMs,
-      duration: 540,
+      scaleX: turnScale,
+      scaleY: turnScale,
+      delay: timing.turnStartMs,
+      duration: 420,
       ease: "Cubic.easeOut",
-      onStart: () => caption.setText("ジャンコインを　いれる！"),
+      onStart: () => setCaption("ハンドルを　まわす…"),
     });
-    this.tweens.add({
-      targets: insert,
-      scaleX: insert.scaleX * 1.035,
-      scaleY: insert.scaleY * 1.035,
-      delay: 2_620,
-      duration: 210,
-      yoyo: true,
-      repeat: 3,
-      ease: "Sine.easeInOut",
-      onStart: () => caption.setText("ガチャガチャ…"),
+    // I.png内のハンドル中心(元画像比 x≈0.51, y≈0.65)。
+    const knobX = turn.x + (0.51 - 0.5) * turn.displayWidth;
+    const knobY = turn.y + (0.65 - 0.5) * turn.displayHeight;
+    const clickLabels = ["ガチャ…", "ガチャ…", "ガチャリ！"];
+    timing.turnClickMs.forEach((ms, index) => {
+      const last = index === timing.turnClickMs.length - 1;
+      at(ms, () => {
+        setCaption(clickLabels[index] ?? "ガチャ…");
+        this.cameras.main.shake(last ? 220 : 110, last ? 0.01 : 0.004);
+        // 手ごと時計回りにひねり、ラチェットの戻りで1段回した感触を出す。
+        this.tweens.add({
+          targets: turn,
+          angle: { from: 0, to: last ? 4 : 2.5 },
+          duration: 120,
+          yoyo: true,
+          ease: "Quad.easeOut",
+        });
+        this.burstSparkles(presentation, knobX, knobY, last ? 14 : 6, last ? 0xffffff : 0xfff3b0, (last ? 60 : 36) * SCALE_FACTOR);
+        this.tweens.add({ targets: panelGlow, alpha: { from: last ? 0.5 : 0.22, to: 0 }, duration: 260 });
+      });
     });
-    this.tweens.add({
-      targets: flash,
-      alpha: 0.92,
-      delay: JUMP_CARD_GACHA_PRESENTATION.finalFlashStartMs,
-      duration: 240,
-      yoyo: true,
-      ease: "Sine.easeOut",
+
+    // 3) 虹色の枠と後光が高まり、白フラッシュでカードへつなぐ。
+    at(timing.rareGlowStartMs, () => {
+      setCaption("なにかが　でてくる…！");
+      this.presentationCounter = this.tweens.addCounter({
+        from: 0,
+        to: 1,
+        duration: 700,
+        repeat: -1,
+        onUpdate: (tween) => {
+          const hue = tween.getValue() ?? 0;
+          panel.setStrokeStyle(3 * SCALE_FACTOR, Phaser.Display.Color.HSVToRGB(hue, 0.65, 1).color);
+        },
+      });
+      this.tweens.add({ targets: rays, alpha: 0.85, duration: 600, ease: "Sine.easeOut" });
+      this.tweens.add({ targets: rays, angle: 360, duration: 3_600, repeat: -1 });
+      this.tweens.add({ targets: panelGlow, alpha: 0.35, duration: timing.finalFlashStartMs - timing.rareGlowStartMs, ease: "Sine.easeIn" });
+      this.tweens.add({
+        targets: turn,
+        scaleX: turnScale * 1.05,
+        scaleY: turnScale * 1.05,
+        duration: 200,
+        yoyo: true,
+        repeat: -1,
+        ease: "Sine.easeInOut",
+      });
+      const sparkleCount = 5;
+      for (let i = 0; i < sparkleCount; i += 1) {
+        at(timing.rareGlowStartMs + i * 220, () =>
+          this.burstSparkles(presentation, 0, 0, 8, Phaser.Display.Color.HSVToRGB(i / sparkleCount, 0.55, 1).color, 110 * SCALE_FACTOR));
+      }
+    });
+    at(timing.finalFlashStartMs, () => {
+      this.cameras.main.shake(260, 0.008);
+      this.tweens.add({ targets: whiteout, alpha: 1, duration: 360, ease: "Quad.easeIn" });
     });
   }
 
+  /** 元画像の縦横比を保ったまま枠内へ収める。 */
+  private addFittedImage(key: string, maxWidth: number, maxHeight: number): Phaser.GameObjects.Image {
+    const image = this.add.image(0, 0, key);
+    if (image.width > 0 && image.height > 0) image.setScale(Math.min(maxWidth / image.width, maxHeight / image.height));
+    return image;
+  }
+
+  /** パネル背後で回る後光。 */
+  private createRareRays(): Phaser.GameObjects.Graphics {
+    const rays = this.add.graphics();
+    const rayCount = 16;
+    const length = DISPLAY.width;
+    for (let i = 0; i < rayCount; i += 1) {
+      const angle = (Math.PI * 2 * i) / rayCount;
+      const half = Math.PI / rayCount / 2;
+      const color = Phaser.Display.Color.HSVToRGB(i / rayCount, 0.45, 1).color;
+      rays.fillStyle(color, 0.35);
+      rays.fillTriangle(
+        0, 0,
+        Math.cos(angle - half) * length, Math.sin(angle - half) * length,
+        Math.cos(angle + half) * length, Math.sin(angle + half) * length,
+      );
+    }
+    return rays;
+  }
+
+  private burstSparkles(
+    container: Phaser.GameObjects.Container,
+    x: number,
+    y: number,
+    count: number,
+    color: number,
+    radius: number,
+  ): void {
+    for (let i = 0; i < count; i += 1) {
+      const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
+      const distance = radius * (0.6 + Math.random() * 0.5);
+      const star = this.add.star(x, y, 4, 1.2 * SCALE_FACTOR, 4.5 * SCALE_FACTOR, color).setBlendMode(Phaser.BlendModes.ADD);
+      container.addAt(star, container.length - 1);
+      this.tweens.add({
+        targets: star,
+        x: x + Math.cos(angle) * distance,
+        y: y + Math.sin(angle) * distance,
+        angle: 180,
+        alpha: 0,
+        scaleX: 0.3,
+        scaleY: 0.3,
+        duration: 520 + Math.random() * 200,
+        ease: "Cubic.easeOut",
+        onComplete: () => star.destroy(),
+      });
+    }
+  }
+
   private clearCoinPresentation(): void {
+    this.presentationTimers.forEach((timer) => timer.remove(false));
+    this.presentationTimers = [];
+    this.presentationCounter?.stop();
+    this.presentationCounter = undefined;
     if (!this.coinPresentation) return;
     this.tweens.killTweensOf(this.coinPresentation);
     this.tweens.killTweensOf(this.coinPresentation.list);

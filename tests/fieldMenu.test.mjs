@@ -69,15 +69,16 @@ class MemoryStorage {
   setItem(key, value) { this.values.set(key, value); }
 }
 
-test("experience starts at level one, levels up by the temporary curve, and persists", () => {
+test("experience starts at level one, levels up by the confirmed Lv1-25 EXP table, and persists", () => {
   const repository = new GameStateRepository(new MemoryStorage());
   const progression = new CharacterProgression(repository);
-  assert.equal(getExperienceToNextLevel(1), 10);
+  assert.equal(getExperienceToNextLevel(1), 12);
   assert.deepEqual(progression.getStats("hero").level, 1);
-  assert.deepEqual(progression.awardExperience(["hero", "tarosa"], 10).leveledUpMemberIds, ["hero", "tarosa"]);
+  assert.deepEqual(progression.awardExperience(["hero", "tarosa"], 11).leveledUpMemberIds, [], "11 EXP is not yet enough for Lv2 (needs 12 cumulative)");
+  assert.deepEqual(progression.awardExperience(["hero", "tarosa"], 1).leveledUpMemberIds, ["hero", "tarosa"]);
   assert.deepEqual(progression.getStats("hero").level, 2);
   assert.deepEqual(progression.getStats("hero").exp, 0);
-  assert.equal(progression.getStats("hero").expToNextLevel, 20);
+  assert.equal(progression.getStats("hero").expToNextLevel, 23);
   assert.equal(new CharacterProgression(repository).getStats("tarosa").level, 2);
 });
 

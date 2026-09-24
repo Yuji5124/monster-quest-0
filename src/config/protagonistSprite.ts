@@ -13,6 +13,8 @@ export const PROTAGONIST_SPRITE: WalkSpriteGeometry = {
   path: new URL("../../assets/characters/playable/protagonist_walk.png", import.meta.url).toString(),
   frameWidth: 54,
   frameHeight: 70,
+  // 3フレーム往復(1→2→3→2)を約0.33秒で1周期にし、180px/秒の移動と足運びを同期する。
+  walkFrameRate: 12,
   baselineY: 67,
 };
 

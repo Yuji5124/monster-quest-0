@@ -1,9 +1,13 @@
 import type { PartyMemberId } from "../systems/PartySystem.ts";
+import { getCharacterBaseStatsAtLevel } from "./characterGrowth.ts";
+import { getDefaultWeaponForLevel } from "../data/weapons.ts";
+import { getExpForNextLevel } from "../data/expTable.ts";
 
 /**
- * HP/MP/こうげき/ぼうぎょ/すばやさはTEMP_TEST_VALUE。
- * 全員Lv1・EXP 0開始はユーザー確定。最終成長率・EXP曲線はTBDのため、現在は
- * 小さな仮閾値で画面・保存・勝利報酬を接続する。戦闘側のDEV_BATTLE_PLAYERとは別管理。
+ * Lv1・EXP0時点のキャラクターステータス。2026-09-22の成長／バランス統合により、
+ * `characterGrowth.ts`の成長カーブ(ユーザー確定のLv23目標値からの逆算)を単一の正として、
+ * ここではLv1のスナップショットだけを提供する(以前は完全に独立した仮値だった)。
+ * 実戦闘・フィールドメニューは`CharacterProgression.getStats()`経由でレベル変化を反映する。
  */
 export interface CharacterStatsEntry {
   readonly id: PartyMemberId;
@@ -20,26 +24,33 @@ export interface CharacterStatsEntry {
   readonly speed: number;
 }
 
+const DISPLAY_NAMES: Readonly<Record<PartyMemberId, string>> = {
+  hero: "主人公",
+  tarosa: "タロサ",
+  mirei: "ミレイ",
+};
+
+function level1Stats(memberId: PartyMemberId): CharacterStatsEntry {
+  const base = getCharacterBaseStatsAtLevel(memberId, 1);
+  const weapon = getDefaultWeaponForLevel(memberId, 1);
+  return {
+    id: memberId,
+    displayName: DISPLAY_NAMES[memberId],
+    level: 1,
+    exp: 0,
+    expToNextLevel: getExpForNextLevel(1),
+    hp: base.maxHp,
+    maxHp: base.maxHp,
+    mp: base.maxMp,
+    maxMp: base.maxMp,
+    attack: base.attack + weapon.attackBonus,
+    defense: base.defense,
+    speed: base.speed,
+  };
+}
+
 export const DEV_CHARACTER_STATS: Readonly<Record<PartyMemberId, CharacterStatsEntry>> = {
-  hero: {
-    id: "hero",
-    displayName: "主人公",
-    level: 1, exp: 0, expToNextLevel: 10,
-    hp: 42, maxHp: 42, mp: 8, maxMp: 8,
-    attack: 12, defense: 7, speed: 9,
-  },
-  tarosa: {
-    id: "tarosa",
-    displayName: "タロサ",
-    level: 1, exp: 0, expToNextLevel: 10,
-    hp: 38, maxHp: 38, mp: 4, maxMp: 4,
-    attack: 14, defense: 5, speed: 11,
-  },
-  mirei: {
-    id: "mirei",
-    displayName: "ミレイ",
-    level: 1, exp: 0, expToNextLevel: 10,
-    hp: 30, maxHp: 30, mp: 16, maxMp: 16,
-    attack: 6, defense: 5, speed: 8,
-  },
+  hero: level1Stats("hero"),
+  tarosa: level1Stats("tarosa"),
+  mirei: level1Stats("mirei"),
 } as const;

@@ -1,6 +1,6 @@
-export type DevMapTestId = "no01" | "no02" | "image-no01" | "starting-forest" | "bie-village" | "rainland-forest" | "rainland-castle-town" | "rainland-castle" | "majin-cave";
+export type DevMapTestId = "no01" | "no02" | "image-no01" | "starting-forest" | "bie-village" | "rainland-forest" | "rainland-castle-town" | "rainland-castle" | "majin-cave" | "zabon-village" | "hidden-village" | "rainland-castle-3d" | "iwayama-cave" | "iwayama-shooting" | "rainland-throne-room";
 
-const DEV_MAP_TEST_IDS: readonly DevMapTestId[] = ["no01", "no02", "image-no01", "starting-forest", "bie-village", "rainland-forest", "rainland-castle-town", "rainland-castle", "majin-cave"];
+const DEV_MAP_TEST_IDS: readonly DevMapTestId[] = ["no01", "no02", "image-no01", "starting-forest", "bie-village", "rainland-forest", "rainland-castle-town", "rainland-castle", "majin-cave", "zabon-village", "hidden-village", "rainland-castle-3d", "iwayama-cave", "iwayama-shooting", "rainland-throne-room"];
 
 /** 通常の起動導線を変更せず、特定マップを単体確認するためのDEV URLを解決する。 */
 export function readDevMapTest(search: string): DevMapTestId | null {

@@ -68,7 +68,8 @@ test("castle: registered in MAPS with the fixed entry contract (mapId + fromCast
   assert.equal(MAP.sceneKey, "RainlandCastleScene");
   assert.equal(MAP.exits.length, 0);
   assert.equal(MAP.buildings.length, 0);
-  assert.deepEqual(Object.keys(MAP.spawns), ["fromCastleTown"]);
+  // fromThroneRoom (2026-09-23): back from the throne room, in front of its door
+  assert.deepEqual(Object.keys(MAP.spawns), ["fromCastleTown", "fromThroneRoom"]);
   assert.equal(MAP.spawns.fromCastleTown.facing, "up");
 });
 
@@ -109,7 +110,9 @@ test("castle: event points exist for the entrance, throne room door, stairs, the
     assert.equal(event.once, true);
     const { x, y, width, height } = event.bounds;
     assert.ok(x >= 0 && y >= 0 && x + width <= manifest().width && y + height <= manifest().height, `${event.id} must be inside the map`);
-    assert.equal(event.commands[0].type, event.id === "event_rainland_castle_exit" ? "transfer" : "message", `${event.id} has the wrong command type`);
+    // the exit (to the castle town) and the throne room door (2026-09-23, to the throne room) are real transfers
+    const transfers = ["event_rainland_castle_exit", "event_rainland_castle_throne_room_entrance"];
+    assert.equal(event.commands[0].type, transfers.includes(event.id) ? "transfer" : "message", `${event.id} has the wrong command type`);
   }
 });
 
@@ -208,7 +211,7 @@ test("castle: the Scene is registered for normal play, the world-map test and ?m
   const main = readFileSync(path.join(REPO_ROOT, "src/main.ts"), "utf-8");
   assert.match(main, /normalScenes = \[[^\]]*RainlandCastleScene[^\]]*\]/);
   assert.match(main, /\? \[WorldMapTestScene[^\]]*RainlandCastleScene[^\]]*\]/);
-  assert.match(main, /mapTestRequested === "rainland-castle"\s*\n?[^\n]*\n?\s*\? \[RainlandCastleScene, RainlandCastleTownScene, WorldMapScene, MapSplashScene\]/);
+  assert.match(main, /mapTestRequested === "rainland-castle"\s*\n?[^\n]*\n?\s*\? \[RainlandCastleScene, RainlandCastle3DScene, RainlandCastleTownScene, RainlandThroneRoomScene, RainlandThroneRoom3DScene, WorldMapScene, MapSplashScene\]/);
   assert.match(main, /mapTestRequested === "rainland-castle-town"\s*\n?[^\n]*\n?\s*\? \[RainlandCastleTownScene, RainlandCastleScene, /);
   const scene = readFileSync(path.join(REPO_ROOT, "src/scenes/RainlandCastleScene.ts"), "utf-8");
   assert.match(scene, /super\("RainlandCastleScene"/);

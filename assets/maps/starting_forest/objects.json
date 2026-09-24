@@ -1,4 +1,42 @@
 {
-  "formatVersion": 1,
-  "objects": []
+  "formatVersion": 2,
+  "objects": [
+    {
+      "id": "boss_starting_forest_erimaki_tokage",
+      "type": "boss",
+      "label": "えりまきとかげ",
+      "x": 832,
+      "y": 185,
+      "width": 64,
+      "height": 64,
+      "blocking": false,
+      "monsterId": "erimaki_hebi",
+      "victoryFlag": "boss.starting_forest_erimaki_tokage_defeated",
+      "unlockFlag": "story.rainland_castle_town_unlocked"
+    },
+    {
+      "id": "chest_starting_forest_kaifukuyaku",
+      "type": "chest",
+      "label": "たからばこ",
+      "x": 696,
+      "y": 381,
+      "width": 44,
+      "height": 36,
+      "blocking": true,
+      "itemId": "kaifukuyaku",
+      "openedFlag": "chest.starting_forest_kaifukuyaku_opened"
+    },
+    {
+      "id": "arrival_starting_forest_tarosa",
+      "type": "arrival",
+      "label": "タロサ",
+      "x": 753,
+      "y": 20,
+      "width": 44,
+      "height": 30,
+      "blocking": false,
+      "characterId": "tarosa",
+      "consumedFlag": "event.starting_forest_tarosa_hunt_talked"
+    }
+  ]
 }

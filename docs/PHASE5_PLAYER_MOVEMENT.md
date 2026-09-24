@@ -1,10 +1,12 @@
 # Phase 5 実装結果
 
-最終更新: 2026-09-13 JST
+最終更新: 2026-09-24 JST
+
+> **履歴注記（2026-09-24）:** 以下のPhase 5実装記録は当時のDEV_PLACEHOLDER段階のもの。現行主人公素材・実装状態は `ASSET_INDEX.md`、`PROJECT_STATUS.md`、`src/config/protagonistSprite.ts` を優先する。
 
 ## 作業前に確認した主人公最新仕様
 
-主人公は男性・別世界の元NPC。正式外見・歩行素材・最終配置はTBD。
+主人公は男性・別世界の元NPC。当時は正式外見・歩行素材・最終配置がTBDだった。
 `AGENTS.md` / `CLAUDE.md` / `README.md`、PROJECT_STATUS・OPENING_SPEC・MAP_FLOW_SPEC・UI_INPUT_SPEC・PHASER_ARCHITECTURE・DATA_CONTRACTS・TBD_REGISTRY・ASSET_INDEX・Phase 4記録、asset_catalogと実ファイルを確認した。
 移動方式についてdocsに確定しているのは十字移動が基本という点。グリッド／連続移動や最終速度の指定は見つからなかった。
 今回のユーザー指示に従い、正式素材がなくても操作検証専用のDEV_PLACEHOLDERでPhase 5のみ進める。
@@ -13,10 +15,10 @@
 
 ## 主人公素材分類
 
-- CURRENT: 正式採用された現行主人公歩行PNGは確認できない。
-- REFERENCE: `assets/characters/reference/sprites/`の14画像、`profiles/`の参考資料。現行主人公への採用根拠がないため不使用。参考画像のフレームや方向数を実装へ転用していない。
+- CURRENT: `assets/characters/playable/protagonist_walk.png`。ユーザー提供の男性主人公参考から作成された4方向×各3フレームの正式歩行スプライトであり、`Player.ts`が使用する。
+- REFERENCE: `assets/characters/reference/reference/主人公/`の方向別ポーズは正式採用根拠として保持する。`assets/characters/reference/sprites/`等の旧参考は現行実装へ転用しない。
 - SUPERSEDED: `char.hero.walk` / `assets/characters/playable/hero_walk.png`。旧女性勇者風主人公で使用禁止。指定ファイルも存在しない。
-- TBD: `char.protagonist.walk` / `assets/characters/playable/protagonist_walk.png`はneeds_reviewで実ファイルなし。正式外見・方向別フレーム・歩行アニメ速度・初期配置は未確定。
+- TBD: 最終の歩行アニメ速度・初期配置。`char.protagonist.walk` / `assets/characters/playable/protagonist_walk.png`は現行実ファイルへ同期済み。
 
 単色RectangleをDEV_PLACEHOLDERとして使用。画像生成・参考画像の正式採用・asset_catalogへの登録は行っていない。
 

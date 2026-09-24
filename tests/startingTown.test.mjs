@@ -6,6 +6,8 @@ import { fileURLToPath } from "node:url";
 import { inflateSync } from "node:zlib";
 import { MAPS } from "../src/config/maps.ts";
 import { PLAYER } from "../src/config/player.ts";
+import { VILLAGER_SPRITES } from "../src/config/villagerSprites.ts";
+import { bodyOffset } from "../src/config/characterWalkSprite.ts";
 import { buildCollisionRects } from "../src/systems/ImageMapCollisionData.ts";
 import { readImageMapEvents, readImageMapManifest, readImageMapObjects } from "../src/systems/ImageMapData.ts";
 
@@ -65,12 +67,16 @@ test("starting-town collision mask keeps the plaza, west exit and every building
 
   const isBlocked = (x, y) => collisionRects.some((rect) => x >= rect.x && x < rect.x + rect.width && y >= rect.y && y < rect.y + rect.height);
 
-  assert.equal(isBlocked(90, 575), false, "the fromWorldMap spawn near the west exit must be walkable");
-  assert.equal(isBlocked(0, 575), false, "the west exit event zone must be walkable");
+  const town = MAPS.map_02_starting_town;
+  const fieldArrival = town.spawns.fromWorldMap;
+  assert.equal(isBlocked(fieldArrival.x, fieldArrival.y), false, "the green field-arrival spawn must be walkable");
+  const westExit = readImageMapEvents(JSON.parse(readFileSync(path.join(MAP_DIR, "events.json"), "utf-8"))).find((event) => event.id === "event_starting_town_west_exit");
+  assert.ok(westExit, "the blue west-exit event must exist");
+  assert.equal(isBlocked(westExit.bounds.x + westExit.bounds.width / 2, westExit.bounds.y + westExit.bounds.height / 2), false, "the blue west exit must be walkable");
   assert.equal(isBlocked(620, 480), false, "the fountain plaza approach must be walkable");
 
-  for (const building of MAPS.map_02_starting_town.buildings) {
-    const spawn = MAPS.map_02_starting_town.spawns[building.frontSpawnId];
+  for (const building of town.buildings) {
+    const spawn = town.spawns[building.frontSpawnId];
     assert.ok(spawn, `${building.id} -> missing frontSpawnId ${building.frontSpawnId}`);
     assert.equal(isBlocked(spawn.x, spawn.y), false, `${building.id} frontSpawn (${spawn.x},${spawn.y}) must be walkable`);
     const doorCx = building.door.x + building.door.width / 2;
@@ -80,6 +86,49 @@ test("starting-town collision mask keeps the plaza, west exit and every building
 
   assert.equal(isBlocked(150, 100), true, "deep forest corners must stay blocked");
   assert.equal(isBlocked(1350, 200), true, "the river must stay blocked");
+});
+
+test("starting-town red points are seven data-driven villagers: four fixed shopkeepers and three local walkers", () => {
+  const town = MAPS.map_02_starting_town;
+  const shopkeepers = town.npcs.filter((npc) => npc.role === "shopkeeper");
+  const walkers = town.npcs.filter((npc) => npc.role === "resident");
+  assert.equal(town.npcs.length, 7);
+  assert.equal(shopkeepers.length, 4);
+  assert.equal(walkers.length, 3);
+  assert.equal(shopkeepers.every((npc) => !npc.movement), true, "shopkeepers must stay at their storefronts");
+  assert.equal(walkers.every((npc) => npc.movement?.kind === "wander"), true, "non-shop red points must wander");
+  assert.equal(town.npcs.every((npc) => npc.spriteId), true, "every town villager must select an asset-backed sprite");
+  assert.deepEqual(town.spawns.fromField, town.spawns.fromWorldMap, "Field and world-map arrivals share the green south entrance");
+  assert.deepEqual(town.spawns.fromWorldMap, { x: 690, y: 1030, facing: "up" });
+});
+
+test("starting-town villagers' feet bodies begin on walkable ground", () => {
+  const manifest = readImageMapManifest(JSON.parse(readFileSync(path.join(MAP_DIR, "map.json"), "utf-8")));
+  const collisionRects = buildCollisionRects(readPngAsMask(path.join(MAP_DIR, "collision.png")), manifest.collisionCellSize);
+  const overlaps = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+
+  for (const npc of MAPS.map_02_starting_town.npcs.filter((candidate) => candidate.movement)) {
+    assert.ok(npc.spriteId, `${npc.id} must select a villager sprite`);
+    const sprite = VILLAGER_SPRITES[npc.spriteId];
+    const offset = bodyOffset(sprite, PLAYER.width, PLAYER.height);
+    const positions = [{ ...npc.position }];
+    for (let step = 0; step < 16; step += 1) {
+      const angle = Math.PI * 2 * step / 16;
+      positions.push({
+        x: npc.position.x + Math.cos(angle) * npc.movement.radius,
+        y: npc.position.y + Math.sin(angle) * npc.movement.radius,
+      });
+    }
+    for (const position of positions) {
+      const body = {
+        x: position.x - sprite.frameWidth / 2 + offset.x,
+        y: position.y - sprite.frameHeight / 2 + offset.y,
+        width: PLAYER.width,
+        height: PLAYER.height,
+      };
+      assert.equal(collisionRects.some((rect) => overlaps(body, rect)), false, `${npc.id} can select a collision area at ${position.x.toFixed(1)},${position.y.toFixed(1)}`);
+    }
+  }
 });
 
 test("no building frontSpawn's full Player body overlaps its own door trigger zone (no instant re-trigger)", () => {

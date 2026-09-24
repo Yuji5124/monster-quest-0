@@ -11,7 +11,7 @@ import { readImageMapEvents, readImageMapManifest, readImageMapObjects } from ".
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const MAP_DIR = path.join(REPO_ROOT, "assets/maps/bie_village");
-const REFERENCE_PATH = path.join(REPO_ROOT, "assets/maps/reference/reference/ビーエのむら.png");
+const REFERENCE_PATH = path.join(REPO_ROOT, "assets/maps/reference/reference/ビーエのむら更新.png");
 
 function readPngSize(filePath) {
   const buffer = readFileSync(filePath);
@@ -68,6 +68,10 @@ test("bie-village collision mask keeps the gate, spawn and plaza walkable while 
   assert.equal(isBlocked(710, 150), false, "the fromWorldMap spawn just inside the north gate must be walkable");
   assert.equal(isBlocked(710, 30), false, "the north gate exit zone must be walkable");
   assert.equal(isBlocked(950, 420), false, "the stone plaza must be walkable");
+  assert.equal(isBlocked(700, 90), false, "the north gate stairs must be walkable");
+  assert.equal(isBlocked(390, 815), false, "the south-west river bridge must be walkable");
+  assert.equal(isBlocked(560, 700), false, "the stone stairs by the south-west road must be walkable");
+  assert.equal(isBlocked(850, 530), true, "the big tree's stone ring in the plaza must be blocked");
 
   assert.equal(isBlocked(300, 280), true, "the watermill house footprint must be blocked");
   assert.equal(isBlocked(950, 250), true, "the garden house footprint must be blocked");

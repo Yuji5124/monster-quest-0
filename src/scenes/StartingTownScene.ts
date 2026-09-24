@@ -16,6 +16,7 @@ import type { ImageMapEvent } from "../systems/ImageMapData.ts";
 import { PROTAGONIST_SPRITE } from "../config/protagonistSprite.ts";
 import { TAROSA_SPRITE } from "../config/tarosaSprite.ts";
 import { MIREI_SPRITE } from "../config/mireiSprite.ts";
+import { VILLAGER_SPRITES } from "../config/villagerSprites.ts";
 import { ensureWalkAnimations, preloadWalkSprite } from "../systems/CharacterWalkSprite.ts";
 import { configureMapCamera } from "../systems/MapCamera.ts";
 import { PartyFollowers } from "../systems/PartyFollowers.ts";
@@ -79,6 +80,9 @@ export class StartingTownScene extends Phaser.Scene {
     preloadWalkSprite(this, PROTAGONIST_SPRITE);
     preloadWalkSprite(this, TAROSA_SPRITE);
     preloadWalkSprite(this, MIREI_SPRITE);
+    for (const npc of MAPS[MAP_ID].npcs) {
+      if (npc.spriteId) preloadWalkSprite(this, VILLAGER_SPRITES[npc.spriteId]);
+    }
   }
 
   create(data?: StartingTownSceneData): void {
@@ -91,7 +95,7 @@ export class StartingTownScene extends Phaser.Scene {
       throw new Error(`StartingTownScene requires the CURRENT ${MAP_ID} image-map package`);
     }
     const events = readImageMapEvents(this.cache.json.get(EVENTS_KEY));
-    // objects.jsonは現状空。No.02のNPCは会話/パーティ加入/戦闘イベントを持つためMAPS.npcs経由のまま。
+    // objects.jsonは現状空。No.02のNPCは対話・見た目・歩行設定をMAPS.npcsのデータで管理する。
     readImageMapObjects(this.cache.json.get(OBJECTS_KEY));
     const worldScale = manifest.worldScale;
 
@@ -118,12 +122,8 @@ export class StartingTownScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, manifest.width * worldScale, manifest.height * worldScale);
 
     const map = MAPS[MAP_ID];
-    // 建物・NPCを先に描画し、主人公を最後に重ねる(手前に見えるようにする)。
-    // definition.positionはmaps.tsのネイティブ背景ピクセル座標なので、worldScaleを掛けた複製をNpcへ渡す。
-    this.npcs = map.npcs.map((definition) => new Npc(this, {
-      ...definition,
-      position: { x: definition.position.x * worldScale, y: definition.position.y * worldScale },
-    }));
+    // definition.position / movementはmaps.tsのネイティブ背景ピクセル座標なので、worldScaleを掛けた複製をNpcへ渡す。
+    this.npcs = map.npcs.map((definition) => new Npc(this, scaleNpcDefinition(definition, worldScale)));
 
     const spawnId = data?.spawnId && map.spawns[data.spawnId] ? data.spawnId : Object.keys(map.spawns)[0];
     const spawn = map.spawns[spawnId];
@@ -133,7 +133,19 @@ export class StartingTownScene extends Phaser.Scene {
     this.partyFollowers = new PartyFollowers(this, this.player);
 
     for (const body of this.collisionRuntime.bodies) this.physics.add.collider(this.player.body, body);
-    for (const npc of this.npcs) this.physics.add.collider(this.player.body, npc.body);
+    for (const npc of this.npcs) {
+      this.physics.add.collider(this.player.body, npc.body);
+      // Fixed shopkeepers deliberately stand at their storefront markers, so
+      // only moving residents need map-wall collision work every physics step.
+      if (npc.definition.movement) {
+        for (const body of this.collisionRuntime.bodies) this.physics.add.collider(npc.body, body);
+      }
+    }
+    for (let index = 0; index < this.npcs.length; index += 1) {
+      for (let other = index + 1; other < this.npcs.length; other += 1) {
+        this.physics.add.collider(this.npcs[index].body, this.npcs[other].body);
+      }
+    }
 
     for (const event of events) {
       const bounds = scaleRect(event.bounds, worldScale);
@@ -198,6 +210,7 @@ export class StartingTownScene extends Phaser.Scene {
         this.fieldMenu.open();
         return;
       }
+      for (const npc of this.npcs) npc.update(this.time.now);
       this.player.update(this.actions);
       if (confirmPressed) this.tryStartDialogue();
     };
@@ -248,6 +261,7 @@ export class StartingTownScene extends Phaser.Scene {
     if (!dialogue) return;
     // 会話開始時点の残存速度を確実に止める(次の物理stepを待たない)。
     this.player.body.setVelocity(0, 0);
+    npc.stop();
     this.afterDialogueEvent = dialogue.afterDialogue;
     this.dialogueBox.open(dialogue.pages);
   }
@@ -303,4 +317,16 @@ export class StartingTownScene extends Phaser.Scene {
 
 function addStaticBody(scene: Phaser.Scene, object: Phaser.GameObjects.Rectangle): void {
   scene.physics.add.existing(object, true);
+}
+
+function scaleNpcDefinition(definition: (typeof MAPS)[typeof MAP_ID]["npcs"][number], worldScale: number) {
+  return {
+    ...definition,
+    position: { x: definition.position.x * worldScale, y: definition.position.y * worldScale },
+    movement: definition.movement && {
+      ...definition.movement,
+      radius: definition.movement.radius * worldScale,
+      speed: definition.movement.speed * worldScale,
+    },
+  };
 }

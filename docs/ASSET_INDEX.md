@@ -1,6 +1,6 @@
 # Monster Quest 0 Asset Index
 
-最終更新: 2026-09-19 JST
+最終更新: 2026-09-23 JST
 
 このファイルを画像アセットの正式台帳とする。Phaser Game Agent / Codex / Claude Code は画像を探す前にこのファイルを確認する。
 
@@ -34,8 +34,8 @@
 
 | 正式パス | 内容 | 状態 |
 |---|---|---|
-| `assets/title/reference/I.png` | ユーザー指定のジャンコインでレバーを回す画。1093×1439。ジャンカードの排出前演出で直接ロードする | CURRENT |
-| `assets/title/reference/H.png` | ユーザー指定のジャンコイン投入画。1024×1536。上記に続く排出前演出で直接ロードする | CURRENT |
+| `assets/title/reference/I.png` | コインでレバーを回す既存演出画。1093×1439。ジャンカード排出前演出の後半（H.pngのコイン投入に続くハンドル操作）で直接ロードする。画像内のジャンコイン表記は旧実装由来で、現行の料金ルール（1回20円）を決めない | CURRENT |
+| `assets/title/reference/H.png` | コイン投入の既存演出画。1024×1536。ジャンカード排出前演出の最初に直接ロードする。画像内表記の更新は、20円仕様へのコード移行と合わせてTBD | CURRENT |
 
 ※「誰も知らないゲーム、やってみる？」はサブタイトルではなく広告・紹介用コピーとして扱う。
 
@@ -127,10 +127,10 @@ NPCに固有名が付いた時点で `npc_01` 等から意味のある名前へ1
 | `assets/maps/starting_place/background.png` | No.01通常Sceneが読むCURRENTの1448×1086高解像度BACKGROUND（**夜版**、オープニングの舞台）。`assets/maps/reference/reference/はじまりのばしょ_夜.png`の無加工コピー（原本は削除・上書きしない）。LINEARフィルタで表示する。2026-09-19に旧1536×1024の昼景（城門・木橋）から差し替え、旧画像はgit履歴(e26d6bf)に残る | CURRENT |
 | `assets/maps/starting_place/collision.png` | 上記と同寸法のCURRENT二値Collision Mask（白=歩行可能、黒=歩行不可）。草地・土の道をHSV色閾値で抽出→北の小道と石段を追加→焚き火の輪・丸太・切り株・崖縁の柵を除外→8pxの安全マージン→16pxセル格子でspawnから4方向に繋がらない飛び地を除去して生成。昼版画像と同一構図のため昼版へも流用できる。人間が修正でき、実行時は生成済みマスクだけを読む | CURRENT |
 | `assets/maps/world_map/background.png` | ポイント選択式ワールドマップ用のCURRENTオリジナル高解像度背景。1448×1086・4:3。実行時はLINEARで縮小表示 | CURRENT |
-| `assets/maps/starting_forest/background.png` | はじまりのもり用CURRENTの1536×1024高解像度BACKGROUND。`assets/maps/reference/reference/はじまりのもり.png`の無加工コピー（原本は削除・上書きしない） | CURRENT |
+| `assets/maps/starting_forest/background.png` | No.03ビーエのもり用CURRENTの1536×1024高解像度BACKGROUND。原本ファイル名`はじまりのもり.png`は互換のため保持する無加工コピー（原本は削除・上書きしない） | CURRENT |
 | `assets/maps/starting_forest/collision.png` | 上記と同寸法のCURRENT二値Collision Mask（白=歩行可能、黒=歩行不可）。背景のHSV色閾値で道を抽出→最大連結成分のみ採用→プレイヤー幅分だけ膨張→南の木戸・北の石アーチまで到達させて生成。人間が上書き修正できる通常のPNG | CURRENT |
-| `assets/maps/bie_village/background.png` | No.03ビーエのむら用CURRENTの1536×1024高解像度BACKGROUND。`assets/maps/reference/reference/ビーエのむら.png`の無加工コピー（原本は削除・上書きしない） | CURRENT |
-| `assets/maps/bie_village/collision.png` | 上記と同寸法のCURRENT二値Collision Mask（白=歩行可能、黒=歩行不可）。広場・石畳・土の道をHSV色閾値で抽出し、建物6棟＋井戸/かまど状の構造物の敷地を個別に除外、川を除外したうえでプレイヤー幅分だけ膨張して生成。北門のみを世界地図への唯一の出入口とする | CURRENT |
+| `assets/maps/bie_village/background.png` | No.04ビーエのむら用CURRENTの1536×1024高解像度BACKGROUND。2026-09-23に`assets/maps/reference/reference/ビーエのむら更新.png`の無加工コピーへ差し替え（旧`ビーエのむら.png`・新原本とも削除・上書きしない） | CURRENT |
+| `assets/maps/bie_village/collision.png` | 上記と同寸法のCURRENT二値Collision Mask（白=歩行可能、黒=歩行不可）。`tools/build_bie_village_collision.py`が土の道の色から8pxセル単位で生成し、北門の階段・南西の橋・石段・水車小屋前を手測定矩形で追加、広場の大木の石囲いを除外、北門へつながる道だけを残す。北門のみを世界地図への唯一の出入口とする | CURRENT |
 | `assets/maps/starting_town/background.png` | No.02はじまりのまち用CURRENTの1448×1086高解像度BACKGROUND。`assets/maps/reference/reference/はじまりのまち.png`の無加工コピー（原本は削除・上書きしない） | CURRENT |
 | `assets/maps/starting_town/collision.png` | 上記と同寸法のCURRENT二値Collision Mask（白=歩行可能、黒=歩行不可）。噴水広場・石畳・土の道をHSV色閾値で抽出し、建物5棟の敷地を個別に除外（各建物の出入口だけ帯状に歩行可能を残す）、噴水・花壇・川を除外したうえでプレイヤー幅分だけ膨張して生成。西端のみを世界地図への正式出入口とする | CURRENT |
 
@@ -182,9 +182,9 @@ CURRENTのNo.01夜背景は `assets/maps/starting_place/background.png` とし�
 | `assets/maps/starting_place/background.png` | 夜版原画の無加工コピー。StartingPlaceSceneがLINEARフィルタで表示するCURRENT背景 | CURRENT |
 | `assets/maps/starting_place/collision.png` | 上記用のCURRENT二値Collision Mask（昼版にも流用可） | CURRENT |
 
-### はじまりのもり
+### ビーエのもり（原本名・内部IDは旧「はじまりのもり」）
 
-2026-09-18追加。No.01「はじまりのばしょ」と同じBACKGROUND/COLLISION/EVENT/OBJECT画像マップ方式を流用した追加フィールド。正式No.01〜No.20の番号は持たない（`MAP_FLOW_SPEC.md` 参照）。
+2026-09-18追加。正式No.03。No.01「はじまりのばしょ」と同じBACKGROUND/COLLISION/EVENT/OBJECT画像マップ方式を流用する。既存パス・原本名・内部IDは互換のため残す（`PLAY_ORDER_SPEC.md`参照）。
 
 | パス | 用途 | 状態 |
 |---|---|---|
@@ -196,7 +196,7 @@ Collisionの作り方: 背景をHSV変換し、道の色域（H≈33〜52°, S�
 
 ### レインランドのもり
 
-2026-09-19追加。はじまりのもりと同じ追加フィールド（正式No.01〜No.20の番号なし）。同一エリアの2画面で、No.01と同じ画像マップ方式を流用する（`MAP_FLOW_SPEC.md` §4.10）。
+2026-09-19追加。正式No.05。同一エリアの2画面で、No.01と同じ画像マップ方式を流用する。既存`rainland_forest_1/2`は内部互換ID（`MAP_FLOW_SPEC.md` §4.10）。
 
 | パス | 用途 | 状態 |
 |---|---|---|
@@ -209,23 +209,22 @@ Collisionの作り方: 背景をHSV変換し、道の色域（H≈33〜52°, S�
 
 ### まじんのどうくつ
 
-2026-09-19追加。正式No.08の3画面ダンジョン。キービジュアルは世界地図からの入場演出専用、`その1〜3`は歩行可能なローカルマップ背景として分離する。
+2026-09-24同期。正式No.07（既存`map_08_majin_cave`は旧番号由来の互換ID）は32px論理グリッドの特殊Dungeon RPG。キービジュアルと旧`その1〜3`は資料として保持し、ランタイム背景・入場演出としては使用しない。通常敵8種はユーザー提供シートを最近傍で256×256 RGBA／64px×4×4へ正規化し、`MajinCaveScene`専用の共通アニメーション基盤から既存IDに結び付ける。
 
 | パス | 用途 | 状態 |
 |---|---|---|
-| `assets/maps/reference/reference/まじんのどうくつ.png` | ユーザー提供のキービジュアル（1448×1086）。削除・上書きせず、その1の`entry_splash.png`へ無加工コピー | REFERENCE |
-| `assets/maps/reference/reference/まじんのどうくつ_その１.png` | ユーザー提供の洞窟内部SOURCE（1448×1086）。その1の背景へ無加工コピー | REFERENCE |
-| `assets/maps/reference/reference/まじんのどうくつ_その2.png` | ユーザー提供の洞窟内部SOURCE（1448×1086）。その2の背景へ無加工コピー | REFERENCE |
-| `assets/maps/reference/reference/まじんのどうくつ_その3.png` | ユーザー提供の洞窟内部SOURCE（1448×1086）。その3の背景へ無加工コピー | REFERENCE |
-| `assets/maps/majin_cave_1/background.png` / `collision.png` / `entry_splash.png` | その1のCURRENT背景・編集可能Collision・入場演出画像 | CURRENT |
-| `assets/maps/majin_cave_2/background.png` / `collision.png` | その2のCURRENT背景・編集可能Collision | CURRENT |
-| `assets/maps/majin_cave_3/background.png` / `collision.png` | その3のCURRENT背景・編集可能Collision | CURRENT |
-
-Collisionは石床・橋・階段を結ぶ広めの初期導線として作成している。実行時の画像解析は行わず、`collision.png`だけを読む。最終的な道幅・寄り道・装飾への接触可否は人間によるプレイ確認で調整する。
+| `assets/maps/reference/reference/まじんのどうくつ.png` | ユーザー提供のキービジュアル（1448×1086）。削除・上書きせず、UI・構成・雰囲気のREFERENCEとしてのみ保持。ランタイムにはロードしない | REFERENCE |
+| `assets/maps/reference/reference/mq0_majin_cave_tileset.png` / `.json` | No.07専用タイルセットのSOURCE／仕様（256×256 RGBA、32px、8×8、64セル） | REFERENCE |
+| `assets/maps/majin_cave/tileset.png` / `tileset.json` | 上記のバイト一致ランタイムコピー。`MajinCaveScene`がスプライトシートとメタデータとして読む | CURRENT |
+| `assets/monsters/majin_cave/monster_{purin,tamago_ghost,obake_tsumuri,fancy_duck,snow_bomb,koakuma,erimaki_hebi,daija}.png` | No.07通常敵8種のCURRENTスプライトシート。各256×256 RGBA、4列×4行、1フレーム64×64。0〜3=idle、4〜7=attack、8〜11=damage、12〜15=defeat。通常ロジックではなく共通表示コントローラだけが読む | CURRENT |
+| `assets/monsters/source/majin_cave/monster_majin_dungeon_source.png` | ユーザー提供のまじん4×4ポーズ原画（1254×1254 RGBA）。再描画・上書きをせずSOURCEとして保持 | REFERENCE |
+| `assets/monsters/majin_cave/monster_majin_dungeon.png` | No.07 10FまじんのCURRENT 4×4ランタイムシート（1280×1280 RGBA、320pxセル）。原画を拡縮せず透明padding／底揃えのみで正規化し、`MajinCaveScene`だけが読む | CURRENT |
+| `assets/maps/reference/reference/まじんのどうくつ_その１.png` / `その2.png` / `その3.png` | 旧No.08時代の画像マップ初期実装で使った洞窟内資料。現行No.07ランタイムは直接ロードしない | REFERENCE |
+| `assets/maps/majin_cave_1/` / `majin_cave_2/` / `majin_cave_3/` | 旧3画面画像マップのパッケージ。削除せず、No.07の現行runtimeでは使用しない | SUPERSEDED |
 
 ### レインランドじょうかまち
 
-2026-09-19追加。はじまりのもり・レインランドのもりと同じ追加フィールド（正式No.の番号なし、`MAP_FLOW_SPEC.md` §4.12）。
+2026-09-19追加。正式No.06「レインランドじょうかまち／レインランドじょう」の城下町側。既存`rainland_castle_town`は内部互換ID（`MAP_FLOW_SPEC.md` §4.12）。
 
 | パス | 用途 | 状態 |
 |---|---|---|
@@ -235,32 +234,73 @@ Collisionは石床・橋・階段を結ぶ広めの初期導線として作成�
 | `assets/maps/rainland_castle_town/collision.png` | CURRENT二値Collision Mask（石畳の道・広場・石段・堀の橋が歩行可能、家・噴水・露店・堀・城壁・桟橋は歩行不可） | CURRENT |
 | `assets/maps/rainland_castle_town/entry_splash.png` | 絶景画像の無加工コピー。`MapSplashScene`が世界地図からの入場時に5秒で投影するCURRENT画像 | CURRENT |
 
-### レインランドじょう（No.05）
+### レインランドじょう（正式No.06、`map_05_rainland_castle`は内部互換ID）
 
 2026-09-19追加、2026-09-20に正式背景へ差し替え。`MAP_FLOW_SPEC.md` §4.13。
 
 | パス | 用途 | 状態 |
 |---|---|---|
 | `assets/maps/reference/reference/レインランドじょう_城内.png` | ユーザー提供のSOURCE原画（城内の俯瞰マップ、1448×1086）。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/reference/reference/レインランドじょう_城内2.png` | ユーザー提供のSOURCE原画（王の間の俯瞰マップ、1448×1086、2026-09-23）。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/rainland_throne_room/background.png` | 前者の無加工コピー。`RainlandThroneRoomScene`（2D）の背景。3Dの王の間`RainlandThroneRoom3DScene`はこの配置から組み立てる | CURRENT |
+| `assets/maps/rainland_throne_room/collision.png` | `tools/build_rainland_throne_room_collision.py`が絵から測った矩形で生成したCollision（広間・両翼・階段・壇が歩行可能、玉座・燭台・台座・植木は歩行不可） | CURRENT |
 | `assets/maps/rainland_castle/background.png` | 上記原画の無加工コピー（バイト一致）。CURRENT背景 | CURRENT |
 | `assets/maps/rainland_castle/collision.png` | CURRENT二値Collision Mask。`tools/build_rainland_castle_collision.py`が背景から測った歩行領域・障害物の矩形から生成（8pxセル格子に揃え、壁より少し内側）。白=歩行可能／黒=歩行不可 | CURRENT |
-| `assets/maps/reference/reference/レインランドじょう_マイクラ風.png` | ユーザー提供の参照画像（ブロック城の一人称視点、1448×1086）。歩行背景ではなく、将来のブロック城化の見た目の参照。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/reference/reference/レインランドじょう_マイクラ風.png` | ユーザー提供の参照画像（ブロック城の一人称視点、1448×1086）。歩行背景ではなく、2026-09-23実装の3D表示`RainlandCastle3DScene`の見た目の参照（ゲーム内では読み込まない。3Dのテクスチャはコードで描くドット絵で、画像素材は追加していない）。削除・上書き・再描画はしない | REFERENCE |
 | `assets/maps/reference/reference/レインランドじょう_イメージ.png` | 城の外観（町の入場演出用、上記「レインランドじょうかまち」参照）。城内の背景としては使わない | REFERENCE |
 
 差し替え手順（背景をもう一度差し替える場合）: 新しい背景を`background.png`へ置く（原本は`assets/maps/reference/reference/`へ保存）→ `tools/build_rainland_castle_collision.py`の矩形を新しい絵に合わせて測り直し、実行して`collision.png`を作り直す（`--preview`で確認）→ `map.json`の`width`/`height`を更新（Sceneのコードは変更しない）→ `maps.ts`のspawn・NPC座標と`events.json`の座標を置き直す → `tests/rainlandCastle.test.mjs`の歩行可否の確認地点を更新する。
 
 ### ビーエのむら
 
-2026-09-18追加。正式No.03。No.01「はじまりのばしょ」と同じBACKGROUND/COLLISION/EVENT/OBJECT画像マップ方式をそのまま流用した最初のNo.番号付き地域。NPC・会話・木こり救出イベントは `docs/NPC/02_bie_no_mura.md` が `SOURCE_DRAFT_EXISTS / REDUCING`（NPC人数・台詞本文とも未確定）のため今回は未実装。
+2026-09-18追加。正式No.04（`map_03_bie_village`は旧番号由来の内部互換ID）。No.01「はじまりのばしょ」と同じBACKGROUND/COLLISION/EVENT/OBJECT画像マップ方式をそのまま流用した最初のNo.番号付き地域。NPC・会話・木こり救出イベントは `docs/NPC/02_bie_no_mura.md` が `SOURCE_DRAFT_EXISTS / REDUCING`（NPC人数・台詞本文とも未確定）のため今回は未実装。
 
 | パス | 用途 | 状態 |
 |---|---|---|
 | `assets/maps/reference/reference/ビーエのむら.png` | ユーザー提供のSOURCE原画（1536×1024、見下ろし気味の構図）。削除・上書き・再描画はしない | REFERENCE |
-| `assets/maps/reference/reference/ビーエのむら_イメージ.png` | 雰囲気参考用の俯瞰パース画像（1448×1086）。ローカルマップ背景としては採用しない | REFERENCE |
-| `assets/maps/bie_village/background.png` | 前者の無加工コピー。BieVillageSceneがLINEARフィルタで表示するCURRENT背景 | CURRENT |
-| `assets/maps/bie_village/collision.png` | 背景から自動生成したCURRENT二値Collision Mask（広場・石畳・土の道が歩行可能、建物6棟・井戸状構造物・川・森は歩行不可） | CURRENT |
+| `assets/maps/reference/reference/ビーエのむら_イメージ.png` | 雰囲気参考用の俯瞰パース画像（1448×1086）。ローカルマップ背景としては採用しない。2026-09-23から入場演出の原本 | REFERENCE |
+| `assets/maps/bie_village/entry_splash.png` | `ビーエのむら_イメージ.png`の無加工コピー。`MapSplashScene`が世界地図からの入場時に5秒（フェードイン1秒→保持3秒→フェードアウト1秒）で投影し、地名「ビーエのむら」を出す（2026-09-23） | CURRENT |
+| `assets/maps/reference/reference/ザボンのむら_イメージ.png` | No.08ザボンのむらの入場演出としてユーザー指定された原画（2026-09-23）。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/zabon_village/entry_splash.png` | 前者の無加工コピー。`MapSplashScene`が世界地図からの入場時に5秒投影し、地名「ザボンのむら」を出す（2026-09-23） | CURRENT |
+| `assets/maps/reference/reference/ザボンのむら　新.png` | No.08ザボンのむらのユーザー提供SOURCE原画（1448×1086、2026-09-23）。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/zabon_village/background.png` | 前者の無加工コピー。`ZabonVillageScene`がLINEARフィルタで表示するCURRENT背景 | CURRENT |
+| `assets/maps/zabon_village/collision.png` | `tools/build_zabon_village_collision.py`で背景から生成したCURRENT二値Collision Mask（土の道・広場・吊り橋・桟橋・石段が歩行可能、建物・トーテム・井戸・畑・川・海・森・山は歩行不可） | CURRENT |
+| `assets/maps/reference/reference/いわやまのどうくつ_1.png` | No.09いわやまのどうくつ1Fのユーザー提供SOURCE原画（1024×1536、2026-09-23）。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/reference/reference/いわやまのどうくつ_2.png` | `_1.png`とバイト一致の重複ファイル。ユーザー判断で2フロア構成とし、使用しない（2026-09-23） | REFERENCE |
+| `assets/maps/reference/reference/いわやまのどうくつ_3.png` | No.09いわやまのどうくつ2Fのユーザー提供SOURCE原画（1024×1536、青い三角は原画の一部で到着の階段の目印）。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/reference/reference/いわやまのどうくつ_イメージ.png` | 入場演出の原本（2026-09-23） | REFERENCE |
+| `assets/maps/iwayama_cave_1/background.png` / `assets/maps/iwayama_cave_2/background.png` | `いわやまのどうくつ_1.png`（1F）/ `_3.png`（2F）の無加工コピー。`IwayamaCave1Scene` / `IwayamaCave2Scene`がLINEARフィルタで表示するCURRENT背景 | CURRENT |
+| `assets/maps/iwayama_cave_1/collision.png` / `assets/maps/iwayama_cave_2/collision.png` | `tools/build_iwayama_cave_collision.py`で背景から生成したCURRENT二値Collision Mask（石畳の床・木の階段・吊り橋が歩行可能、岩・崖・地底湖・暗闇・燭台は歩行不可） | CURRENT |
+| `assets/maps/iwayama_cave_1/entry_splash.png` | `いわやまのどうくつ_イメージ.png`の無加工コピー。`MapSplashScene`が世界地図からの入場時に5秒投影し、地名「いわやまのどうくつ」を出す（2026-09-23） | CURRENT |
+| `assets/battle/backgrounds/reference/mq0_battle_bg_009_9264defc52.png` | 洞窟の戦闘背景。No.09いわやまのどうくつの通常敵(こあくま・エリマキヘビ・ダイジャ)の戦闘で使用（2026-09-23）。加工・複製せず`src/data/monsters.ts`のVite URLから読む | REFERENCE / DEV戦闘用 |
+### かくれざと
 
-Collisionの作り方: 背景をHSV変換し、広場の石畳＋土の道の色域で二値化（道の色域は森はじまりのもりと同じ閾値、加えて低彩度・高明度の石畳を追加）→川を別途青系色閾値で除外→最大連結成分（橋の分離片は個別検出のうえ結合）を採用→建物6棟・井戸/かまど状構造物の敷地を目視確認した矩形で個別に除外→プレイヤー幅（30px）に対して余裕を持たせるため段階的に膨張（最終半径16px相当）→装飾的な低い庭石垣や木の樹冠でHSV閾値が途切れていた2箇所だけ人間が矩形パッチで接続→北門のみ画像上端まで到達させる、という手順で生成した。橋・広場を囲む道など見た目どおり自然に歩ける範囲を優先し、一本道には固定していない。最終的な白黒はPNGとして保存されており、以後は人間が直接ピクセルを描画・削除して修正できる（実行時にAI画像解析は行わない、`MAP_SYSTEM.md` §5準拠）。北門以外にも画像端まで続く道（東・南東）があるが、正式な出入口としては未接続のまま行き止まりとして残した。
+2026-09-24追加。正式No.10。No.01と同じBACKGROUND/COLLISION/EVENT/OBJECT画像マップ方式で、`HiddenVillageScene`が共通の画像マップRuntimeを使う。
+
+| パス | 用途 | 状態 |
+|---|---|---|
+| `assets/maps/reference/reference/かくれざと.png` | ユーザー提供のSOURCE原画（1536×1024）。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/hidden_village/background.png` | 原画の無加工コピー。`HiddenVillageScene`がLINEARフィルタで表示するCURRENT背景 | CURRENT |
+| `assets/maps/hidden_village/collision.png` | `tools/build_hidden_village_collision.py`で生成したCURRENT二値Collision Mask。北西の門・石段・神社前・広場・家前・橋・水車前・洞窟前を歩行可能とし、建物・水・滝・崖・森を歩行不可にする | CURRENT |
+
+| `assets/maps/reference/reference/ビーエのむら更新.png` | 2026-09-23のユーザー提供SOURCE原画（1536×1024、マップ構成変更版）。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/bie_village/background.png` | `ビーエのむら更新.png`の無加工コピー（2026-09-23差し替え、旧版は`ビーエのむら.png`のコピー）。BieVillageSceneがLINEARフィルタで表示するCURRENT背景 | CURRENT |
+| `assets/maps/bie_village/collision.png` | `tools/build_bie_village_collision.py`で背景から生成したCURRENT二値Collision Mask（土の道・石畳・橋・階段が歩行可能、建物・大木の石囲い・川・森は歩行不可） | CURRENT |
+
+Collisionの作り方: 背景をHSV変換し、広場の石畳＋土の道の色域で二値化（道の色域はNo.03ビーエのもり（内部`starting_forest`）と同じ閾値、加えて低彩度・高明度の石畳を追加）→川を別途青系色閾値で除外→最大連結成分（橋の分離片は個別検出のうえ結合）を採用→建物6棟・井戸/かまど状構造物の敷地を目視確認した矩形で個別に除外→プレイヤー幅（30px）に対して余裕を持たせるため段階的に膨張（最終半径16px相当）→装飾的な低い庭石垣や木の樹冠でHSV閾値が途切れていた2箇所だけ人間が矩形パッチで接続→北門のみ画像上端まで到達させる、という手順で生成した。橋・広場を囲む道など見た目どおり自然に歩ける範囲を優先し、一本道には固定していない。最終的な白黒はPNGとして保存されており、以後は人間が直接ピクセルを描画・削除して修正できる（実行時にAI画像解析は行わない、`MAP_SYSTEM.md` §5準拠）。北門以外にも画像端まで続く道（東・南東）があるが、正式な出入口としては未接続のまま行き止まりとして残した。
+
+### かくれざと
+
+2026-09-24追加。正式No.10の画像マップ。ユーザー提供の原画を無加工でCURRENT背景へコピーし、`HiddenVillageScene`がBACKGROUND / COLLISION / EVENT / OBJECTを読む。北西門から世界地図へ出入りする。ミレイの登場イベント、入場演出、建物内部、BGMは未実装／TBD。
+
+| パス | 用途 | 状態 |
+|---|---|---|
+| `assets/maps/reference/reference/かくれざと.png` | ユーザー提供のSOURCE原画（1536×1024）。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/hidden_village/background.png` | 原画の無加工コピー。`HiddenVillageScene`がLINEARフィルタで表示するCURRENT背景 | CURRENT |
+| `assets/maps/hidden_village/collision.png` | `tools/build_hidden_village_collision.py`で生成したCURRENT二値Collision Mask。人間が修正可能で、実行時に画像解析は行わない | CURRENT |
+| `assets/maps/hidden_village/events.json` / `objects.json` | 北西門のworld-map Eventと空のOBJECTレイヤー。背景ピクセル座標を共有する | CURRENT |
+
+村人歩行シートは既存の`assets/characters/npc/villager_{01..10}_walk.png`を流用する。現行の仮住民8人と仮会話は正式NPCデータではない。最新目安である住民5人 + ミレイへ再選抜するには、`NPC_DIALOGUE_MASTER.md`またはユーザー確定会話が必要である。
 
 ### はじまりのまち
 
@@ -272,10 +312,16 @@ Collisionの作り方: 背景をHSV変換し、広場の石畳＋土の道の色
 | `assets/maps/reference/reference/はじまりのまち_イメージ.png` | 同寸法の別案/参考画像。ローカルマップ背景としては採用しない | REFERENCE |
 | `assets/maps/starting_town/background.png` | 前者の無加工コピー。StartingTownSceneがLINEARフィルタで表示するCURRENT背景 | CURRENT |
 | `assets/maps/starting_town/collision.png` | 背景から自動生成したCURRENT二値Collision Mask（噴水広場・石畳・土の道が歩行可能、建物5棟・噴水・花壇・川・森は歩行不可） | CURRENT |
+| `assets/maps/hidden_village/background.png` | No.10かくれざと用CURRENTの1536×1024高解像度BACKGROUND。`assets/maps/reference/reference/かくれざと.png`の無加工コピー（原本は削除・上書きしない） | CURRENT |
+| `assets/maps/hidden_village/collision.png` | 上記用CURRENT二値Collision Mask（北西の門・石段・神社前・広場・家前・橋・水車前・洞窟前が歩行可能、建物・神社・水・滝・崖・森は歩行不可）。`tools/build_hidden_village_collision.py`で再生成できる | CURRENT |
+| `assets/characters/reference/reference/村人たち/` | ユーザー提供の村人10種のSOURCE歩行シート。原本は上書きせず、各系統の最新透過3列×4行シートを選ぶ | REFERENCE |
+| `assets/characters/npc/villager_{01..10}_walk.png` | `tools/build_villager_sheets.py`が上記から生成するCURRENTのPhaser用村人シート。各70×70セル、3列×4行（下／左／右／上）、足元基準67px。選択IDは`src/config/villagerSprites.ts`で一元管理する | CURRENT |
 
 **建物6→5への変更**: reference画像には教会(きょうかい)と、その手前に4棟の家（屋台風の日よけがある店＝どうぐや、井戸と薪のある家＝ぶきや、普通の家＝民家A、干し草のある家＝やどや）＝合計5棟しか描かれていない。旧DEV_PLACEHOLDER時代のデータは6棟（民家Bを含む）だったが、実在しない6棟目を維持しないとユーザーが判断し、民家B（`map_02_house_b`）と対応する内部データ・spawnを正式に削除した。`assets/maps/data/no02_start_town_interiors.json`・`src/config/interiors.ts`・`src/config/maps.ts`を同時に更新済み。
 
-Collisionの作り方: はじまりのもり/ビーエのむらと同じ手順（HSV色閾値で広場の石畳＋土の道を抽出→川を除外→最大連結成分を採用→建物5棟の敷地を矩形で個別に除外しつつ、各建物の出入口だけ帯状に歩行可能を残す→段階的に膨張→西端が画像端まで自然に到達する箇所をそのまま西門として採用）で生成した。噴水と4つの花壇は色閾値だけで自然に除外され、追加の手作業は不要だった。壁のCollisionは背景画像のCollision Maskが担うため、旧`entities/Building.ts`（単色矩形描画＋壁セグメント計算）と`config/building.ts`は不要になり削除した。建物のドア判定（`interiorId`がある建物だけInteriorSceneへ遷移）はPhase 8-Bの`building.door`＋`createExitZone`をそのまま再利用している。
+**村人配置（2026-09-23）**: `MAPS.map_02_starting_town.npcs`が注釈画像の赤ポイント7か所を管理する。どうぐや／ぶきや／民家A／やどや前の4人は固定店主、教会前・噴水西・南の道の3人は赤ポイント半径内だけを歩く住民。店の価格・商品・店UIは未確定のため、この時点では店主の配置と会話だけを実装する。
+
+Collisionの作り方: ビーエのもり（内部`starting_forest`）/ビーエのむらと同じ手順（HSV色閾値で広場の石畳＋土の道を抽出→川を除外→最大連結成分を採用→建物5棟の敷地を矩形で個別に除外しつつ、各建物の出入口だけ帯状に歩行可能を残す→段階的に膨張→西端が画像端まで自然に到達する箇所をそのまま西門として採用）で生成した。噴水と4つの花壇は色閾値だけで自然に除外され、追加の手作業は不要だった。壁のCollisionは背景画像のCollision Maskが担うため、旧`entities/Building.ts`（単色矩形描画＋壁セグメント計算）と`config/building.ts`は不要になり削除した。建物のドア判定（`interiorId`がある建物だけInteriorSceneへ遷移）はPhase 8-Bの`building.door`＋`createExitZone`をそのまま再利用している。
 
 ## 6. 戦闘背景
 現在の正式方針は、**ドットキャラクターと高品質な2D JRPG／アニメ背景を組み合わせる**こと。背景はゲーム組み込み用として、敵・UIの視認性を優先する。
@@ -333,12 +379,15 @@ Collisionの作り方: はじまりのもり/ビーエのむらと同じ手順�
 ## 9. モンスター画像
 正式総数は25体。
 
-はじまりのもりの現在の戦闘表示は、原画を直接読む暫定接続とする。名称と出現地域は確定済みだが、最終ステータスと実装用の整理済み素材パスはTBD。
+ビーエのもり（内部`starting_forest`）の現在の戦闘表示は、原画を直接読む暫定接続とする。名称と出現地域は確定済みだが、最終ステータスと実装用の整理済み素材パスはTBD。
 
 | 名称 | 現在の戦闘用参照パス | 状態 |
 |---|---|---|
-| たまゴースト | `assets/monsters/source/portraits/mq0_monster_001_0d78a307c8.png` | REFERENCE / はじまりのもりに出現 |
-| プリン | `assets/monsters/source/portraits/mq0_monster_003_1e2e150bba.png` | REFERENCE / はじまりのもりに出現 |
+| たまゴースト | `assets/monsters/source/portraits/mq0_monster_001_0d78a307c8.png` | REFERENCE / No.03ビーエのもり（内部`starting_forest`）に出現 |
+| プリン | `assets/monsters/source/portraits/mq0_monster_003_1e2e150bba.png` | REFERENCE / No.03ビーエのもり（内部`starting_forest`）に出現 |
+| おばけつむり | `assets/monsters/battle/monster_03_obake_tsumuri.png` | DERIVED / 単体画像がないため、名前入りカード`mq0_monster_card_006_7e4f4add89.jpeg`の絵部分から背景を透過で切り抜いた戦闘用画像(2026-09-23)。No.05レインランドのもりに出現 |
+| ファンシーダック | `assets/monsters/source/portraits/mq0_monster_027_74e342f3ed.png` | REFERENCE / 名前入りカード047・071・112と外見を照合。No.05レインランドのもりに出現 |
+| スノーボム | `assets/monsters/source/portraits/mq0_monster_028_72713e1026.png` | REFERENCE / 名前入りカード008・030・123と外見を照合。No.05レインランドのもりに出現 |
 
 推奨命名:
 - `assets/monsters/battle/monster_01_<name>.png`

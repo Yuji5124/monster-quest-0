@@ -1,0 +1,19 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_iwayama_cave_2_stairs_to_1f",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 488, "y": 1224, "width": 48, "height": 24 },
+      "commands": [{ "type": "transfer", "targetMapId": "map_iwayama_cave_1", "targetSpawnId": "fromCaveFloor2" }]
+    },
+    {
+      "id": "event_iwayama_cave_2_inner_point",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 488, "y": 192, "width": 56, "height": 24 },
+      "commands": [{ "type": "message", "text": "[DEV] いわやまのどうくつ おく（イベント内容TBD）" }]
+    }
+  ]
+}

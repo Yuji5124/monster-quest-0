@@ -3,8 +3,10 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { WORLD_MAP_MARKER_LAYOUT, getWorldMapMarkerStyle } from "../src/config/worldMapPresentation.ts";
 import { MAPS } from "../src/config/maps.ts";
 import {
+  isWorldMapDestinationTravelReady,
   readInterimUnlockedFlags,
   readWorldMapDestinations,
   readWorldMapManifest,
@@ -15,76 +17,96 @@ import {
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const MAP_DIRECTORY = path.join(REPO_ROOT, "assets/maps/world_map");
 
-test("world-map manifest uses an original high-resolution background and destinations file", () => {
+function loadWorldMap() {
   const manifest = readWorldMapManifest(JSON.parse(readFileSync(path.join(MAP_DIRECTORY, "map.json"), "utf-8")));
+  const definitions = readWorldMapDestinations(JSON.parse(readFileSync(path.join(MAP_DIRECTORY, "destinations.json"), "utf-8")), manifest);
+  return { manifest, definitions };
+}
+
+test("world-map manifest preserves the 1448x1086 background coordinate space", () => {
+  const { manifest } = loadWorldMap();
   assert.equal(manifest.type, "point-selection-world-map");
   assert.equal(manifest.coordinateSpace, "background-pixels");
   assert.equal(manifest.assetStatus, "CURRENT");
+  assert.equal(manifest.width, 1448);
+  assert.equal(manifest.height, 1086);
   assert.equal(manifest.width / manifest.height, 4 / 3);
-  assert.ok(manifest.width >= 1440);
   assert.ok(existsSync(path.join(MAP_DIRECTORY, manifest.background)));
   assert.ok(existsSync(path.join(MAP_DIRECTORY, manifest.destinations)));
 });
 
-test("world-map destinations declare visibility and flag-based unlock conditions", () => {
-  const manifest = readWorldMapManifest(JSON.parse(readFileSync(path.join(MAP_DIRECTORY, "map.json"), "utf-8")));
-  const definitions = readWorldMapDestinations(JSON.parse(readFileSync(path.join(MAP_DIRECTORY, "destinations.json"), "utf-8")), manifest);
-  assert.equal(definitions.length, 7);
-  assert.equal(definitions[0].unlockFlag, null);
-  assert.equal(definitions[1].unlockFlag, null);
-  // はじまりのもりは既存No.01/No.02と同じ「常時選択可能」を現時点の実装状態とする(unlockFlag: null)。
-  // データ形式としてunlockFlagは保持しつつ、値そのものはSaveSystem接続後の差し替え対象。
-  assert.equal(definitions[2].unlockFlag, null);
-  // ビーエのむらはNo.03の正式地域のため、実フラグを持たせる(PHASE_WORLD_MAP_POINT_SELECTION.mdの
-  // 「No.03以降はSaveSystemのflags連動で追加する」方針どおり)。SaveSystemがflagsを持つまでは、
-  // 本番WorldMapSceneもDATA_CONTRACTS.md §8.1に従いdevelopmentUnlockedFlagsを暫定の解放状態として使う。
-  assert.equal(definitions[3].unlockFlag, "story.bie_village_unlocked");
-  // レインランドのもりは、はじまりのもりと同じ追加フィールドとして常時選択可能(unlockFlag: null)。
-  // 正式な解放条件はTBD(TBD_REGISTRY.md)のため、実フラグ名はまだ定めない。
-  assert.equal(definitions[4].id, "destination_rainland_forest");
-  assert.equal(definitions[4].unlockFlag, null);
-  // レインランドじょうかまちも、追加フィールドとして常時選択可能。正式な解放条件はTBD。
-  assert.equal(definitions[5].id, "destination_rainland_castle_town");
-  assert.equal(definitions[5].unlockFlag, null);
-  // No.08まじんのどうくつも、正式な解放フラグの実装まで常時選択可能とする。
-  // (No.05レインランドじょうは世界地図に直接載せず、レインランドじょうかまちの北の城門から入る。)
-  assert.equal(definitions[6].id, "destination_majin_cave");
-  assert.equal(definitions[6].unlockFlag, null);
-  assert.deepEqual(manifest.developmentUnlockedFlags, ["story.bie_village_unlocked"]);
-  assert.equal(manifest.entryDestinationIds.from_starting_place, "destination_starting_place");
-  assert.equal(manifest.entryDestinationIds.from_starting_town, "destination_starting_town");
-  assert.equal(manifest.entryDestinationIds.from_starting_forest, "destination_starting_forest");
-  assert.equal(manifest.entryDestinationIds.from_bie_village, "destination_bie_village");
-  assert.equal(manifest.entryDestinationIds.from_rainland_forest, "destination_rainland_forest");
-  assert.equal(manifest.entryDestinationIds.from_rainland_castle_town, "destination_rainland_castle_town");
-  assert.equal(manifest.entryDestinationIds.from_majin_cave, "destination_majin_cave");
-
-  const defaultView = resolveWorldMapDestinations(definitions, new Set(manifest.developmentUnlockedFlags));
-  assert.deepEqual(defaultView.map((destination) => destination.unlocked), [true, true, true, true, true, true, true]);
-  assert.deepEqual(defaultView.map((destination) => destination.displayName), ["はじまりのばしょ", "はじまりのまち", "はじまりのもり", "ビーエのむら", "レインランドのもり", "レインランドじょうかまち", "まじんのどうくつ"]);
-
-  // 本番WorldMapSceneが使う暫定の解放状態(readInterimUnlockedFlags)では、ビーエのむらも選択できる。
-  const productionView = resolveWorldMapDestinations(definitions, readInterimUnlockedFlags(manifest));
-  assert.deepEqual(productionView.map((destination) => destination.unlocked), [true, true, true, true, true, true, true]);
-  assert.equal(productionView[3].displayName, "ビーエのむら");
-  assert.equal(productionView[3].targetMapId, "map_03_bie_village");
-
-  // フラグが1つも立っていない状態(将来のSaveSystemの序盤)では、ビーエのむらだけ？？？のままロックされる。
-  const noProgressView = resolveWorldMapDestinations(definitions, new Set());
-  assert.deepEqual(noProgressView.map((destination) => destination.unlocked), [true, true, true, false, true, true, true]);
-  assert.equal(noProgressView[3].displayName, "？？？");
-
-  const lockedFixture = [{ ...definitions[1], unlockFlag: "world.starting_town_unlocked" }];
-  const lockedTownView = resolveWorldMapDestinations(lockedFixture, new Set());
-  assert.equal(lockedTownView[0].unlocked, false);
-  assert.equal(lockedTownView[0].displayName, "？？？");
-  assert.equal(resolveWorldMapDestinations([{ ...definitions[1], visible: false }], new Set()).length, 0);
+test("world-map declares the 20 official points in play order with final label-aware positions", () => {
+  const { definitions } = loadWorldMap();
+  assert.equal(definitions.length, 20);
+  assert.deepEqual(definitions.map((destination) => destination.name), [
+    "はじまりのばしょ", "はじまりのまち", "ビーエのもり", "ビーエのむら", "レインランドのもり",
+    "レインランドじょうかまち", "まじんのどうくつ", "ザボンのむら", "いわやまのどうくつ", "かくれざと",
+    "みずうみの古城", "港町ダコハ", "コタンカイムの洞窟", "ポサロ城", "ふっかつのほこら",
+    "デーマスのとう", "ぬまちのどうくつ", "いしのまち", "バトラスのとりで", "オロチへの道",
+  ]);
+  assert.equal(definitions.some((destination) => /ザボンの狩り場|ダコハ海岸|バトラスのとりで周辺/.test(destination.name)), false);
+  assert.equal(definitions.some((destination) => destination.name === "レインランドじょう" || destination.name === "オロチのしろ" || destination.name === "最終地点"), false);
+  for (const destination of definitions) {
+    assert.equal(destination.positionStatus, "FINAL_POSITION");
+    assert.equal(typeof destination.labelOffset.x, "number");
+    assert.equal(typeof destination.labelOffset.y, "number");
+  }
+  assert.equal(definitions[2].id, "destination_starting_forest");
+  assert.equal(definitions[2].name, "ビーエのもり");
 });
 
-test("currently unlockable world-map destinations resolve to registered local scenes and spawns", () => {
-  const manifest = readWorldMapManifest(JSON.parse(readFileSync(path.join(MAP_DIRECTORY, "map.json"), "utf-8")));
-  const definitions = readWorldMapDestinations(JSON.parse(readFileSync(path.join(MAP_DIRECTORY, "destinations.json"), "utf-8")), manifest);
-  const destinations = resolveWorldMapDestinations(definitions, new Set(manifest.developmentUnlockedFlags));
+test("implementation status separates real destinations from blue planned geography", () => {
+  const { manifest, definitions } = loadWorldMap();
+  const implemented = definitions.filter((destination) => destination.implementationStatus === "implemented");
+  const planned = definitions.filter((destination) => destination.implementationStatus === "planned");
+  assert.equal(implemented.length, 10);
+  assert.equal(planned.length, 10);
+  assert.ok(implemented.every((destination) => typeof destination.targetMapId === "string" && typeof destination.targetSpawnId === "string"));
+  assert.ok(planned.every((destination) => destination.targetMapId === null && destination.targetSpawnId === null));
+  assert.ok(Object.values(manifest.entryDestinationIds).every((id) => implemented.some((destination) => destination.id === id)));
+
+  const resolved = resolveWorldMapDestinations(definitions, readInterimUnlockedFlags(manifest));
+  const rainlandForest = resolved.find((destination) => destination.id === "destination_rainland_forest");
+  const rainlandCastleTown = resolved.find((destination) => destination.id === "destination_rainland_castle_town");
+  assert.equal(rainlandForest?.unlockFlag, null);
+  assert.equal(rainlandForest?.unlocked, true, "the forest remains an always-selectable destination");
+  assert.equal(rainlandCastleTown?.unlockFlag, "story.rainland_castle_town_unlocked");
+  assert.equal(rainlandCastleTown?.unlocked, false, "the forest boss is the first real unlock source for Rainland's castle town");
+  assert.equal(rainlandCastleTown?.displayName, "？？？");
+  assert.equal(isWorldMapDestinationTravelReady(rainlandCastleTown), false);
+  assert.ok(resolved.filter((destination) => destination.implementationStatus === "implemented" && destination.id !== "destination_rainland_castle_town").every(isWorldMapDestinationTravelReady));
+  const legacyForestUnlock = resolveWorldMapDestinations(definitions, new Set([...readInterimUnlockedFlags(manifest), "story.rainland_forest_unlocked"]));
+  assert.equal(legacyForestUnlock.find((destination) => destination.id === "destination_rainland_castle_town")?.unlocked, false, "an old forest-only flag must not unlock the castle town");
+  const afterBoss = resolveWorldMapDestinations(definitions, new Set([...readInterimUnlockedFlags(manifest), "story.rainland_castle_town_unlocked"]));
+  assert.equal(afterBoss.find((destination) => destination.id === "destination_rainland_castle_town")?.unlocked, true);
+  assert.ok(resolved.filter((destination) => destination.implementationStatus === "planned").every((destination) => !isWorldMapDestinationTravelReady(destination)));
+
+  const plannedStyle = getWorldMapMarkerStyle("planned", true, false);
+  const implementedStyle = getWorldMapMarkerStyle("implemented", true, false);
+  const lockedStyle = getWorldMapMarkerStyle("implemented", false, false);
+  assert.equal(WORLD_MAP_MARKER_LAYOUT.ringRadius, 13);
+  assert.equal(WORLD_MAP_MARKER_LAYOUT.coreRadius, 6);
+  assert.equal(WORLD_MAP_MARKER_LAYOUT.hitSize, 44);
+  assert.equal(plannedStyle.coreFill, 0x168cff);
+  assert.equal(plannedStyle.labelColor, "#8dccff");
+  assert.notEqual(plannedStyle.coreFill, implementedStyle.coreFill);
+  assert.notEqual(plannedStyle.coreFill, lockedStyle.coreFill);
+  assert.equal(getWorldMapMarkerStyle("implemented", true, true).coreFill, 0xffc34d);
+});
+
+test("implemented destinations resolve to registered scenes and spawns, while planned destinations cannot transition", () => {
+  const { manifest, definitions } = loadWorldMap();
+  const mainSource = readFileSync(path.join(REPO_ROOT, "src/main.ts"), "utf-8");
+  for (const destination of definitions.filter((candidate) => candidate.implementationStatus === "implemented")) {
+    const target = MAPS[destination.targetMapId];
+    assert.ok(target, `${destination.id} target map must exist`);
+    assert.ok(target.spawns[destination.targetSpawnId], `${destination.id} target spawn must exist`);
+    assert.match(mainSource, new RegExp(`\\b${target.sceneKey}\\b`), `${destination.id} scene must be registered by main.ts`);
+  }
+  for (const destination of definitions.filter((candidate) => candidate.implementationStatus === "planned")) {
+    assert.equal(destination.targetMapId, null);
+    assert.equal(destination.targetSpawnId, null);
+  }
   assert.equal(resolveWorldMapEntryDestination(manifest, definitions, "from_starting_place").id, "destination_starting_place");
   assert.equal(resolveWorldMapEntryDestination(manifest, definitions, "from_starting_town").id, "destination_starting_town");
   assert.equal(resolveWorldMapEntryDestination(manifest, definitions, "from_starting_forest").id, "destination_starting_forest");
@@ -92,12 +114,23 @@ test("currently unlockable world-map destinations resolve to registered local sc
   assert.equal(resolveWorldMapEntryDestination(manifest, definitions, "from_rainland_forest").id, "destination_rainland_forest");
   assert.equal(resolveWorldMapEntryDestination(manifest, definitions, "from_rainland_castle_town").id, "destination_rainland_castle_town");
   assert.equal(resolveWorldMapEntryDestination(manifest, definitions, "from_majin_cave").id, "destination_majin_cave");
-  for (const destination of destinations.filter((candidate) => candidate.unlocked)) {
-    assert.equal(destination.unlocked, true);
-    assert.equal(destination.positionStatus, "DEV_PLACEHOLDER_POSITION");
-    const target = MAPS[destination.targetMapId];
-    assert.ok(target, `${destination.id} target map must exist`);
-    assert.ok(target.spawns[destination.targetSpawnId], `${destination.id} target spawn must exist`);
-    assert.equal(destination.targetSpawnId, "fromWorldMap");
-  }
+  assert.equal(resolveWorldMapEntryDestination(manifest, definitions, "from_hidden_village").id, "destination_hidden_village");
+});
+
+test("story-locked implemented destinations retain the existing unknown non-travel state", () => {
+  const { definitions } = loadWorldMap();
+  const lockedView = resolveWorldMapDestinations([{ ...definitions[3], unlockFlag: "story.bie_village_unlocked" }], new Set());
+  assert.equal(lockedView[0].implementationStatus, "implemented");
+  assert.equal(lockedView[0].unlocked, false);
+  assert.equal(lockedView[0].displayName, "？？？");
+  assert.equal(isWorldMapDestinationTravelReady(lockedView[0]), false);
+});
+
+test("destination parser rejects a planned point with a non-null Scene target", () => {
+  const { manifest, definitions } = loadWorldMap();
+  const invalid = {
+    formatVersion: 2,
+    destinations: [{ ...definitions.find((destination) => destination.implementationStatus === "planned"), targetMapId: "map_01_starting_place", targetSpawnId: "fromWorldMap" }],
+  };
+  assert.throws(() => readWorldMapDestinations(invalid, manifest), /planned world map destinations must set targetMapId and targetSpawnId to null/);
 });

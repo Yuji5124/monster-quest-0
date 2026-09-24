@@ -1,0 +1,15 @@
+{
+  "id": "map_rainland_throne_room",
+  "name": "レインランドじょう おうのま",
+  "formatVersion": 1,
+  "coordinateSpace": "background-pixels",
+  "width": 1448,
+  "height": 1086,
+  "background": "background.png",
+  "collision": "collision.png",
+  "events": "events.json",
+  "objects": "objects.json",
+  "collisionCellSize": 8,
+  "assetStatus": "CURRENT",
+  "worldScale": 1.5
+}
