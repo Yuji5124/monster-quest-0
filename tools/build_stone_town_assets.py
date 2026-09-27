@@ -572,12 +572,17 @@ def paint_waterfall(p, x0, x1, y0, y1, rng):
 
 def paint_bridge(p):
     bx0, by0, bx1, by1 = WALK["bridge"]
-    # arch face south of the deck (over water)
-    p.rect(bx0 + 8, by1, bx1 - 8, by1 + 22, fill=(166, 165, 169))
-    p.rect(bx0 + 8, by1, bx1 - 8, by1 + 3, fill=(196, 195, 199))
-    p.ellipse((bx0 + bx1) / 2 - 14, by1 + 22, 26, 20, fill=(38, 58, 76))
-    p.ellipse((bx0 + bx1) / 2 - 14, by1 + 22, 22, 16, fill=(64, 100, 124))
-    p.rect(bx0 + 8, by1 + 22, bx1 - 8, by1 + 26, fill=(118, 156, 176))
+    cx = (bx0 + bx1) / 2
+    half = (bx1 - bx0) / 2 - 10
+    # arch face south of the deck: a pale stone rim framing a shadowed strip of water (not a flat dark hole).
+    p.rect(bx0 + 6, by1, bx1 - 6, by1 + 28, fill=(152, 168, 182))
+    p.ellipse(cx, by1 + 8, half, 9, fill=(122, 150, 170))
+    p.ellipse(cx, by1 + 14, half * 0.86, 10, fill=(96, 128, 152))
+    p.ellipse(cx, by1 + 19, half * 0.62, 9, fill=(74, 106, 130))
+    for rx in (-half * 0.5, 0, half * 0.5):
+        p.line([(cx + rx, by1 + 2), (cx + rx * 0.7, by1 + 24)], (210, 220, 226, 60), 1.4)
+    p.rect(bx0 + 6, by1 - 2, bx1 - 6, by1 + 3, fill=(198, 197, 201))
+    p.rect(bx0 + 6, by1 + 25, bx1 - 6, by1 + 30, fill=(134, 133, 139))
     # deck (cobbles get pasted separately); parapets north and south
     p.rect(bx0 + 2, by0 - 10, bx1 - 2, by0 + 2, fill=(174, 173, 177))
     p.rect(bx0 + 2, by0 - 10, bx1 - 2, by0 - 6, fill=(204, 203, 207))
@@ -615,16 +620,18 @@ def paint_fountain(p, rng):
         rx = cx + math.cos(ang) * 150 * rr
         ry = cy + 4 + math.sin(ang) * 54 * rr
         p.line([(rx, ry), (rx + rng.uniform(6, 16), ry)], (206, 230, 238, 170), 0.9)
-    # ring of small stone animals on the rim (front side)
-    for a_deg in (25, 70, 110, 155):
+    # small stone finials spaced around the rim (front side) -- a plain baluster shape reads clearly
+    # at this scale, unlike an attempted animal silhouette.
+    for a_deg in (20, 65, 115, 160):
         a = math.radians(a_deg)
         ax, ay = cx + 172 * math.cos(a), cy - 2 + 74 * math.sin(a)
-        p.ellipse(ax, ay + 2, 10, 4, fill=(0, 0, 0, 60))
-        p.ellipse(ax, ay - 6, 9, 6, fill=(184, 183, 187))
-        p.ellipse(ax + 6, ay - 12, 4.5, 4, fill=(190, 189, 193))
-        p.poly([(ax + 8, ay - 15), (ax + 11, ay - 20), (ax + 12, ay - 14)], fill=(176, 175, 179))
-        for dx in (-6, -2, 3, 7):
-            p.rect(ax + dx, ay - 3, ax + dx + 2, ay + 4, fill=(160, 160, 166))
+        p.ellipse(ax, ay + 3, 8, 3.2, fill=(0, 0, 0, 55))
+        p.rect(ax - 4.5, ay - 12, ax + 4.5, ay + 2, fill=(166, 165, 170), r=2)
+        p.rect(ax - 4.5, ay - 12, ax + 4.5, ay - 9, fill=(196, 195, 199))
+        p.ellipse(ax, ay - 17, 5.6, 4.6, fill=(184, 183, 188))
+        p.ellipse(ax - 1.6, ay - 19, 2.4, 2, fill=(212, 211, 215))
+        p.rect(ax - 1.6, ay - 24, ax + 1.6, ay - 16, fill=(178, 177, 182))
+        p.ellipse(ax, ay - 25.5, 3, 2.4, fill=(192, 191, 196))
     # pedestal
     p.ellipse(cx, cy - 6, 62, 26, fill=(0, 0, 0, 58))
     p.rect(cx - 46, cy - 30, cx + 46, cy - 6, fill=(170, 169, 173))
@@ -1083,8 +1090,14 @@ def build_background():
 
     # --- vines and moss creeping over walls
     ivy = random.Random(99)
+    statue_rects = [(o["x"] - 24, o["y"] - 40, o["x"] + o["width"] + 24, o["y"] + o["height"] + 8) for o in objects if o["type"] == "statue"]
+
+    def clear_of_statues(x0, y0, x1, y1):
+        return not any(x0 < sx1 and x1 > sx0 and y0 < sy1 and y1 > sy0 for sx0, sy0, sx1, sy1 in statue_rects)
+
+    ivy_boxes = [box for box in LANDMARK_BOXES[:9] if clear_of_statues(box[0], box[3] - 34, box[2], box[3] + 8)]
     for _ in range(90):
-        bx0, by0, bx1, by1 = ivy.choice(LANDMARK_BOXES[:9])
+        bx0, by0, bx1, by1 = ivy.choice(ivy_boxes)
         vx = ivy.uniform(bx0 + 2, bx1 - 2)
         vy = by1 - ivy.uniform(2, 34)
         for k in range(ivy.randint(3, 6)):
