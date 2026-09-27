@@ -17,8 +17,18 @@
     "from_rainland_castle_town": "destination_rainland_castle_town",
     "from_majin_cave": "destination_majin_cave",
     "from_zabon_village": "destination_zabon_village",
+    "from_dakoha_port": "destination_dakoha_port",
+    "from_posaro_castle": "destination_posaro_castle",
+    "from_revival_shrine": "destination_revival_shrine",
     "from_hidden_village": "destination_hidden_village",
-    "from_iwayama_cave": "destination_iwayama_cave"
+    "from_iwayama_cave": "destination_iwayama_cave",
+    "from_kotankaim_cave": "destination_kotankaim_cave",
+    "from_demas_tower": "destination_demas_tower",
+    "from_swamp_cave": "destination_swamp_cave",
+    "from_mysterious_tower": "destination_mysterious_tower",
+    "from_lake_old_castle": "destination_lake_old_castle",
+    "from_stone_town": "destination_stone_town",
+    "from_batorasu_fortress": "destination_batras_fortress"
   },
   "developmentUnlockedFlags": ["story.bie_village_unlocked"],
   "assetStatus": "CURRENT"

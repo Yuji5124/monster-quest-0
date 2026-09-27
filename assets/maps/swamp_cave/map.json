@@ -1,0 +1,14 @@
+{
+  "id": "map_swamp_cave",
+  "name": "ぬまちのどうくつ",
+  "formatVersion": 1,
+  "coordinateSpace": "background-pixels",
+  "width": 1672,
+  "height": 941,
+  "background": "../reference/reference/新しいフォルダー/ぬまちのどうくつ.png",
+  "collision": "collision.json",
+  "events": "events.json",
+  "objects": "objects.json",
+  "assetStatus": "REFERENCE_BACKED_ACTION_SLICE",
+  "worldScale": 1
+}

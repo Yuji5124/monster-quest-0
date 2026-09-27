@@ -89,6 +89,63 @@ export const VILLAGER_SPRITES = {
     walkFrameRate: 6,
     baselineY: 67,
   },
+  // 2026-09-26: No.06レインランドじょう(城内・王の間)の住人。
+  villager_11: { // 槍の近衛兵
+    key: "char.villager.11.walk",
+    path: new URL("../../assets/characters/npc/villager_11_walk.png", import.meta.url).toString(),
+    frameWidth: 70,
+    frameHeight: 70,
+    walkFrameRate: 6,
+    baselineY: 67,
+  },
+  villager_12: { // 盾の兵士
+    key: "char.villager.12.walk",
+    path: new URL("../../assets/characters/npc/villager_12_walk.png", import.meta.url).toString(),
+    frameWidth: 70,
+    frameHeight: 70,
+    walkFrameRate: 6,
+    baselineY: 67,
+  },
+  villager_13: { // メイド
+    key: "char.villager.13.walk",
+    path: new URL("../../assets/characters/npc/villager_13_walk.png", import.meta.url).toString(),
+    frameWidth: 70,
+    frameHeight: 70,
+    walkFrameRate: 6,
+    baselineY: 67,
+  },
+  villager_14: { // 王
+    key: "char.villager.14.walk",
+    path: new URL("../../assets/characters/npc/villager_14_walk.png", import.meta.url).toString(),
+    frameWidth: 70,
+    frameHeight: 70,
+    walkFrameRate: 6,
+    baselineY: 67,
+  },
+  villager_15: { // 青マントの騎士
+    key: "char.villager.15.walk",
+    path: new URL("../../assets/characters/npc/villager_15_walk.png", import.meta.url).toString(),
+    frameWidth: 70,
+    frameHeight: 70,
+    walkFrameRate: 6,
+    baselineY: 67,
+  },
+  villager_16: { // 学者
+    key: "char.villager.16.walk",
+    path: new URL("../../assets/characters/npc/villager_16_walk.png", import.meta.url).toString(),
+    frameWidth: 70,
+    frameHeight: 70,
+    walkFrameRate: 6,
+    baselineY: 67,
+  },
+  villager_17: { // 不思議なとうの更地を案内するおじいさん
+    key: "char.villager.17.walk",
+    path: new URL("../../assets/characters/npc/villager_17_walk.png", import.meta.url).toString(),
+    frameWidth: 70,
+    frameHeight: 70,
+    walkFrameRate: 6,
+    baselineY: 67,
+  },
 } as const satisfies Record<string, WalkSpriteGeometry>;
 
 export type VillagerSpriteId = keyof typeof VILLAGER_SPRITES;

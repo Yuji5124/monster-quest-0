@@ -29,7 +29,7 @@ test("the requested narration is preserved in its authored order", () => {
     "名も知らぬ土地を歩く、\n　ひとりの旅人がいた。",
     "その旅人は今日もまた、\n　旅を続けるのであった――。",
   ]);
-  assert.ok(getOpeningCampfireControlReleaseMs() >= 24000 && getOpeningCampfireControlReleaseMs() <= 26000);
+  assert.ok(getOpeningCampfireControlReleaseMs() >= 22000 && getOpeningCampfireControlReleaseMs() <= 23000);
 });
 
 test("new game shows only the hidden-program glitch before the campfire sequence, then releases to ambience without BGM", () => {
@@ -44,8 +44,8 @@ test("new game shows only the hidden-program glitch before the campfire sequence
   assert.match(startingPlace, /if \(this\.openingInputLocked\) this\.actions\.setLocked\(true\)/);
   assert.match(startingPlace, /openingCampfireAudio\.startFireAndWind\(\)/);
   assert.match(startingPlace, /openingCampfireAudio\.enableFieldAmbience\(\)/);
-  assert.match(startingPlace, /this\.player\.setFacing\("up"\)/);
-  assert.match(startingPlace, /"…………。"/);
+  assert.match(startingPlace, /this\.player\.setFacing\("left"\)/);
+  assert.doesNotMatch(startingPlace, /showProtagonistOpeningLine|"…………。"/);
   assert.doesNotMatch(startingPlace, /this\.sound\.play|this\.sound\.add/);
   assert.match(ambience, /Web Audio/);
   assert.doesNotMatch(ambience, /createMediaElementSource|HTMLAudioElement/);

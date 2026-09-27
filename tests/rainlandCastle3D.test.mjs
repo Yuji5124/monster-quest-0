@@ -133,6 +133,15 @@ test("the view toggle is wired: V key, castle package points at the 3D scene, an
   assert.match(main, /normalScenes = \[[^\]]*RainlandCastleScene, RainlandCastle3DScene/);
 });
 
+test("entering the castle from the castle town opens the 3D view by default; MAPS keeps 2D for other routes", () => {
+  const town = readFileSync(path.join(REPO_ROOT, "src/scenes/RainlandCastleTownScene.ts"), "utf-8");
+  assert.match(town, /transferSceneOverrides: \{ map_05_rainland_castle: "RainlandCastle3DScene" \}/);
+  const shared = readFileSync(path.join(REPO_ROOT, "src/scenes/RainlandForestScene.ts"), "utf-8");
+  assert.match(shared, /this\.pkg\.transferSceneOverrides\?\.\[target\.id\] \?\? target\.sceneKey/);
+  // the 3D scene's V/「2D」 toggle goes to MAPS[..].sceneKey, so that must stay the 2D castle (no 3D⇄3D loop)
+  assert.equal(MAPS.map_05_rainland_castle.sceneKey, "RainlandCastleScene");
+});
+
 function roundVector(vector) {
   return { x: Math.round(vector.x * 1e6) / 1e6 + 0, y: Math.round(vector.y * 1e6) / 1e6 + 0 };
 }

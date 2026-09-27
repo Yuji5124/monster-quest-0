@@ -3,7 +3,8 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { BIE_VILLAGE_ANOMALY } from "../src/config/bieVillageAnomaly.ts";
+import { BIE_VILLAGE_ANOMALY, BIE_VILLAGER_GLITCH } from "../src/config/bieVillageAnomaly.ts";
+import { planVillagerGlitch } from "../src/systems/MapAnomalyPlan.ts";
 import { pickHotspot, planBlock, planSparks, planTear } from "../src/systems/MapAnomalyPlan.ts";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -66,4 +67,22 @@ test("hotspot picking follows the weights (the woodcutter house is the densest s
   assert.equal(top, "woodcutter_house");
   assert.equal(pickHotspot(() => 0, BIE_VILLAGE_ANOMALY.hotspots).id, BIE_VILLAGE_ANOMALY.hotspots[0].id);
   assert.equal(pickHotspot(() => 0.999999, BIE_VILLAGE_ANOMALY.hotspots).id, BIE_VILLAGE_ANOMALY.hotspots.at(-1).id);
+});
+
+test("villager glitch is noticeable but brief, stays next to the villager and targets an existing villager", () => {
+  assert.ok(BIE_VILLAGER_GLITCH.durationMs.min >= 150, "long enough to notice");
+  assert.ok(BIE_VILLAGER_GLITCH.durationMs.max <= 400, "a stutter, never a freeze");
+  assert.ok(BIE_VILLAGER_GLITCH.shift.max <= 16, "the ghost stays next to the villager");
+  assert.ok(BIE_VILLAGER_GLITCH.intervalMs.min >= 1500, "occasional, not constant");
+  assert.ok(BIE_VILLAGER_GLITCH.jitterSteps >= 2 && BIE_VILLAGER_GLITCH.jitterSteps <= 4);
+  for (let seed = 1; seed < 200; seed += 1) {
+    let value = seed;
+    const random = () => { value = (value * 16807) % 2147483647; return (value - 1) / 2147483646; };
+    const plan = planVillagerGlitch(random, BIE_VILLAGER_GLITCH, 6);
+    assert.ok(plan.index >= 0 && plan.index < 6);
+    assert.ok(Math.abs(plan.shift) >= BIE_VILLAGER_GLITCH.shift.min && Math.abs(plan.shift) <= BIE_VILLAGER_GLITCH.shift.max);
+    assert.ok(plan.durationMs >= BIE_VILLAGER_GLITCH.durationMs.min && plan.durationMs <= BIE_VILLAGER_GLITCH.durationMs.max);
+    assert.ok(BIE_VILLAGER_GLITCH.ghostColors.includes(plan.color));
+  }
+  assert.equal(planVillagerGlitch(Math.random, BIE_VILLAGER_GLITCH, 0), undefined);
 });

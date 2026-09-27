@@ -15,10 +15,10 @@
  * 武器・勇者装備7種(ぼくとう/こんぼう/てつのけん/こうてつのけん/ゆうしゃのけん/
  * ゆうしゃのかんむり/ゆうしゃのたて)は既存の`weapons.ts`が正本のため、ここには重複させない。
  */
-export type ItemId = "kaifukuyaku" | "dokukeshi" | "hiyamizu" | "kaigara_no_kabuto" | "inu_no_fun";
+export type ItemId = "kaifukuyaku" | "dokukeshi" | "hiyamizu" | "kaigara_no_kabuto" | "inu_no_fun" | "rire_rope";
 
 export type ItemType = "consumable" | "unclassified";
-export type ItemEffect = "heal" | "cure_poison";
+export type ItemEffect = "heal" | "cure_poison" | "escape_cave";
 
 export interface ItemDefinition {
   readonly id: ItemId;
@@ -58,8 +58,22 @@ export const ITEM_DEFINITIONS: Readonly<Record<ItemId, ItemDefinition>> = {
     usableOnField: true,
     description: "どくの　じょうたいを　なおす　くすり。",
   },
-  // 2026-09-23新規追加。効果・分類はITEM_EQUIPMENT_SPEC.md §3により未確定のため断定しない。
+  // TEMP_TEST_VALUE: No.08の通常敵が一度だけ落とす、洞窟内専用の緊急脱出道具。
+  // 正式なアイテム一覧・入手方法・名称は未確定のため、店・通常フィールドには出さない。
+  rire_rope: {
+    id: "rire_rope",
+    name: "リレロープ",
+    type: "consumable",
+    price: null,
+    sellPrice: null,
+    effect: "escape_cave",
+    power: null,
+    usableInBattle: false,
+    usableOnField: true,
+    description: "まじんのどうくつから　そとへ　でる　ロープ。",
+  },
   hiyamizu: {
+  // 2026-09-23新規追加。効果・分類はITEM_EQUIPMENT_SPEC.md §3により未確定のため断定しない。
     id: "hiyamizu",
     name: "ひやみず",
     type: "unclassified",

@@ -1,0 +1,19 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_kotankaim_cave_3_stairs_to_2",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 696, "y": 1056, "width": 64, "height": 30 },
+      "commands": [{ "type": "transfer", "targetMapId": "map_kotankaim_cave_2", "targetSpawnId": "fromCave3" }]
+    },
+    {
+      "id": "event_kotankaim_cave_3_sigil",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 696, "y": 112, "width": 56, "height": 40 },
+      "commands": [{ "type": "message", "text": "[DEV] ゆうしゃのたての場所（入手演出・条件TBD）" }]
+    }
+  ]
+}

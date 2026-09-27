@@ -3,6 +3,8 @@ import { DEV_BOSS_TEST_PLAYER } from "../config/battle.ts";
 import type { BattleCombatantDefinition } from "../battle/BattleSystem.ts";
 import { DEV_DAIDAIN, DEV_MIRROR, NORMAL_ATTACK } from "./battleActions.ts";
 import type { BattleAction } from "./battleActions.ts";
+import { DEMAS_BATTLE_SPRITE_SHEET } from "./demasBattlePresentation.ts";
+import type { DemasBattleSpriteSheetDefinition } from "./demasBattlePresentation.ts";
 
 /**
  * モンスター25体のHP/攻撃/防御/素早さ/EXP/ゴールドの正本(2026-09-23ユーザー確定)。
@@ -77,6 +79,8 @@ export interface DevBattleMonsterDefinition {
   readonly displayName: string;
   readonly portraitUrl: string;
   readonly portraitFormat: "png" | "jpeg";
+  /** Optional authored battle animation; the static portrait remains the fallback. */
+  readonly battleSpriteSheet?: DemasBattleSpriteSheetDefinition;
   /** DEV_BATTLE_BALANCE only; never a final MQ0 value. */
   readonly maxHp: number;
   readonly attack: number;
@@ -85,10 +89,18 @@ export interface DevBattleMonsterDefinition {
   readonly maxMp?: number;
   readonly isBoss?: boolean;
   readonly enemyActions?: readonly BattleAction[];
+  readonly statusResistance?: BattleCombatantDefinition["statusResistance"];
+  readonly statusApplyMessage?: BattleCombatantDefinition["statusApplyMessage"];
   readonly reward?: BattleCombatantDefinition["reward"];
   readonly display?: { readonly scale: number; readonly offsetY: number };
   readonly background?: { readonly key: string; readonly url: string };
   readonly devPlayer?: BattleCombatantDefinition;
+  /** Query-only party fixture. It never changes the authored map-event party. */
+  readonly devParty?: readonly BattleCombatantDefinition[];
+  /** Renderer-only palette for a battle whose supplied portrait has no authored battle background. */
+  readonly backgroundTheme?: "fortress";
+  /** Event-only defeat pacing; combat rules remain in BattleSystem. */
+  readonly victoryPresentation?: "fortress-stop";
 }
 
 /** レインランドのもりの通常敵。表示・背景はビーエのもりの通常敵と同じ扱い(森の戦闘背景・0.7倍表示)。 */
@@ -227,6 +239,8 @@ export const DEV_BATTLE_MONSTERS: Record<DevBattleMonsterId, DevBattleMonsterDef
     // Verified against named card_125 / promo_019; use the standalone transparent portrait.
     portraitUrl: new URL("../../assets/monsters/source/portraits/mq0_monster_030_54c4041dec.png", import.meta.url).href,
     portraitFormat: "png",
+    // The supplied animated sheet is used only by BattleScene's Demas presentation controller.
+    battleSpriteSheet: DEMAS_BATTLE_SPRITE_SHEET,
     isBoss: true,
     // TEMP_TEST_VALUE / DEV_BATTLE_BALANCE, not the source card's 1000/500/300.
     // 2026-09-23確定のMONSTER_ROSTER正本(HP1100/攻撃54/防御46/素早さ38)とはまだ異なる。
@@ -243,7 +257,34 @@ export const DEV_BATTLE_MONSTERS: Record<DevBattleMonsterId, DevBattleMonsterDef
       key: "battle.bg.demas_test",
       url: new URL("../../assets/battle/backgrounds/reference/mq0_battle_bg_008_c44a414baf.png", import.meta.url).href,
     },
+    // The old one-person fixture remains for pure BattleSystem regression tests.
+    // BattleScene's ?battleTest=demas now uses devParty so the actual UI and turn
+    // rotation exercise the required hero / Tarosa / Mirei boss formation.
     devPlayer: { ...DEV_BOSS_TEST_PLAYER, learnedMagic: [DEV_MIRROR] },
+    devParty: [
+      { ...DEV_BOSS_TEST_PLAYER, id: "hero", displayName: "主人公", learnedMagic: [] },
+      { ...DEV_BOSS_TEST_PLAYER, id: "tarosa", displayName: "タロサ", learnedMagic: [] },
+      { ...DEV_BOSS_TEST_PLAYER, id: "mirei", displayName: "ミレイ", learnedMagic: [DEV_MIRROR] },
+    ],
+  },
+  batorasu: {
+    id: "batorasu",
+    displayName: MONSTER_ROSTER_BY_ID.batorasu.name,
+    // User-supplied portrait is the formal visual for No.19; do not substitute AI reference art.
+    portraitUrl: new URL("../../assets/monsters/source/portraits/mq0_monster_039_09ac6a99aa.png", import.meta.url).href,
+    portraitFormat: "png",
+    maxHp: MONSTER_ROSTER_BY_ID.batorasu.hp,
+    attack: MONSTER_ROSTER_BY_ID.batorasu.attack,
+    defense: MONSTER_ROSTER_BY_ID.batorasu.defense,
+    speed: MONSTER_ROSTER_BY_ID.batorasu.speed,
+    isBoss: true,
+    enemyActions: [NORMAL_ATTACK, NORMAL_ATTACK],
+    statusResistance: { poison: false },
+    statusApplyMessage: { poison: "バトラスの　からだに\nどくが　まわっていく！" },
+    reward: { experience: MONSTER_ROSTER_BY_ID.batorasu.exp, money: MONSTER_ROSTER_BY_ID.batorasu.gold },
+    display: { scale: 1.1, offsetY: 0 },
+    backgroundTheme: "fortress",
+    victoryPresentation: "fortress-stop",
   },
 };
 

@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_mysterious_tower_1f_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 432, "y": 616, "width": 96, "height": 40 },
+      "commands": [{ "type": "transfer", "targetMapId": "map_mysterious_tower_exterior", "targetSpawnId": "fromTower1F" }]
+    }
+  ]
+}

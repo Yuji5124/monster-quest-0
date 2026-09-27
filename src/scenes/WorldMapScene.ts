@@ -6,6 +6,7 @@ import { getWorldMapMarkerStyle, WORLD_MAP_MARKER_LAYOUT } from "../config/world
 import { InputSystem } from "../systems/InputSystem.ts";
 import { GameStateRepository } from "../systems/GameStateRepository.ts";
 import { beginMapTransition } from "../systems/MapTransition.ts";
+import { startWorldMapClouds } from "../systems/WorldMapClouds.ts";
 import {
   isWorldMapDestinationTravelReady,
   readInterimUnlockedFlags,
@@ -82,6 +83,9 @@ export class WorldMapScene extends Phaser.Scene {
       throw new Error("world map background must fit the display exactly");
     }
 
+    // 上空を流れる雲(config/worldMapPresentation.tsのWORLD_MAP_CLOUDS)。地点マーカーより下に置き、見た目だけを足す。
+    const clouds = startWorldMapClouds(this, { width: DISPLAY.width, height: DISPLAY.height });
+
     const scaleX = DISPLAY.width / manifest.width;
     const scaleY = DISPLAY.height / manifest.height;
     for (const destination of this.destinations) this.createMarker(destination, scaleX, scaleY);
@@ -114,7 +118,7 @@ export class WorldMapScene extends Phaser.Scene {
 
     // メインCameraは背景・地点だけを拡大する。HUDは等倍の専用Cameraで常に読める状態を保つ。
     const hudObjects = [title, controls, this.notice];
-    const worldObjects = [background, this.mapHitArea, ...this.markers.flatMap((marker) => [marker.ring, marker.core, marker.label])];
+    const worldObjects = [background, ...clouds, this.mapHitArea, ...this.markers.flatMap((marker) => [marker.ring, marker.core, marker.label])];
     this.cameras.main.ignore(hudObjects);
     const hudCamera = this.cameras.add(0, 0, DISPLAY.width, DISPLAY.height);
     hudCamera.setScroll(0, 0).setZoom(1);
@@ -160,7 +164,7 @@ export class WorldMapScene extends Phaser.Scene {
   private createMarker(destination: WorldMapDestination, scaleX: number, scaleY: number): void {
     const x = destination.x * scaleX;
     const y = destination.y * scaleY;
-    const style = getWorldMapMarkerStyle(destination.implementationStatus, destination.unlocked, false);
+    const style = getWorldMapMarkerStyle(destination.implementationStatus, destination.unlocked, false, destination.visibilityState);
     const ring = this.add.circle(x, y, WORLD_MAP_MARKER_LAYOUT.ringRadius, style.ringFill, style.ringAlpha)
       .setStrokeStyle(WORLD_MAP_MARKER_LAYOUT.ringStrokeThickness, style.ringStroke, 0.9)
       .setDepth(20);
@@ -250,7 +254,7 @@ export class WorldMapScene extends Phaser.Scene {
     for (const candidate of this.markers) {
       this.applyMarkerStyle(candidate, candidate.destination.id === id);
     }
-    this.notice.setText(`${marker.destination.name}　Z / Enter、またはもう一度クリックで移動`);
+    this.notice.setText(`${marker.destination.displayName}　Z / Enter、またはもう一度クリックで移動`);
     this.cameras.main.pan(marker.x, marker.y, 260, "Sine.easeOut");
     this.cameras.main.zoomTo(1.35, 260, "Sine.easeOut");
   }
@@ -270,7 +274,7 @@ export class WorldMapScene extends Phaser.Scene {
   }
 
   private applyMarkerStyle(marker: DestinationMarker, selected: boolean): void {
-    const style = getWorldMapMarkerStyle(marker.destination.implementationStatus, marker.destination.unlocked, selected);
+    const style = getWorldMapMarkerStyle(marker.destination.implementationStatus, marker.destination.unlocked, selected, marker.destination.visibilityState);
     marker.ring.setFillStyle(style.ringFill, style.ringAlpha);
     marker.ring.setStrokeStyle(WORLD_MAP_MARKER_LAYOUT.ringStrokeThickness, style.ringStroke, 0.9);
     marker.core.setFillStyle(style.coreFill, 1);
@@ -291,7 +295,7 @@ export class WorldMapScene extends Phaser.Scene {
       throw new Error(`world-map destination ${destination.id} has an unknown target`);
     }
     this.transitioning = true;
-    this.notice.setText(`${destination.name}へ移動します…`);
+    this.notice.setText(`${destination.displayName}へ移動します…`);
     const data: Record<string, string> = { spawnId: destination.targetSpawnId };
     if (target.sceneKey === "MajinCaveScene") data.returnSceneKey = this.scene.key;
     beginMapTransition(this, this.actions, target.sceneKey, data, TRANSITION_MS);

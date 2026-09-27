@@ -1,0 +1,337 @@
+{
+  "formatVersion": 1,
+  "objects": [
+    {
+      "id": "statue_gate_guard",
+      "type": "statue",
+      "label": "もんばんの石像",
+      "x": 808,
+      "y": 944,
+      "width": 28,
+      "height": 36,
+      "blocking": false,
+      "pages": [
+        "もんばんの　いしぞうだ。\nてを　まえに　だした　まま\nかたまって　いる。",
+        "〔のこった　こえ〕\n「とまれ！　そらが……\nそらが　しろく　ひかっ……」",
+        "とつぜん　まちじゅうが\nいしに　なって　しまった\nようだ。"
+      ],
+      "examinedFlag": "event.stone_town_gate_examined"
+    },
+    {
+      "id": "statue_gate_traveler",
+      "type": "statue",
+      "label": "旅人と犬の石像",
+      "x": 612,
+      "y": 952,
+      "width": 72,
+      "height": 44,
+      "blocking": false,
+      "pages": [
+        "にもつを　せおった　たびびとと\nあしもとの　いぬの　いしぞう。",
+        "〔のこった　こえ〕\n「やっと　ついたな。\nここの　パンが　めあてで……」"
+      ]
+    },
+    {
+      "id": "statue_cat",
+      "type": "statue",
+      "label": "猫の石像",
+      "x": 536,
+      "y": 840,
+      "width": 32,
+      "height": 22,
+      "blocking": false,
+      "pages": [
+        "ねこの　いしぞう。\nひなたで　まるく　なった　まま\nひげまで　こまかく　のこって　いる。"
+      ]
+    },
+    {
+      "id": "statue_pigeons",
+      "type": "statue",
+      "label": "鳩の石像",
+      "x": 884,
+      "y": 826,
+      "width": 40,
+      "height": 20,
+      "blocking": false,
+      "pages": [
+        "はとの　いしぞう。\nえさを　ついばむ　かたちの　まま\nあしもとで　かたまって　いる。"
+      ]
+    },
+    {
+      "id": "statue_talkers",
+      "type": "statue",
+      "label": "向き合う二人の石像",
+      "x": 496,
+      "y": 648,
+      "width": 76,
+      "height": 44,
+      "blocking": false,
+      "pages": [
+        "むかいあって　はなして　いた\nふたりの　いしぞう。",
+        "〔のこった　こえ〕\n「それでね　きのう……」\n「うん　うん　それで？」"
+      ]
+    },
+    {
+      "id": "statue_prayer",
+      "type": "statue",
+      "label": "祈る娘の石像",
+      "x": 700,
+      "y": 668,
+      "width": 28,
+      "height": 34,
+      "blocking": false,
+      "pages": [
+        "ひろばの　いしぞうに　むかって\nてを　あわせた　むすめの\nいしぞう。",
+        "〔のこった　こえ〕\n「どうか　みんなを\nまもって　ください……」"
+      ],
+      "changedFlag": "event.stone_town_plaza_awakened",
+      "changedPages": [
+        "むすめの　いしぞうの　ほほが\nほんのり　あたたかく　みえる。",
+        "〔のこった　こえ〕\n「……ひかりが……あたたかい……」"
+      ]
+    },
+    {
+      "id": "statue_well_woman",
+      "type": "statue",
+      "label": "井戸の女の石像",
+      "x": 858,
+      "y": 660,
+      "width": 28,
+      "height": 34,
+      "blocking": false,
+      "pages": [
+        "つるべを　ひきあげようと　した\nおんなの　いしぞう。",
+        "〔のこった　こえ〕\n「きょうは　みずが\nいやに　つめたいと　おもったら……」",
+        "みずの　すいろだけは\nなぜか　いしに　ならず\nしずかに　ながれて　いる。"
+      ],
+      "examinedFlag": "event.stone_town_echo_well",
+      "changedFlag": "event.stone_town_plaza_awakened",
+      "changedPages": [
+        "つるべの　ロープが\nかすかに　ゆれて　いる。",
+        "〔のこった　こえ〕\n「……あら　みずが　あたたかい……」"
+      ]
+    },
+    {
+      "id": "statue_baker",
+      "type": "statue",
+      "label": "パンやの石像",
+      "x": 104,
+      "y": 500,
+      "width": 120,
+      "height": 44,
+      "blocking": false,
+      "pages": [
+        "パンを　さしだした　まま\nかたまった　パンやの　いしぞう。",
+        "〔のこった　こえ〕\n「はい　できたてだよ。\nほら　あわてずに　おたべ。」",
+        "やきたての　においまで\nとまって　しまった　ようだ。"
+      ],
+      "examinedFlag": "event.stone_town_echo_baker",
+      "changedFlag": "event.stone_town_plaza_awakened",
+      "changedPages": [
+        "パンを　さしだした　ゆびさきが\nほんの　すこし　あたたかい。",
+        "〔のこった　こえ〕\n「……あつい　うちに　おたべ……」"
+      ]
+    },
+    {
+      "id": "statue_child",
+      "type": "statue",
+      "label": "走る子どもの石像",
+      "x": 288,
+      "y": 572,
+      "width": 28,
+      "height": 36,
+      "blocking": false,
+      "pages": [
+        "はしって　いる　とちゅうで\nかたまった　こどもの　いしぞう。",
+        "〔のこった　こえ〕\n「まって　まって！\nぼくの　パン！」"
+      ],
+      "changedFlag": "event.stone_town_plaza_awakened",
+      "changedPages": [
+        "こどもの　いしぞうの　ほほが\nほんのり　あかい　ようだ。",
+        "〔のこった　こえ〕\n「……パン……あったかい……」"
+      ]
+    },
+    {
+      "id": "statue_dog",
+      "type": "statue",
+      "label": "犬の石像",
+      "x": 344,
+      "y": 626,
+      "width": 44,
+      "height": 24,
+      "blocking": false,
+      "pages": [
+        "いぬの　いしぞう。\nこどもを　おいかけて　いるのか\nしっぽまで　ぴんと　のびて　いる。",
+        "ほえる　こえは\nもう　きこえない。"
+      ]
+    },
+    {
+      "id": "statue_basket_woman",
+      "type": "statue",
+      "label": "かごを抱えた女の石像",
+      "x": 232,
+      "y": 668,
+      "width": 28,
+      "height": 36,
+      "blocking": false,
+      "pages": [
+        "かごを　かかえた　おんなの　いしぞう。\nかごの　なかの　パンまで\nいしに　なって　いる。",
+        "〔のこった　こえ〕\n「まって　まって\nおつりを　わすれてるよ！」"
+      ]
+    },
+    {
+      "id": "statue_birds",
+      "type": "statue",
+      "label": "鳩の石像（たる）",
+      "x": 112,
+      "y": 584,
+      "width": 40,
+      "height": 22,
+      "blocking": false,
+      "pages": [
+        "はとの　いしぞう。\nパンくずを　ねらった　まま\nたるの　うえで　かたまって　いる。"
+      ]
+    },
+    {
+      "id": "statue_bridge_traveler",
+      "type": "statue",
+      "label": "橋を渡る旅人の石像",
+      "x": 1160,
+      "y": 568,
+      "width": 28,
+      "height": 36,
+      "blocking": false,
+      "pages": [
+        "はしを　わたる　とちゅうの\nたびびとの　いしぞう。\nまちの　ほうを　ふりかえって　いる。",
+        "〔のこった　こえ〕\n「ひろばの　ほうが　ひかった……\nそれから　あしが　うごかなく……」",
+        "ひかりは　まちの　まんなかから\nひろがったのかも　しれない。"
+      ],
+      "examinedFlag": "event.stone_town_echo_bridge"
+    },
+    {
+      "id": "statue_merchant",
+      "type": "statue",
+      "label": "露店の商人の石像",
+      "x": 1272,
+      "y": 496,
+      "width": 68,
+      "height": 48,
+      "blocking": false,
+      "pages": [
+        "しなものを　ならべて　いた\nしょうにんの　いしぞう。",
+        "〔のこった　こえ〕\n「きょうは　いい　しいれが\nできたんだ。さあ　みてって……」"
+      ]
+    },
+    {
+      "id": "statue_mother_child",
+      "type": "statue",
+      "label": "手をつなぐ親子の石像",
+      "x": 640,
+      "y": 800,
+      "width": 52,
+      "height": 40,
+      "blocking": false,
+      "pages": [
+        "てを　つないだ　おやこの　いしぞう。\nパンやへ　むかう　とちゅうらしい。",
+        "〔のこった　こえ〕\n「おかあさん　パンやさん　まだ？」\n「もうすこしよ　ほら　いいにおい。」"
+      ]
+    },
+    {
+      "id": "statue_reader",
+      "type": "statue",
+      "label": "本を読む学者の石像",
+      "x": 988,
+      "y": 440,
+      "width": 28,
+      "height": 36,
+      "blocking": false,
+      "pages": [
+        "ほんを　ひらいた　まま\nかたまった　がくしゃの　いしぞう。",
+        "〔のこった　こえ〕\n「ひろばの　ほしは　ひとびとの\nこえに　こたえて　ひかると……」"
+      ]
+    },
+    {
+      "id": "statue_porter",
+      "type": "statue",
+      "label": "荷を運ぶ人の石像",
+      "x": 1320,
+      "y": 724,
+      "width": 32,
+      "height": 36,
+      "blocking": false,
+      "pages": [
+        "にもつを　はこんで　いた\nはたらきものの　いしぞう。\nうでが　ふるえて　いそうだ。",
+        "〔のこった　こえ〕\n「おもい　おもい……\nあと　すこし……」"
+      ]
+    },
+    {
+      "id": "statue_elder",
+      "type": "statue",
+      "label": "ろうじんの石像",
+      "x": 708,
+      "y": 124,
+      "width": 32,
+      "height": 40,
+      "blocking": false,
+      "pages": [
+        "ながい　ローブの　ろうじんの\nいしぞう。　まちを\nみおろして　いる。",
+        "〔のこった　こえ〕\n「あの　ひ　そらが　しろく　ひかり\nまちの　じかんが　とまった。」",
+        "「ひかりは　ひがしの　とりでの\nほうから　きたように　みえた。」",
+        "「だれか　この　こえを　きいて\nいるのなら……\nそこへ　むかって　くれ。」"
+      ],
+      "examinedFlag": "event.stone_town_elder_heard"
+    },
+    {
+      "id": "barrier_north_stairs",
+      "type": "barrier",
+      "label": "北の階段をふさぐ石の壁",
+      "x": 648,
+      "y": 296,
+      "width": 152,
+      "height": 32,
+      "blocking": true,
+      "pages": [
+        "くずれた　いしの　かべが\nきたへ　のぼる　かいだんを\nふさいで　いる。",
+        "ひろばの　ほしを　かかげた\nいしぞうが　なにか\nいいたげに　みえる。"
+      ],
+      "openedFlag": "event.stone_town_path_opened",
+      "presentation": "stone-rubble"
+    },
+    {
+      "id": "statue_plaza_star",
+      "type": "awakening",
+      "label": "広場の星を掲げる石像",
+      "x": 540,
+      "y": 376,
+      "width": 368,
+      "height": 272,
+      "blocking": false,
+      "requiredFlags": [
+        "event.stone_town_echo_baker",
+        "event.stone_town_echo_well",
+        "event.stone_town_echo_bridge"
+      ],
+      "lockedPages": [
+        "つばさの　いしぞうが\nほしを　たかく　かかげて　いる。\nまちの　まもりがみ　だろうか。",
+        "ほしは　くもって　ひかって　いない。\nまちの　あちこちに　のこる\nこえを　あつめて　みよう。"
+      ],
+      "pages": [
+        "つばさの　いしぞうの　ほしが\nさっき　あつめた　こえに\nこたえるように　ゆれた……",
+        "……ほしが　ひかった。"
+      ],
+      "afterPages": [
+        "ひかりが　ひろばじゅうに\nひろがり　いしだたみに\nちいさな　ひびが　はしる。",
+        "きたの　かいだんを　ふさいで　いた\nかべが　ゆっくりと\nくずれおちた。"
+      ],
+      "repeatPages": [
+        "ほしは　しずかに　ひかって　いる。\nまるで　まちを　みまもって\nいるようだ。"
+      ],
+      "awakenedFlag": "event.stone_town_plaza_awakened",
+      "opensBarrierId": "barrier_north_stairs",
+      "glow": {
+        "x": 756,
+        "y": 343
+      }
+    }
+  ]
+}

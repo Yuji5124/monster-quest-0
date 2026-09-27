@@ -1,6 +1,7 @@
 import { getCharacterBaseStatsAtLevel, getMagicLearnTable } from "../config/characterGrowth.ts";
 import type { CharacterStatsEntry } from "../config/characterStats.ts";
-import { getDefaultWeaponForLevel } from "../data/weapons.ts";
+import { getDefaultWeaponForLevel, getEquippedWeapon } from "../data/weapons.ts";
+import type { LivePartyState } from "../battle/PartyCombatants.ts";
 import { getExpForLevel, getExpForNextLevel, getLevelForTotalExp } from "../data/expTable.ts";
 import { GameStateRepository } from "./GameStateRepository.ts";
 import type { CharacterProgressSaveState } from "./GameStateRepository.ts";
@@ -95,10 +96,12 @@ export class CharacterProgression {
   }
 
   getStats(memberId: PartyMemberId): CharacterStatsEntry {
-    const totalExp = this.repository?.load().party.characterProgress[memberId]?.totalExp ?? 0;
+    const party = this.repository?.load().party;
+    const totalExp = party?.characterProgress[memberId]?.totalExp ?? 0;
     const level = getLevelForTotalExp(totalExp);
     const base = getCharacterBaseStatsAtLevel(memberId, level);
-    const weapon = getDefaultWeaponForLevel(memberId, level);
+    const weapon = getEquippedWeapon(memberId, level, party?.equippedWeaponIds[memberId]);
+    const vitals = party?.vitals[memberId];
     const currentThreshold = getExpForLevel(level);
     const span = getExpForNextLevel(level) - currentThreshold;
     return {
@@ -107,14 +110,32 @@ export class CharacterProgression {
       level,
       exp: span > 0 ? Math.min(span, totalExp - currentThreshold) : 0,
       expToNextLevel: span > 0 ? span : 1,
-      hp: base.maxHp,
+      hp: Math.min(base.maxHp, vitals?.hp ?? base.maxHp),
       maxHp: base.maxHp,
-      mp: base.maxMp,
+      mp: Math.min(base.maxMp, vitals?.mp ?? base.maxMp),
       maxMp: base.maxMp,
       attack: base.attack + weapon.attackBonus,
       defense: base.defense,
       speed: base.speed,
     };
+  }
+
+  /** 戦闘開始用: ぶきやで買った装備と、前の戦闘から持ち越した現在HP/MP。 */
+  getLiveState(memberId: PartyMemberId): LivePartyState {
+    const party = this.repository?.load().party;
+    const vitals = party?.vitals[memberId];
+    return { equippedWeaponId: party?.equippedWeaponIds[memberId], hp: vitals?.hp, mp: vitals?.mp };
+  }
+
+  /** 戦闘終了時の現在HP/MPを保存する(次の戦闘・ステータス画面・やどやで使う)。 */
+  saveVitals(members: readonly { readonly id: string; readonly hp: number; readonly mp: number }[]): void {
+    if (!this.repository) return;
+    this.repository.savePartyVitals(Object.fromEntries(members.map((member) => [member.id, { hp: member.hp, mp: member.mp }])));
+  }
+
+  /** やどや: 全員のHP/MPを最大値へ戻す(戦闘不能のメンバーも起き上がる)。 */
+  restoreVitals(): void {
+    this.repository?.restorePartyVitals();
   }
 
   awardExperience(memberIds: readonly PartyMemberId[], amount: number): ExperienceAwardResult {

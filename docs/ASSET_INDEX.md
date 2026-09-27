@@ -85,6 +85,8 @@ Phaser側は `src/config/protagonistSprite.ts`(グリッド・フレーム番号
 |---|---|---|
 | `assets/characters/reference/reference/タロサ/*.png` | ユーザー提供の歩行ポーズ参考(12枚)。削除・上書きしない | REFERENCE |
 | `assets/characters/playable/tarosa_walk.png` | 上記から生成したCURRENT歩行スプライトシート(132×280、44×70セル) | CURRENT |
+| `assets/characters/reference/reference/タロサ/タロサ立ち姿.png` | 2026-09-26 ユーザー提供の立ち姿(1448×1086、背景つきRGB)。削除・上書きしない | REFERENCE |
+| `assets/characters/portraits/tarosa_standing.png` | 上記の無加工バイト一致コピー。ビーエのもりのタロサ会話中に、中央の縦長範囲(x380〜1200)を額縁つきで表示する(`StartingForestScene`) | CURRENT |
 
 タロサの正式キャラクターデザイン(青い髪・エルフ耳・弓と矢筒・緑のスカーフ)は`CHARACTER_GROWTH.md`確定事項の「弓を使用」と整合する。
 
@@ -264,6 +266,16 @@ Collisionの作り方: 背景をHSV変換し、道の色域（H≈33〜52°, S�
 | `assets/maps/zabon_village/entry_splash.png` | 前者の無加工コピー。`MapSplashScene`が世界地図からの入場時に5秒投影し、地名「ザボンのむら」を出す（2026-09-23） | CURRENT |
 | `assets/maps/reference/reference/ザボンのむら　新.png` | No.08ザボンのむらのユーザー提供SOURCE原画（1448×1086、2026-09-23）。削除・上書き・再描画はしない | REFERENCE |
 | `assets/maps/zabon_village/background.png` | 前者の無加工コピー。`ZabonVillageScene`がLINEARフィルタで表示するCURRENT背景 | CURRENT |
+| `assets/maps/reference/reference/新しいフォルダー/ふっかつのほこら.png` | No.15ふっかつのほこらのユーザー提供原画（絵画調の外観、1672×941、2026-09-26）。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/revival_shrine/entry_splash.png` | 前者の無加工コピー。`MapSplashScene`が世界地図からの入場時に5秒投影し、地名「ふっかつのほこら」を出す | CURRENT |
+| `assets/maps/reference/reference/新しいフォルダー/ふっかつのほこら_イメージ.png` | No.15ふっかつのほこらのユーザー提供SOURCE原画（見下ろしのドット絵、1672×941、2026-09-26。名前は_イメージだが中身はマップ）。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/revival_shrine/background.png` | 前者の無加工コピー。`RevivalShrineScene`がLINEARフィルタで表示するCURRENT背景 | CURRENT |
+| `assets/maps/revival_shrine/collision.png` | `tools/build_revival_shrine_collision.py`が手で測った矩形から生成したCURRENT二値Collision Mask（石段・門の通路・広場・八角形の中央広場・西の石橋と島・上の段・台座が歩行可能、水・石柱・遺跡・崖・滝は歩行不可） | CURRENT |
+| `assets/maps/reference/reference/港町ダコハ_イメージ.png` | No.12港町ダコハの入場演出としてユーザー指定された原画（2026-09-26）。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/dakoha_port/entry_splash.png` | 前者の無加工コピー。`MapSplashScene`が世界地図からの入場時に5秒投影し、地名「港町ダコハ」を出す（2026-09-26） | CURRENT |
+| `assets/maps/reference/reference/港町ダコハ.png` | No.12港町ダコハのユーザー提供SOURCE原画（1448×1086、2026-09-26）。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/dakoha_port/background.png` | 前者の無加工コピー。`DakohaPortScene`がLINEARフィルタで表示するCURRENT背景 | CURRENT |
+| `assets/maps/dakoha_port/collision.png` | `tools/build_dakoha_port_collision.py`で背景から生成したCURRENT二値Collision Mask（石畳の広場・通り・石段・岸壁・木の桟橋・灯台への道が歩行可能、建物・露店・噴水・木箱・海・崖・森は歩行不可） | CURRENT |
 | `assets/maps/zabon_village/collision.png` | `tools/build_zabon_village_collision.py`で背景から生成したCURRENT二値Collision Mask（土の道・広場・吊り橋・桟橋・石段が歩行可能、建物・トーテム・井戸・畑・川・海・森・山は歩行不可） | CURRENT |
 | `assets/maps/reference/reference/いわやまのどうくつ_1.png` | No.09いわやまのどうくつ1Fのユーザー提供SOURCE原画（1024×1536、2026-09-23）。削除・上書き・再描画はしない | REFERENCE |
 | `assets/maps/reference/reference/いわやまのどうくつ_2.png` | `_1.png`とバイト一致の重複ファイル。ユーザー判断で2フロア構成とし、使用しない（2026-09-23） | REFERENCE |
@@ -282,6 +294,81 @@ Collisionの作り方: 背景をHSV変換し、道の色域（H≈33〜52°, S�
 | `assets/maps/reference/reference/かくれざと.png` | ユーザー提供のSOURCE原画（1536×1024）。削除・上書き・再描画はしない | REFERENCE |
 | `assets/maps/hidden_village/background.png` | 原画の無加工コピー。`HiddenVillageScene`がLINEARフィルタで表示するCURRENT背景 | CURRENT |
 | `assets/maps/hidden_village/collision.png` | `tools/build_hidden_village_collision.py`で生成したCURRENT二値Collision Mask。北西の門・石段・神社前・広場・家前・橋・水車前・洞窟前を歩行可能とし、建物・水・滝・崖・森を歩行不可にする | CURRENT |
+
+### コタンカイムの洞窟
+
+2026-09-26追加。正式No.13。(1)〜(3)はユーザー提供の各原画を無加工のBACKGROUNDとして採用し、共通画像マップRuntimeで遷移する（(1)右上の扉⇄(2)南の石段、(2)左上の扉⇄(3)南の石段、(1)南端⇄世界地図）。(3)北の魔法陣はゆうしゃのたての場所だが、入手演出・条件はTBDのためDEVメッセージのみ。ランダムエンカウント・NPC・OBJECTは追加しない。
+
+| パス | 用途 | 状態 |
+|---|---|---|
+| `assets/maps/reference/reference/コタンカイムのどうくつ_イメージ.png` | 世界地図からの入場演出用SOURCE原画。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/kotankaim_cave_1/entry_splash.png` | 前者の無加工コピー。世界地図から(1)へ入るときだけ、地名「コタンカイムの洞窟」とともに5秒投影する | CURRENT |
+| `assets/maps/reference/reference/コタンカイムのどうくつ1.png` / `2.png` / `3.png` | No.13の(1)〜(3)ユーザー提供SOURCE原画（各1448×1086）。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/kotankaim_cave_1/background.png` / `kotankaim_cave_2/background.png` / `kotankaim_cave_3/background.png` | 各フロアの無加工CURRENT背景。`KotankaimCave1Scene`〜`KotankaimCave3Scene`が表示する | CURRENT |
+| `assets/maps/kotankaim_cave_{1..3}/collision.png` | `tools/build_kotankaim_cave_collision.py`で生成するCURRENT二値Collision Mask。砂色の床の色判定に、手測りの石段・木の橋・扉・灰色の石畳広場を加え、柱／アーチの脚・水・滝・崖を歩行不可にし、入口から連結した範囲だけを残す | CURRENT |
+
+### ポサロ城
+
+2026-09-27追加。正式No.14。世界地図から外観を5秒表示して南の大階段へ入り、同じ階段から世界地図へ戻る。見下ろしのボス間をBACKGROUND正本とし、共通画像マップRuntimeで南の階段・中央ホール・玉座への階段・上段までを歩けるようにした。バクラー戦、ゆうしゃのけん、NPC、会話、BGMはTBDのため追加していない。
+
+| パス | 用途 | 状態 |
+|---|---|---|
+| `assets/maps/reference/reference/新しいフォルダー/ポサロじょう_イメージ.png` | 世界地図からの入場演出用SOURCE外観。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/posaro_castle/entry_splash.png` | 前者の無加工コピー。世界地図から入るときだけ、地名「ポサロ城」とともに5秒投影する | CURRENT |
+| `assets/maps/reference/reference/新しいフォルダー/ポサロじょうボス.png` | 見下ろしのボス間用SOURCE原画（1448×1086）。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/posaro_castle/background.png` | 前者の無加工CURRENT背景。`PosaroCastleScene`がLINEARフィルタで表示する | CURRENT |
+| `assets/maps/posaro_castle/collision.png` | `tools/build_posaro_castle_collision.py`で生成するCURRENT二値Collision Mask。南の入口階段・中央ホール・玉座への階段・上段を歩行可能とし、溶岩・壁・柱・像・脇部屋を歩行不可にする | CURRENT |
+
+### デーマスのとう
+
+2026-09-26追加。正式No.16。1〜3Fはユーザー提供の各原画を無加工のBACKGROUNDとして採用し、共通画像マップRuntimeで遷移する。3F中央のデーマスはOBJECTで管理し、既存`BattleScene`の`demas`戦へ接続する。ランダムエンカウントや新しい戦闘数値は追加しない。
+
+| パス | 用途 | 状態 |
+|---|---|---|
+| `assets/maps/reference/reference/新しいフォルダー/デーマスのとう_イメージ.png` | 世界地図からの入場演出用SOURCE外観原画。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/demas_tower_1/entry_splash.png` | 前者の無加工コピー。世界地図から1Fへ入るときだけ、地名「デーマスのとう」とともに5秒投影する | CURRENT |
+| `assets/maps/reference/reference/新しいフォルダー/デーマスのとう1階.png` / `2階.png` / `3階.png` | No.16の1〜3Fユーザー提供SOURCE原画（各1448×1086）。削除・上書き・再描画はしない | REFERENCE |
+| `assets/maps/demas_tower_1/background.png` / `demas_tower_2/background.png` / `demas_tower_3/background.png` | 各階の無加工CURRENT背景。`DemasTower1Scene`〜`DemasTower3Scene`がLINEARフィルタで表示する | CURRENT |
+| `assets/maps/demas_tower_{1..3}/collision.png` | `tools/build_demas_tower_collision.py`で管理するCURRENT二値Collision Mask。中央の入口・階段・主通路、3Fの赤いカーペットと中央台座への道だけを歩行可能とする | CURRENT |
+| `assets/monsters/battle/デマスのモンスターアニメーションスプライトシート (1).png` | ユーザー提供の4列×3行シート。上段の待機フレームを3F中央のデーマス表示に使用し、BattleSceneでは`DemasBossController`が12フレームを待機／詠唱／発射／被弾／弱りへ割り当てる | CURRENT |
+
+### ぬまちのどうくつ
+
+2026-09-27追加。正式No.17の最初の短い三人アクション区画。ユーザー提供の見下ろし原画を無加工で直接読み込み、主人公・タロサ・ミレイの攻撃、浅い沼の減速、高い足場・根道の加速、最奥の宝箱を検証する。全域用の人間確認済みCURRENT背景・Collision・敵編成はTBDであり、この原画を上書き・再描画しない。
+
+| パス | 用途 | 状態 |
+|---|---|---|
+| `assets/maps/reference/reference/新しいフォルダー/ぬまちのどうくつ.png` | ユーザー提供の見下ろし地形原画（1672×941）。`SwampCaveActionScene`が直接ロードする最初のアクション区画の背景 | REFERENCE（暫定直接使用） |
+| `assets/maps/reference/reference/新しいフォルダー/ぬまちのどうくつ_イメージ.png` | 洞窟の根・滝・水辺の雰囲気と構図の参考原画（1672×941）。ゲーム内では読み込まない | REFERENCE |
+| `assets/maps/swamp_cave/{map.json,collision.json,events.json,objects.json}` | No.17短区画のBACKGROUND / COLLISION / EVENT / OBJECTメタデータ。Collisionはコード設定の浅瀬・高所ゾーンを指す最小JSONで、人間調整済みPNGは全域化時に追加する | CURRENT（PARTIAL） |
+
+### いしのまち
+
+2026-09-27追加。正式No.18。ユーザー提供は絵画調の外観イラストだけで、見下ろしの歩行背景は未提供のため、歩行背景・Collisionは`DEV_PLACEHOLDER`。
+
+| パス | 用途 | 状態 |
+|---|---|---|
+| `assets/maps/reference/reference/新しいフォルダー/いしのまち_イメージ.png` | ユーザー提供の外観イラスト原画（1448×1086、石になった町）。削除・上書き・再描画はしない。**見下ろしの歩行地図ではない** | REFERENCE |
+| `assets/maps/stone_town/entry_splash.png` | 前者の無加工コピー。世界地図から入るときだけ、地名「いしのまち」とともに5秒投影する | CURRENT |
+| `assets/maps/stone_town/background.png` | `tools/build_stone_town_assets.py`が手続き生成した仮の見下ろし背景（1448×1086）。石像は`assets/characters/npc/villager_*_walk.png`の待機フレームを石化色にして貼り込んだ。正式背景が届いたら差し替える | DEV_PLACEHOLDER |
+| `assets/maps/stone_town/collision.png` | 同ツールが同じレイアウトから生成した二値Collision Mask。石の壁は含まない（ランタイムBody） | DEV_PLACEHOLDER |
+| `assets/maps/stone_town/{map.json,events.json,objects.json}` | メタデータ。`assetStatus: DEV_PLACEHOLDER`。`objects.json`に石像（`statue`）18・石の壁（`barrier`）・広場の石像（`awakening`）とその台詞（`DIALOGUE_DRAFT`）を持つ | CURRENT（PARTIAL） |
+
+### 不思議なとう
+
+2026-09-26追加。正式No.01〜No.20を増やさない中盤以降の特別地点。ユーザー提供の更地はSOURCEとして保存し、初期建築段階では中央奥の古い石塔を加えた別背景を採用する。成長後の塔イメージは将来用リファレンスとして保持する。
+
+| パス | 用途 | 状態 |
+|---|---|---|
+| `assets/maps/reference/reference/ふしぎなとう.png` | ユーザー提供SOURCE原画（1536×1024）の更地。変更せず保存する | REFERENCE |
+| `assets/maps/mysterious_tower_exterior/background.png` | `ふしぎなとう.png`の無加工コピー。増築前の地形保全用であり、実行時には読み込まない | PRESERVED |
+| `assets/maps/mysterious_tower_exterior/background_tower_level_1.png` | 生成素材を1536×1024に整形した初期建築段階のCURRENT背景。中央奥の古い石塔と、将来用の左右・手前の空地を持つ | CURRENT |
+| `assets/maps/mysterious_tower_exterior/collision.png` | `tools/build_mysterious_tower_land_collision.py`で管理する二値Collision Mask。草地と南の石橋に加え、石塔の南向き入口だけを歩行可能とする | CURRENT |
+| `assets/maps/reference/reference/ふしぎなとう_イメージ.png` | 成長後の塔の完成イメージ。現行マップでは読まず、将来の塔成長の視覚リファレンスとして保持する | REFERENCE |
+| `assets/maps/mysterious_tower_1f/background.png` / `collision.png` | 無人の1Fと歩行領域。中央の台座はBACKGROUND、調べられる塔の核は`objects.json`のOBJECTとして別管理 | DEV_PLACEHOLDER |
+| `assets/maps/mysterious_tower_exterior/events.json` / `objects.json` | 中央の古い石組み→1F、南の石橋→世界地図、空のOBJECTレイヤー | CURRENT DATA |
+| `assets/maps/mysterious_tower_1f/events.json` / `objects.json` | 1F→外、核（`object_mysterious_tower_core`）のOBJECTメッセージ | CURRENT DATA |
+| `assets/characters/npc/villager_17_walk.png` | ユーザー指定のおじいさん歩行シートを正規化した実行用素材。更地の案内NPCだけに使用する | CURRENT |
 
 | `assets/maps/reference/reference/ビーエのむら更新.png` | 2026-09-23のユーザー提供SOURCE原画（1536×1024、マップ構成変更版）。削除・上書き・再描画はしない | REFERENCE |
 | `assets/maps/bie_village/background.png` | `ビーエのむら更新.png`の無加工コピー（2026-09-23差し替え、旧版は`ビーエのむら.png`のコピー）。BieVillageSceneがLINEARフィルタで表示するCURRENT背景 | CURRENT |
@@ -314,8 +401,8 @@ Collisionの作り方: 背景をHSV変換し、広場の石畳＋土の道の色
 | `assets/maps/starting_town/collision.png` | 背景から自動生成したCURRENT二値Collision Mask（噴水広場・石畳・土の道が歩行可能、建物5棟・噴水・花壇・川・森は歩行不可） | CURRENT |
 | `assets/maps/hidden_village/background.png` | No.10かくれざと用CURRENTの1536×1024高解像度BACKGROUND。`assets/maps/reference/reference/かくれざと.png`の無加工コピー（原本は削除・上書きしない） | CURRENT |
 | `assets/maps/hidden_village/collision.png` | 上記用CURRENT二値Collision Mask（北西の門・石段・神社前・広場・家前・橋・水車前・洞窟前が歩行可能、建物・神社・水・滝・崖・森は歩行不可）。`tools/build_hidden_village_collision.py`で再生成できる | CURRENT |
-| `assets/characters/reference/reference/村人たち/` | ユーザー提供の村人10種のSOURCE歩行シート。原本は上書きせず、各系統の最新透過3列×4行シートを選ぶ | REFERENCE |
-| `assets/characters/npc/villager_{01..10}_walk.png` | `tools/build_villager_sheets.py`が上記から生成するCURRENTのPhaser用村人シート。各70×70セル、3列×4行（下／左／右／上）、足元基準67px。選択IDは`src/config/villagerSprites.ts`で一元管理する | CURRENT |
+| `assets/characters/reference/reference/村人たち/` | ユーザー提供の村人・城の人物のSOURCE歩行シート。原本は上書きせず、各系統の最新透過3列×4行シートを選ぶ | REFERENCE |
+| `assets/characters/npc/villager_{01..16}_walk.png` | `tools/build_villager_sheets.py`が上記から生成するCURRENTのPhaser用村人シート。各70×70セル、3列×4行（下／左／右／上）、足元基準67px。選択IDは`src/config/villagerSprites.ts`で一元管理する。11〜16（2026-09-26）はNo.06レインランドじょうの住人（11槍の近衛兵／12盾の兵士／13メイド／14王／15青マントの騎士／16学者）で、隣のコマの断片を除去して生成する。姫のシートはミレイの正体に触れうるため未割り当て | CURRENT |
 
 **建物6→5への変更**: reference画像には教会(きょうかい)と、その手前に4棟の家（屋台風の日よけがある店＝どうぐや、井戸と薪のある家＝ぶきや、普通の家＝民家A、干し草のある家＝やどや）＝合計5棟しか描かれていない。旧DEV_PLACEHOLDER時代のデータは6棟（民家Bを含む）だったが、実在しない6棟目を維持しないとユーザーが判断し、民家B（`map_02_house_b`）と対応する内部データ・spawnを正式に削除した。`assets/maps/data/no02_start_town_interiors.json`・`src/config/interiors.ts`・`src/config/maps.ts`を同時に更新済み。
 

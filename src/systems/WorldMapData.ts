@@ -19,6 +19,8 @@ export interface WorldMapManifest {
 }
 
 export type WorldMapImplementationStatus = "implemented" | "planned";
+export type WorldMapRouteKind = "main" | "special";
+export type WorldMapVisibilityState = "HIDDEN" | "UNKNOWN" | "DISCOVERED";
 
 export interface WorldMapLabelOffset {
   /** Offset in the same source-pixel coordinate space as x/y. */
@@ -34,6 +36,12 @@ interface WorldMapDestinationBase {
   readonly y: number;
   /** false omits the point entirely; true + a locked flag shows a non-interactive unknown point. */
   readonly visible: boolean;
+  /** Main-route locations retain the formal No.01–20 sequence; optional places do not consume a number. */
+  readonly routeKind: WorldMapRouteKind;
+  /** No marker is drawn until this flag is saved. Null keeps the normal visible behavior. */
+  readonly revealFlag: string | null;
+  /** A revealed point displays ？？？ until this flag is saved. Null means it is already known. */
+  readonly discoveryFlag: string | null;
   /** null means the location is always available; otherwise this must be a SAVE_FLAG_SPEC-compliant key. */
   readonly unlockFlag: string | null;
   /** Final source-pixel placement on the current world-map background. */
@@ -63,7 +71,8 @@ export type WorldMapDestinationDefinition =
 /** Runtime view of a visible destination after its data-defined unlock condition was evaluated. */
 export type WorldMapDestination = WorldMapDestinationDefinition & {
   readonly unlocked: boolean;
-  /** Locked points must not reveal their destination name before their flag is set. */
+  readonly visibilityState: Exclude<WorldMapVisibilityState, "HIDDEN">;
+  /** Locked or not-yet-discovered points must not reveal their destination name. */
   readonly displayName: string;
 };
 
@@ -120,6 +129,9 @@ export function readWorldMapDestinations(value: unknown, manifest: WorldMapManif
       x,
       y,
       visible: requireBoolean(item, "visible", `world map destinations[${index}]`),
+      routeKind: readRouteKind(item, `world map destinations[${index}]`),
+      revealFlag: requireOptionalFlag(item, "revealFlag", `world map destinations[${index}]`),
+      discoveryFlag: requireOptionalFlag(item, "discoveryFlag", `world map destinations[${index}]`),
       unlockFlag,
       positionStatus: finalPositionStatus,
       labelOffset: requireLabelOffset(item, "labelOffset", `world map destinations[${index}]`),
@@ -144,23 +156,36 @@ export function readWorldMapDestinations(value: unknown, manifest: WorldMapManif
 }
 
 /**
- * Derives selectable state from saved progress. Hidden points do not enter the UI at all;
- * visible but locked points remain as `？？？` so future routes are not spoiled.
+ * Derives selectable state from saved progress. A special destination can move from
+ * HIDDEN → UNKNOWN → DISCOVERED without exposing its name before first entry.
  */
 export function resolveWorldMapDestinations(
   definitions: readonly WorldMapDestinationDefinition[],
   unlockedFlags: ReadonlySet<string>,
 ): WorldMapDestination[] {
   return definitions
-    .filter((definition) => definition.visible)
+    .filter((definition) => getWorldMapDestinationVisibility(definition, unlockedFlags) !== "HIDDEN")
     .map((definition): WorldMapDestination => {
       const unlocked = definition.unlockFlag === null || unlockedFlags.has(definition.unlockFlag);
+      const visibilityState = getWorldMapDestinationVisibility(definition, unlockedFlags);
+      if (visibilityState === "HIDDEN") throw new Error("hidden destination must not be resolved");
       return {
         ...definition,
         unlocked,
-        displayName: unlocked ? definition.name : "？？？",
+        visibilityState,
+        displayName: unlocked && visibilityState === "DISCOVERED" ? definition.name : "？？？",
       };
   });
+}
+
+/** Evaluates all three visibility states, including HIDDEN entries omitted from the runtime UI. */
+export function getWorldMapDestinationVisibility(
+  definition: WorldMapDestinationDefinition,
+  unlockedFlags: ReadonlySet<string>,
+): WorldMapVisibilityState {
+  if (!definition.visible || (definition.revealFlag !== null && !unlockedFlags.has(definition.revealFlag))) return "HIDDEN";
+  if (definition.discoveryFlag !== null && !unlockedFlags.has(definition.discoveryFlag)) return "UNKNOWN";
+  return "DISCOVERED";
 }
 
 /** The only destinations that can be selected for a Scene transition. */
@@ -260,9 +285,17 @@ function requireEntryDestinationIds(record: Record<string, unknown>, key: string
 }
 
 function requireOptionalFlag(record: Record<string, unknown>, key: string, label: string): string | null {
+  if (record[key] === undefined) return null;
   const value = record[key];
   if (value === null) return null;
   return requireFlagValue(value, `${label}.${key}`);
+}
+
+function readRouteKind(record: Record<string, unknown>, label: string): WorldMapRouteKind {
+  const value = record.routeKind;
+  if (value === undefined) return "main";
+  if (value === "main" || value === "special") return value;
+  throw new Error(`${label}.routeKind must be main or special`);
 }
 
 function requireFlagValue(value: unknown, label: string): string {

@@ -11,10 +11,6 @@ export const OPENING_CAMPFIRE = {
   narrationFadeMs: 500,
   narrationEndFadeMs: 900,
   fireOnlyMs: 2000,
-  lookPauseMs: 650,
-  protagonistLineFadeInMs: 260,
-  protagonistLineMs: 1500,
-  protagonistLineFadeMs: 400,
   nightVeilAlpha: 0.28,
 } as const;
 
@@ -28,14 +24,10 @@ export const OPENING_CAMPFIRE_NARRATION = [
 ] as const;
 
 /**
- * 実時間の目安。各行のクロスフェードを含み、最後の無言から操作解放まで約25秒。
+ * 実時間の目安。各行のクロスフェードを含み、最後の焚き火だけの間から操作解放まで約22秒。
  */
 export function getOpeningCampfireControlReleaseMs(): number {
   return OPENING_CAMPFIRE.narrationStartMs
     + OPENING_CAMPFIRE_NARRATION.length * OPENING_CAMPFIRE.narrationLineMs
-    + OPENING_CAMPFIRE.fireOnlyMs
-    + OPENING_CAMPFIRE.lookPauseMs
-    + OPENING_CAMPFIRE.protagonistLineFadeInMs
-    + OPENING_CAMPFIRE.protagonistLineMs
-    + OPENING_CAMPFIRE.protagonistLineFadeMs;
+    + OPENING_CAMPFIRE.fireOnlyMs;
 }

@@ -91,6 +91,17 @@ export function getDefaultWeaponForLevel(memberId: PartyMemberId, level: number)
   return weapons[Math.min(index, weapons.length - 1)];
 }
 
+/**
+ * 実際に装備している武器。ぶきやで買った武器(`equippedWeaponId`)とレベル基準の自動装備のうち、
+ * こうげき補正が高い方を使う。自動装備はそうび画面が無い間の暫定処理のため、買った武器が
+ * レベルアップで弱い方へ戻されたり、買う意味が無くなったりしないよう強い方を採る。
+ */
+export function getEquippedWeapon(memberId: PartyMemberId, level: number, equippedWeaponId?: string): WeaponDefinition {
+  const automatic = getDefaultWeaponForLevel(memberId, level);
+  const purchased = equippedWeaponId ? getWeaponById(memberId, equippedWeaponId) : undefined;
+  return purchased && purchased.attackBonus > automatic.attackBonus ? purchased : automatic;
+}
+
 export function getWeaponById(memberId: PartyMemberId, weaponId: string): WeaponDefinition | undefined {
   return WEAPON_PROGRESSION[memberId].find((weapon) => weapon.id === weaponId);
 }

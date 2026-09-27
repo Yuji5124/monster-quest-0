@@ -1,9 +1,9 @@
 // Phase 1の仮キー配列。action名はUI_INPUT_SPECに合わせる。
 export const INPUT_BINDINGS = {
-  moveUp: ["ArrowUp"],
-  moveDown: ["ArrowDown"],
-  moveLeft: ["ArrowLeft"],
-  moveRight: ["ArrowRight"],
+  moveUp: ["ArrowUp", "KeyW"],
+  moveDown: ["ArrowDown", "KeyS"],
+  moveLeft: ["ArrowLeft", "KeyA"],
+  moveRight: ["ArrowRight", "KeyD"],
   confirm: ["KeyZ", "Enter"],
   cancel: ["KeyX", "Escape"],
   menu: ["KeyC"],

@@ -7,6 +7,7 @@ import type { ImageMapCollisionRuntime } from "../systems/ImageMapCollision.ts";
 import { readImageMapEvents, readImageMapManifest, readImageMapObjects, scaleRect } from "../systems/ImageMapData.ts";
 import type { ImageMapEvent } from "../systems/ImageMapData.ts";
 import { configureMapCamera } from "../systems/MapCamera.ts";
+import { startFieldAmbience } from "../systems/FieldAmbience.ts";
 import { beginMapTransition } from "../systems/MapTransition.ts";
 import { PROTAGONIST_SPRITE } from "../config/protagonistSprite.ts";
 import { TAROSA_SPRITE } from "../config/tarosaSprite.ts";
@@ -14,8 +15,19 @@ import { MIREI_SPRITE } from "../config/mireiSprite.ts";
 import { ensureWalkAnimations, preloadWalkSprite } from "../systems/CharacterWalkSprite.ts";
 import { PartyFollowers } from "../systems/PartyFollowers.ts";
 import { FieldMenu } from "../ui/FieldMenu.ts";
-import { BIE_VILLAGE_ANOMALY } from "../config/bieVillageAnomaly.ts";
+import { BIE_VILLAGE_ANOMALY, BIE_VILLAGER_GLITCH } from "../config/bieVillageAnomaly.ts";
 import { startMapAnomalyAmbience } from "../systems/MapAnomalyAmbience.ts";
+import { INTERACTION_REACH, INTERACTION_SPAN } from "../config/interaction.ts";
+import { VILLAGER_SPRITES } from "../config/villagerSprites.ts";
+import { getDialogue } from "../data/dialogues.ts";
+import { Npc } from "../entities/Npc.ts";
+import type { NpcDefinition } from "../config/maps.ts";
+import { isStoryFlagsDialogueEvent } from "../events/BattleEventData.ts";
+import type { DialogueAfterEvent } from "../events/BattleEventData.ts";
+import { GameStateRepository } from "../systems/GameStateRepository.ts";
+import { canInteract } from "../systems/Interaction.ts";
+import { startVillagerGlitch } from "../systems/VillagerGlitch.ts";
+import { DialogueBox } from "../ui/DialogueBox.ts";
 
 const MAP_ID = "map_03_bie_village";
 const MANIFEST_KEY = "image-map.bie-village.manifest";
@@ -40,14 +52,19 @@ export interface BieVillageSceneData {
  * No.04「ビーエのむら」(内部IDは旧No.03由来)。背景はビーエのむら更新.png、collision.pngはtools/build_bie_village_collision.pyが生成する。
  * ビーエのもりから続く地域の異変として、背景の一部が一瞬だけ乱れる小さな異変(config/bieVillageAnomaly.ts)を常時重ねる。
  * StartingPlaceScene(No.01)と同じBACKGROUND/COLLISION/EVENT/OBJECT
- * 画像マップ方式をそのまま再利用する。NPC・会話・木こり救出イベント・ランダムエンカウントは
- * docs/NPC/02_bie_no_mura.md が SOURCE_DRAFT_EXISTS / REDUCING のため今回は未実装(follow-up)。
+ * 画像マップ方式をそのまま再利用する。村人6人(MAPS.npcs、No.02と同じ「固定はドアの真ん前＋周辺を歩く人」)と
+ * 会話初稿、村人の小さなバグり(config/bieVillageAnomaly.tsのBIE_VILLAGER_GLITCH)を持つ。
+ * 木こり救出イベント・正式台詞・ランダムエンカウントは未実装(docs/NPC/02_bie_no_mura.md)。
  */
 export class BieVillageScene extends Phaser.Scene {
   private actions!: InputSystem;
   private player!: Player;
   private collisionRuntime!: ImageMapCollisionRuntime;
   private fieldMenu!: FieldMenu;
+  private dialogueBox!: DialogueBox;
+  private afterDialogueEvent: DialogueAfterEvent | undefined;
+  private readonly gameState = new GameStateRepository();
+  private npcs: Npc[] = [];
   private notice?: Phaser.GameObjects.Text;
   private consumedEventIds = new Set<string>();
   private transitioning = false;
@@ -65,10 +82,14 @@ export class BieVillageScene extends Phaser.Scene {
     preloadWalkSprite(this, PROTAGONIST_SPRITE);
     preloadWalkSprite(this, TAROSA_SPRITE);
     preloadWalkSprite(this, MIREI_SPRITE);
+    for (const npc of MAPS[MAP_ID].npcs) {
+      if (npc.spriteId) preloadWalkSprite(this, VILLAGER_SPRITES[npc.spriteId]);
+    }
   }
 
   create(data?: BieVillageSceneData): void {
     this.transitioning = false;
+    this.afterDialogueEvent = undefined;
     this.consumedEventIds.clear();
     const manifest = readImageMapManifest(this.cache.json.get(MANIFEST_KEY));
     if (manifest.id !== MAP_ID || manifest.assetStatus !== "CURRENT") {
@@ -103,6 +124,8 @@ export class BieVillageScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, manifest.width * worldScale, manifest.height * worldScale);
 
     const mapConfig = MAPS[MAP_ID];
+    // definition.position / movementはネイティブ背景ピクセルなので、worldScaleを掛けた複製をNpcへ渡す(No.02と同じ)。
+    this.npcs = mapConfig.npcs.map((definition) => new Npc(this, scaleNpcDefinition(definition, worldScale)));
     const spawn = mapConfig.spawns[data?.spawnId ?? "fromWorldMap"] ?? mapConfig.spawns.fromWorldMap;
     ensureWalkAnimations(this, PROTAGONIST_SPRITE);
     this.player = new Player(this, spawn.x * worldScale, spawn.y * worldScale, spawn.facing);
@@ -110,8 +133,25 @@ export class BieVillageScene extends Phaser.Scene {
     // 加入済みの仲間(タロサ・ミレイ)は、他の画像マップと同じく主人公の軌跡を辿って付いてくる。
     new PartyFollowers(this, this.player);
     for (const body of this.collisionRuntime.bodies) this.physics.add.collider(this.player.body, body);
+    for (const npc of this.npcs) {
+      this.physics.add.collider(this.player.body, npc.body);
+      // 固定の村人はドア前に立ったまま動かないため、壁との判定は歩く村人だけに付ける。
+      if (npc.definition.movement) {
+        for (const body of this.collisionRuntime.bodies) this.physics.add.collider(npc.body, body);
+      }
+    }
+    for (let index = 0; index < this.npcs.length; index += 1) {
+      for (let other = index + 1; other < this.npcs.length; other += 1) {
+        this.physics.add.collider(this.npcs[index].body, this.npcs[other].body);
+      }
+    }
+    // 村人の小さなバグり。見た目だけで、会話・判定・移動には触れない。
+    const villagerSprites = this.npcs
+      .map((npc) => npc.visual)
+      .filter((visual): visual is Phaser.GameObjects.Sprite => visual instanceof Phaser.GameObjects.Sprite);
+    const villagerGlitch = startVillagerGlitch(this, villagerSprites, worldScale, BIE_VILLAGER_GLITCH);
 
-    // Objectの判定は背景と別レイヤーに保つ(No.01と同じ)。ビーエのむらは現時点でNPC等を配置しない。
+    // Objectの判定は背景と別レイヤーに保つ(No.01と同じ)。村人はMAPS.npcsで管理する。
     for (const object of objects) {
       const bounds = scaleRect(object, worldScale);
       const marker = this.add.rectangle(bounds.x, bounds.y, bounds.width, bounds.height, 0x35b7d4, 1);
@@ -135,6 +175,8 @@ export class BieVillageScene extends Phaser.Scene {
     }
 
     configureMapCamera(this, this.player.visual, { x: 0, y: 0, width: manifest.width * worldScale, height: manifest.height * worldScale });
+    // 雲の影・漂う粒などの環境エフェクト(config/fieldAmbience.ts)。見た目だけで、背景・判定・進行には触れない。
+    startFieldAmbience(this, MAP_ID);
     this.cameras.main.setBackgroundColor("#101018");
     this.cameras.main.fadeIn(MAP_TRANSITION_FADE_MS, 0, 0, 0);
 
@@ -148,9 +190,16 @@ export class BieVillageScene extends Phaser.Scene {
       }).setScrollFactor(0).setDepth(2000);
     }
 
+    // 会話ウィンドウは他の表示物の後に作り、常に最前面へ描画する。
+    this.dialogueBox = new DialogueBox(this);
     this.fieldMenu = new FieldMenu(this);
     this.actions = new InputSystem(window, document);
     const movePlayer = (): void => {
+      const confirmPressed = this.actions.consumePressed("confirm");
+      if (this.dialogueBox.isOpen) {
+        if (confirmPressed && this.dialogueBox.advance()) this.handleAfterDialogue();
+        return;
+      }
       if (this.fieldMenu.isOpen) {
         this.fieldMenu.handleInput(this.actions);
         return;
@@ -159,7 +208,9 @@ export class BieVillageScene extends Phaser.Scene {
         this.fieldMenu.open();
         return;
       }
+      for (const npc of this.npcs) npc.update(this.time.now);
       this.player.update(this.actions);
+      if (confirmPressed) this.tryStartDialogue();
     };
     const toggleCollision = (keyboardEvent: KeyboardEvent): void => {
       if (!isDevMode || keyboardEvent.code !== "KeyD" || keyboardEvent.repeat || keyboardEvent.ctrlKey || keyboardEvent.metaKey || keyboardEvent.altKey) return;
@@ -185,10 +236,41 @@ export class BieVillageScene extends Phaser.Scene {
         player: this.player,
         collisionRectCount: collisionRects.length,
         anomaly,
+        villagerGlitch,
         setCollisionVisible: (visible: boolean): void => this.collisionRuntime.setDebugVisible(visible),
       };
       // eslint-disable-next-line no-console
       console.log(`[IMAGE_MAP] ${manifest.id} loaded: ${manifest.width}x${manifest.height}, collisionRects=${collisionRects.length}`);
+    }
+  }
+
+  private tryStartDialogue(): void {
+    if (this.transitioning) return;
+    const center = this.player.body.center;
+    const npc = this.npcs.find((candidate) =>
+      canInteract(
+        center,
+        this.player.facing,
+        { x: candidate.body.x, y: candidate.body.y, width: candidate.body.width, height: candidate.body.height },
+        INTERACTION_REACH,
+        INTERACTION_SPAN,
+      )
+    );
+    if (!npc) return;
+    const dialogue = getDialogue(npc.definition.dialogueId);
+    if (!dialogue) return;
+    this.player.body.setVelocity(0, 0);
+    npc.stop();
+    this.afterDialogueEvent = dialogue.afterDialogue;
+    this.dialogueBox.open(dialogue.pages);
+  }
+
+  /** 会話を最後まで読み終えた時点で、世界地図の解放など一度きりの進行フラグを保存する(No.02ぶきやと同じ)。 */
+  private handleAfterDialogue(): void {
+    const event = this.afterDialogueEvent;
+    this.afterDialogueEvent = undefined;
+    if (isStoryFlagsDialogueEvent(event)) {
+      for (const flag of event.flags) this.gameState.setFlag(flag);
     }
   }
 
@@ -216,6 +298,18 @@ export class BieVillageScene extends Phaser.Scene {
   private setNotice(message: string): void {
     this.notice?.setText(message);
   }
+}
+
+function scaleNpcDefinition(definition: NpcDefinition, worldScale: number): NpcDefinition {
+  return {
+    ...definition,
+    position: { x: definition.position.x * worldScale, y: definition.position.y * worldScale },
+    movement: definition.movement && {
+      ...definition.movement,
+      radius: definition.movement.radius * worldScale,
+      speed: definition.movement.speed * worldScale,
+    },
+  };
 }
 
 function addStaticBody(scene: Phaser.Scene, object: Phaser.GameObjects.Rectangle): void {

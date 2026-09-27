@@ -6,6 +6,10 @@ import { fileURLToPath } from "node:url";
 import { inflateSync } from "node:zlib";
 import { PLAYER } from "../src/config/player.ts";
 import { MAPS } from "../src/config/maps.ts";
+import { INTERACTION_REACH } from "../src/config/interaction.ts";
+import { VILLAGER_SPRITES } from "../src/config/villagerSprites.ts";
+import { bodyOffset } from "../src/config/characterWalkSprite.ts";
+import { getDialogue } from "../src/data/dialogues.ts";
 import { buildCollisionRects } from "../src/systems/ImageMapCollisionData.ts";
 import { readImageMapEvents, readImageMapManifest, readImageMapObjects } from "../src/systems/ImageMapData.ts";
 
@@ -95,6 +99,61 @@ test("the fromWorldMap spawn's full Player body clears the north-gate event zone
 
 // Minimal PNG reader (8-bit RGBA/RGB, non-interlaced), mirrors tests/startingForest.test.mjs so this
 // file stays Node/Phaser-independent instead of depending on the browser Canvas the runtime uses.
+test("bie-village has six data-driven villagers: four fixed at doors and two local walkers", () => {
+  const npcs = MAPS.map_03_bie_village.npcs;
+  assert.equal(npcs.length, 6, "docs/NPC/02_bie_no_mura.md: 目安6人");
+  assert.equal(npcs.filter((npc) => !npc.movement).length, 4);
+  assert.equal(npcs.filter((npc) => npc.movement?.kind === "wander").length, 2);
+  for (const npc of npcs) {
+    assert.equal(npc.mapId, "map_03_bie_village");
+    assert.ok(npc.spriteId && VILLAGER_SPRITES[npc.spriteId], `${npc.id} uses a user-supplied villager sheet`);
+    const dialogue = getDialogue(npc.dialogueId);
+    assert.ok(dialogue && dialogue.pages.length > 0, `${npc.id} has dialogue`);
+    for (const page of dialogue.pages) assert.ok(page.split("\n").length <= 3, `${npc.id} page fits the dialogue box`);
+  }
+});
+
+test("bie-village fixed villagers can be talked to from the walkable path right below them", () => {
+  const manifest = readImageMapManifest(JSON.parse(readFileSync(path.join(MAP_DIR, "map.json"), "utf-8")));
+  const scale = manifest.worldScale;
+  const collisionRects = buildCollisionRects(readPngAsMask(path.join(MAP_DIR, "collision.png")), manifest.collisionCellSize)
+    .map((rect) => ({ x: rect.x * scale, y: rect.y * scale, width: rect.width * scale, height: rect.height * scale }));
+  const overlaps = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+
+  for (const npc of MAPS.map_03_bie_village.npcs.filter((candidate) => !candidate.movement)) {
+    assert.equal(npc.facing, "down", `${npc.id} faces the path`);
+    // Runtime: position is scaled by worldScale; the sprite and its feet body are not.
+    const sprite = VILLAGER_SPRITES[npc.spriteId];
+    const offset = bodyOffset(sprite, PLAYER.width, PLAYER.height);
+    const npcBottom = npc.position.y * scale - sprite.frameHeight / 2 + offset.y + PLAYER.height;
+    const player = { x: npc.position.x * scale - PLAYER.width / 2, width: PLAYER.width, height: PLAYER.height };
+    let top = npcBottom;
+    while (top < npcBottom + 60 && collisionRects.some((rect) => overlaps({ ...player, y: top }, rect))) top += 1;
+    assert.equal(collisionRects.some((rect) => overlaps({ ...player, y: top }, rect)), false, `${npc.id} has walkable ground below`);
+    // The spot must be reachable from the road, not an isolated pocket: the player can stand a body-height lower too.
+    assert.equal(collisionRects.some((rect) => overlaps({ ...player, y: top + PLAYER.height }, rect)), false, `${npc.id} is reachable from the road`);
+    assert.ok(top + PLAYER.height / 2 - INTERACTION_REACH <= npcBottom, `${npc.id} is within talking reach (gap ${(top - npcBottom).toFixed(1)}px)`);
+  }
+});
+
+test("bie-village walkers only wander over walkable ground", () => {
+  const manifest = readImageMapManifest(JSON.parse(readFileSync(path.join(MAP_DIR, "map.json"), "utf-8")));
+  const collisionRects = buildCollisionRects(readPngAsMask(path.join(MAP_DIR, "collision.png")), manifest.collisionCellSize);
+  const overlaps = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+  for (const npc of MAPS.map_03_bie_village.npcs.filter((candidate) => candidate.movement)) {
+    const sprite = VILLAGER_SPRITES[npc.spriteId];
+    const offset = bodyOffset(sprite, PLAYER.width, PLAYER.height);
+    for (let step = 0; step <= 16; step += 1) {
+      const angle = Math.PI * 2 * step / 16;
+      const radius = step === 16 ? 0 : npc.movement.radius;
+      const x = npc.position.x + Math.cos(angle) * radius;
+      const y = npc.position.y + Math.sin(angle) * radius;
+      const body = { x: x - sprite.frameWidth / 2 + offset.x, y: y - sprite.frameHeight / 2 + offset.y, width: PLAYER.width, height: PLAYER.height };
+      assert.equal(collisionRects.some((rect) => overlaps(body, rect)), false, `${npc.id} can select a collision area at ${x.toFixed(1)},${y.toFixed(1)}`);
+    }
+  }
+});
+
 function readPngAsMask(filePath) {
   const buffer = readFileSync(filePath);
   let offset = 8;

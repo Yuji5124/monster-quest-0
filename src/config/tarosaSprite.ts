@@ -12,6 +12,7 @@ export const TAROSA_SPRITE: WalkSpriteGeometry = {
   path: new URL("../../assets/characters/playable/tarosa_walk.png", import.meta.url).toString(),
   frameWidth: 44,
   frameHeight: 70,
-  walkFrameRate: 7,
+  // 主人公と同じ3フレーム往復を約0.33秒で1周期にし、隊列追従と弓イベントの走りを滑らかにする。
+  walkFrameRate: 12,
   baselineY: 67,
 };

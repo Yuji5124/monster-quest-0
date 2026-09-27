@@ -51,23 +51,36 @@ async function npcBattle(spawnId, monsterId) {
   await confirm();
   const battle = await scene('BattleScene');
   assert(battle.battle.getSnapshot().enemy.id === monsterId, 'NPC selected wrong enemy');
-  assert(battle.portrait.texture.key === 'battle.monster.' + monsterId, 'stale portrait');
+  const expectedTexture = monsterId === 'demas' ? 'battle.monster.demas.animated' : 'battle.monster.' + monsterId;
+  assert(battle.portrait.texture.key === expectedTexture, 'stale portrait or missing Demas animation sheet');
+  if (monsterId === 'demas') {
+    assert(battle.demasController, 'Demas animated presentation controller missing');
+    assert(JSON.stringify(battle.battle.getSnapshot().party.map(member => member.id)) === JSON.stringify(['hero', 'tarosa', 'mirei']), 'Demas must use the three-person party');
+  }
   assert(battle.battle.getSnapshot().state === 'COMMAND', 'dialogue input leaked into battle');
   return battle;
 }
 async function winDemas(battle) {
-  for (let turn = 0; turn < 6; turn++) {
-    if (turn % 3 === 2) {
-      await key('ArrowDown');
-      await confirm(2); // open magic, then cast Mirror
-      await confirm(2); // enemy Daidain, then acknowledge
+  // A round is Hero -> Tarosa -> Mirei -> enemy. Only Mirei prepares Mirror
+  // before the third enemy action (Daidain); the other actions stay on fight.
+  let command = 'fight';
+  for (let round = 0; round < 5 && battle.battle.getSnapshot().state !== 'VICTORY'; round++) {
+    if (command !== 'fight') { await key('ArrowUp'); command = 'fight'; }
+    await confirm(2); // Hero: fight -> next party command
+    await confirm(2); // Tarosa: fight -> next party command
+    const mirrorRound = round % 3 === 2;
+    if (mirrorRound) {
+      await key('ArrowDown'); command = 'magic';
+      await confirm(2); // Mirei: open magic -> cast Mirror
     } else {
-      if (turn === 3) await key('ArrowUp');
-      await confirm(3);
+      await confirm(); // Mirei: fight
     }
+    await confirm(); // resolve the one enemy action
+    if (battle.presentationLocked) await until(() => !battle.presentationLocked, 'Daidain presentation completed');
+    if (battle.battle.getSnapshot().state !== 'VICTORY') await confirm(); // enemy message -> next Hero command
   }
   assert(battle.battle.getSnapshot().state === 'VICTORY', 'Demas win failed');
-  assert(battle.battle.getSnapshot().player.hp === 132, 'reflection did not protect HP');
+  assert(battle.battle.getSnapshot().party[2].status.mirror === 0, 'Mirei Mirror was not consumed by Daidain');
 }
 async function returned(spawnId) {
   const town = await scene('StartingTownScene');

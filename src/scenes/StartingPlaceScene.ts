@@ -8,6 +8,7 @@ import type { ImageMapCollisionRuntime } from "../systems/ImageMapCollision.ts";
 import { readImageMapEvents, readImageMapManifest, readImageMapObjects, scaleRect } from "../systems/ImageMapData.ts";
 import type { ImageMapEvent } from "../systems/ImageMapData.ts";
 import { configureMapCamera } from "../systems/MapCamera.ts";
+import { startFieldAmbience } from "../systems/FieldAmbience.ts";
 import { beginMapTransition } from "../systems/MapTransition.ts";
 import { PROTAGONIST_SPRITE } from "../config/protagonistSprite.ts";
 import { TAROSA_SPRITE } from "../config/tarosaSprite.ts";
@@ -33,7 +34,7 @@ const OBJECTS_PATH = new URL("../../assets/maps/starting_place/objects.json", im
 
 const isDevMode = typeof import.meta.env !== "undefined" && import.meta.env.DEV;
 
-// assets/maps/starting_place/background.png上の焚き火の中心。主人公のopening spawnと同じ
+// assets/maps/starting_place/background.png上の焚き火の中心。
 // ピクセル座標系で、導入中は主人公が動かないため画面上の光源位置は固定できる。
 const CAMPFIRE_WORLD_POSITION = { x: 725, y: 515 } as const;
 
@@ -143,6 +144,8 @@ export class StartingPlaceScene extends Phaser.Scene {
     }
 
     configureMapCamera(this, this.player.visual, { x: 0, y: 0, width: manifest.width * worldScale, height: manifest.height * worldScale });
+    // 雲の影・漂う粒などの環境エフェクト(config/fieldAmbience.ts)。見た目だけで、背景・判定・進行には触れない。
+    startFieldAmbience(this, MAP_ID);
     if (this.openingInputLocked) this.frameOpeningCamera();
     this.cameras.main.setBackgroundColor("#101018");
     if (!this.openingInputLocked) this.cameras.main.fadeIn(MAP_TRANSITION_FADE_MS, 0, 0, 0);
@@ -214,7 +217,7 @@ export class StartingPlaceScene extends Phaser.Scene {
   /** タイトル後だけ再生する、No.01の焚き火から自由歩行へ入る導入。 */
   private startOpeningCampfireSequence(): void {
     this.openingAmbienceActive = true;
-    // 初めは横を向かせ、ナレーション後に焚き火（北）へ小さく視線を戻す。
+    // 焚き火の右側の開始位置から、最初から火の方へ視線を向ける。
     this.player.setFacing("left");
 
     const nightVeil = this.add
@@ -293,7 +296,7 @@ export class StartingPlaceScene extends Phaser.Scene {
     lineIndex: number,
   ): void {
     if (lineIndex >= OPENING_CAMPFIRE_NARRATION.length) {
-      this.time.delayedCall(OPENING_CAMPFIRE.fireOnlyMs, () => this.showProtagonistOpeningLine(narrationText, narrationPanel));
+      this.time.delayedCall(OPENING_CAMPFIRE.fireOnlyMs, () => this.releaseOpeningControl());
       return;
     }
     const isLastLine = lineIndex === OPENING_CAMPFIRE_NARRATION.length - 1;
@@ -322,37 +325,6 @@ export class StartingPlaceScene extends Phaser.Scene {
           });
         });
       },
-    });
-  }
-
-  private showProtagonistOpeningLine(narrationText: Phaser.GameObjects.Text, narrationPanel: Phaser.GameObjects.Rectangle): void {
-    // 焚き火が主人公の北にあるため、上向きの直立フレームで小さな視線の変化を示す。
-    this.player.setFacing("up");
-    this.time.delayedCall(OPENING_CAMPFIRE.lookPauseMs, () => {
-      narrationText.setText("…………。");
-      this.tweens.add({
-        targets: narrationPanel,
-        alpha: 0.78,
-        duration: OPENING_CAMPFIRE.protagonistLineFadeInMs,
-        ease: "Sine.easeOut",
-      });
-      this.tweens.add({
-        targets: narrationText,
-        alpha: 1,
-        duration: OPENING_CAMPFIRE.protagonistLineFadeInMs,
-        ease: "Sine.easeOut",
-        onComplete: () => {
-          this.time.delayedCall(OPENING_CAMPFIRE.protagonistLineMs, () => {
-            this.tweens.add({
-              targets: [narrationText, narrationPanel],
-              alpha: 0,
-              duration: OPENING_CAMPFIRE.protagonistLineFadeMs,
-              ease: "Sine.easeIn",
-              onComplete: () => this.releaseOpeningControl(),
-            });
-          });
-        },
-      });
     });
   }
 

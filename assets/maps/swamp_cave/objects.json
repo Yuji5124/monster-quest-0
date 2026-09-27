@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "objects": [
+    {
+      "id": "object_swamp_cave_inner_chest",
+      "kind": "chest",
+      "position": { "x": 840, "y": 302 },
+      "reward": { "itemId": "kaifukuyaku", "count": 1 },
+      "openedFlag": "chest.swamp_cave_inner_kaifukuyaku_opened"
+    }
+  ]
+}

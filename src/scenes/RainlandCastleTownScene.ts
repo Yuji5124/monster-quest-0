@@ -11,6 +11,9 @@ const CASTLE_TOWN: RainlandMapPackage = {
   collisionPath: new URL("../../assets/maps/rainland_castle_town/collision.png", import.meta.url).toString(),
   eventsPath: new URL("../../assets/maps/rainland_castle_town/events.json", import.meta.url).toString(),
   objectsPath: new URL("../../assets/maps/rainland_castle_town/objects.json", import.meta.url).toString(),
+  // 2026-09-25: 北の城門からレインランドじょうへ入ったときは3D(ブロック城)を初期表示にする。V/「2D」でいつでも2Dへ切り替えられる。
+  // 王の間から城へ戻るとき・MAPSのsceneKey(2D)は変えない。
+  transferSceneOverrides: { map_05_rainland_castle: "RainlandCastle3DScene" },
 };
 
 /**

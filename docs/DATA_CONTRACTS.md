@@ -129,6 +129,7 @@ Claude Code / Codex / Phaser Game Agentが同じJSON構造を前提に実装で�
 - `implementationStatus: "implemented"` の `targetMapId` / `targetSpawnId` は、実在するローカルマップの安全なspawnへ必ず解決する。
 - `implementationStatus: "planned"` は地理を先行表示する未実装地点である。`targetMapId` / `targetSpawnId` は必ず`null`とし、Scene遷移の選択対象にしない。UI上の専用色は青とする。
 - `visible: false` は地点をUIへ出さない。`visible: true` かつ未解放なら、UIは名前を`？？？`として非選択表示にできる。
+- `routeKind` は省略時`main`。`special`は正式No.01〜No.20の並びを増やさない任意地点に使う。`revealFlag`が未成立ならHIDDEN（地点なし）、成立後`discoveryFlag`が未成立ならUNKNOWN（`？？？`）、成立後はDISCOVERED（正式名）とする。既存地点は両フラグ省略でDISCOVERED扱いを維持する。
 - `unlockFlag: null` は常に選択可能、文字列は `SAVE_FLAG_SPEC.md` の小文字・ドット区切りフラグ名とする。最終的な選択可否はSceneに直書きせず、セーブフラグから導出する。
 - `WorldMapScene`は共有`GameStateRepository.flags`を正式な進行状態として読み、`developmentUnlockedFlags`は既存開発用の初期解放だけを補助する。`WorldMapTestScene`は`?worldMapFlags=`が指定された場合にその明示値だけを使い、未指定時は従来の開発用初期解放を使う。
 - `positionStatus: "FINAL_POSITION"` は、CURRENTの背景画像を実見して決めた正式な配置にだけ使用する。
@@ -210,6 +211,7 @@ Claude Code / Codex / Phaser Game Agentが同じJSON構造を前提に実装で�
 - 現行の暫定GameStateでは、`party.joinedMemberIds` に `hero` → `tarosa` → `mirei` の加入済み接頭辞、`party.characterProgress` に3人全員の`level`/`exp`、`inventory` に正の所持数、`flags`に妥当な小文字ドット区切りキーのtrue値だけを保存する。
 - 旧セーブで不足する`characterProgress`/`inventory`は、Lv1・EXP0／空の所持品へ安全に補完する。未加入の後続メンバーだけを含める不正な加入順は正規化して除外する。
 - 正式SaveSystemはこの順序と成長・所持品を引き継ぎ、HP・装備・控え編成を別途拡張する。
+- `tower: { "towerLevel": 1 }` は不思議なとうの最小保存領域。旧v1セーブに`tower`が無い場合もlevel 1へ補完する。`towerResidents` / `towerFacilities` / `towerMaterials` / `towerAIState`は設計確定まで追加しない（`TOWER_EXPANSION_BOUNDARY.md`参照）。
 
 ## 12. 禁止
 - 同じ意味のIDを複数方式で作る

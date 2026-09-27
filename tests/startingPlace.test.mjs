@@ -92,7 +92,8 @@ test("starting-place collision keeps the trails, spawns and exit zone walkable w
   const opening = MAPS.map_01_starting_place.spawns.opening;
   const fromWorldMap = MAPS.map_01_starting_place.spawns.fromWorldMap;
   const fromField = MAPS.map_01_starting_place.spawns.fromField;
-  assert.equal(isBlocked(opening.x, opening.y), false, "the opening spawn south of the campfire must be walkable");
+  assert.deepEqual(opening, { x: 810, y: 500, facing: "left" }, "the opening spawn must sit right of the campfire and face it");
+  assert.equal(isBlocked(opening.x, opening.y), false, "the opening spawn right of the campfire must be walkable");
   assert.equal(isBlocked(fromWorldMap.x, fromWorldMap.y), false, "the fromWorldMap spawn at the top of the stone steps must be walkable");
   assert.equal(isBlocked(fromField.x, fromField.y), false, "the legacy fromField spawn must be walkable");
   assert.equal(isBlocked(gate.x + gate.width / 2, gate.y + gate.height / 2), false, "the north exit zone must sit on the walkable trail");

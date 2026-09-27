@@ -1,5 +1,8 @@
 import { DEV_MAJIN_CAVE_BALANCE, getMajinCaveEnemyDamage, getMajinCavePlayerDamage } from "../config/majinCave.ts";
 import type { MajinCavePoint } from "../config/majinCave.ts";
+import type { BattleAction } from "../data/battleActions.ts";
+import { MAGIC_HEAT } from "../data/battleActions.ts";
+import type { ItemId } from "../data/items.ts";
 import { isMajinCaveWalkable, shortestMajinCavePath } from "./MajinCaveGenerator.ts";
 import type { MajinCaveEnemyState } from "./MajinCaveRunState.ts";
 import { MajinCaveRunState } from "./MajinCaveRunState.ts";
@@ -11,9 +14,14 @@ export type MajinCavePlayerAction =
   | { readonly valid: true; readonly kind: "attack"; readonly enemy: MajinCaveEnemyState; readonly damage: number; readonly defeated: boolean }
   | { readonly valid: true; readonly kind: "wait" }
   | { readonly valid: true; readonly kind: "heat"; readonly enemy: MajinCaveEnemyState; readonly damage: number; readonly defeated: boolean }
+  | { readonly valid: true; readonly kind: "magic"; readonly magic: Extract<BattleAction, { readonly kind: "magic_damage" }>; readonly enemy: MajinCaveEnemyState; readonly damage: number; readonly defeated: boolean }
+  | { readonly valid: true; readonly kind: "magic_heal"; readonly magic: Extract<BattleAction, { readonly kind: "heal" }>; readonly recovered: number }
+  | { readonly valid: true; readonly kind: "item_heal"; readonly itemId: ItemId; readonly recovered: number }
   | { readonly valid: false; readonly kind: "no_mp" }
   | { readonly valid: false; readonly kind: "not_learned" }
-  | { readonly valid: false; readonly kind: "no_target" };
+  | { readonly valid: false; readonly kind: "no_target" }
+  | { readonly valid: false; readonly kind: "no_effect" }
+  | { readonly valid: false; readonly kind: "unsupported_magic" };
 
 export type MajinCaveEnemyEvent =
   | { readonly kind: "attack"; readonly enemy: MajinCaveEnemyState; readonly damage: number }
@@ -61,6 +69,37 @@ export class MajinCaveTurnSystem {
     run.completePlayerAction("attack");
     const defeated = run.damageEnemy(enemy, DEV_MAJIN_CAVE_BALANCE.heatDamage, { isHeat: true });
     return { valid: true, kind: "heat", enemy, damage: DEV_MAJIN_CAVE_BALANCE.heatDamage, defeated };
+  }
+
+  /** Resolves a learned No.08 spell without leaking cave presentation into the normal BattleScene. */
+  castMagic(run: MajinCaveRunState, magic: BattleAction, direction?: MajinCaveDirection): MajinCavePlayerAction {
+    if (magic.kind === "magic_damage") {
+      if (!direction) return { valid: false, kind: "no_target" };
+      if (magic.id === MAGIC_HEAT.id) return this.castHeat(run, direction);
+      const delta = DELTAS[direction];
+      const enemy = run.enemyAt({ x: run.playerPosition.x + delta.x, y: run.playerPosition.y + delta.y });
+      if (!enemy) return { valid: false, kind: "no_target" };
+      if (!run.spendPlayerMp(magic.mpCost)) return { valid: false, kind: "no_mp" };
+      run.completePlayerAction("magic");
+      const defeated = run.damageEnemy(enemy, magic.power);
+      return { valid: true, kind: "magic", magic, enemy, damage: magic.power, defeated };
+    }
+    if (magic.kind === "heal") {
+      if (run.playerHp >= run.hero.maxHp) return { valid: false, kind: "no_effect" };
+      if (!run.spendPlayerMp(magic.mpCost)) return { valid: false, kind: "no_mp" };
+      const recovered = run.recoverPlayer(magic.power);
+      run.completePlayerAction("magic");
+      return { valid: true, kind: "magic_heal", magic, recovered };
+    }
+    return { valid: false, kind: "unsupported_magic" };
+  }
+
+  /** The inventory boundary stays in the Scene; this method only applies the cave-side healing turn. */
+  useHealingItem(run: MajinCaveRunState, itemId: ItemId, power: number): MajinCavePlayerAction {
+    if (!Number.isFinite(power) || power <= 0 || run.playerHp >= run.hero.maxHp) return { valid: false, kind: "no_effect" };
+    const recovered = run.recoverPlayer(power);
+    run.completePlayerAction("item");
+    return { valid: true, kind: "item_heal", itemId, recovered };
   }
 
   resolveEnemyPhase(run: MajinCaveRunState): readonly MajinCaveEnemyEvent[] {

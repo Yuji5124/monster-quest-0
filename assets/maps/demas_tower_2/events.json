@@ -1,0 +1,19 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_demas_tower_2_stairs_to_1f",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 672, "y": 1048, "width": 104, "height": 38 },
+      "commands": [{ "type": "transfer", "targetMapId": "map_demas_tower_1", "targetSpawnId": "fromTower2F" }]
+    },
+    {
+      "id": "event_demas_tower_2_stairs_to_3f",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 672, "y": 104, "width": 104, "height": 44 },
+      "commands": [{ "type": "transfer", "targetMapId": "map_demas_tower_3", "targetSpawnId": "fromTower2F" }]
+    }
+  ]
+}

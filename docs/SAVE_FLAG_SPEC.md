@@ -1,6 +1,6 @@
 # モンスタークエスト0 セーブ・進行フラグ仕様
 
-最終更新: 2026-09-24 JST
+最終更新: 2026-09-27 JST
 
 このファイルはセーブデータとストーリー進行フラグの責務を整理する正本。JSONの基本構造は `DATA_CONTRACTS.md` に従う。
 
@@ -78,6 +78,7 @@
 - `party.mirei_joined`
 - `party.tarosa_joined`
 - `boss.demas_defeated`
+- `story.demas_tower_cleared`
 - `glitch.phase_1_started`
 
 ## 5. 主要進行フラグ
@@ -89,7 +90,8 @@
 - タロサ加入
 - 勇者装備取得状況
 - デーマスの塔解放
-- デーマス撃破
+- デーマス撃破（`boss.demas_defeated`）
+- デーマスの塔撃破後状態（`story.demas_tower_cleared`。No.16の3Fボス勝利時に同時保存）
 - 終盤突入
 - バトラス撃破
 - オロチまおう関連進行
@@ -137,6 +139,59 @@ No.09いわやまのどうくつ1Fの崩落シューティング（2026-09-24）
 ```text
 event.iwayama_cave_shooting_cleared
 ```
+
+No.18いしのまち（2026-09-27）は、すべて`event.*`の一度きり／進行フラグで、本編の`story.*`（解放）には触れない。`event.stone_town_entered`だけがコードから直接読み書きされる（`src/config/storyFlags.ts`の`STORY_FLAGS.stoneTownEntered`）。他は`assets/maps/stone_town/objects.json`が参照する。
+
+```text
+event.stone_town_entered            # 初回入場の語りを見た（会話を閉じたときに保存）
+event.stone_town_gate_examined      # 入口の門番の石像を調べた
+event.stone_town_echo_baker         # パンやの石像の「のこった声」を聞いた
+event.stone_town_echo_well          # 井戸の女の石像の声を聞いた
+event.stone_town_echo_bridge        # 橋を渡る旅人の石像の声を聞いた
+event.stone_town_plaza_awakened     # 3つの声を集めて広場の石像が目覚めた（ひび・星の光・一部の石像の文の変化）
+event.stone_town_path_opened        # 北の階段をふさぐ石の壁が崩れた（崩れ終わった時点で保存）
+event.stone_town_elder_heard        # 上段の老人の石像の声を聞いた
+```
+
+`plaza_awakened`と`path_opened`は演出の途中で終了しても矛盾しない（どちらも立っていなければ次の調べで演出をやり直す）。石像を調べるだけの反応（猫・鳩・親子など）はフラグを持たない。
+
+不思議なとう（任意の特別地点、2026-09-26）は次の状態を使用する。2026-09-27にユーザー指示で、`story.mysterious_tower_revealed`を立てる本編側の解放イベントを決めた: No.02はじまりのまちのおじいさん（`npc_start_town_tower_elder`）と話し、暗転でおじいさんが去る一度きりのイベント。同イベントは`event.starting_town_tower_elder_talked`（一度きりの消費済みフラグ。立っていればおじいさんを生成しない）と`story.mysterious_tower_revealed`を暗転中に同時に保存する。
+
+```text
+story.mysterious_tower_revealed
+story.mysterious_tower_discovered
+event.mysterious_tower_first_entry_seen
+```
+
+同フラグは`world_map/map.json`の`developmentUnlockedFlags`には含めない（この会話だけが解放源）。
+
+No.03ビーエのもり（2026-09-27）は`unlockFlag`に次のフラグを使う。No.02のぶきやの店主の「はなす」を初めて最後まで読み終えた時に保存する（最後のページ「ビーエのもりへ　いけるように　なった！」を閉じた後）。同義キーを別名で増やさない。
+
+```text
+story.bie_forest_unlocked
+```
+
+No.05レインランドのもり（2026-09-27）は`unlockFlag`に次のフラグを使う。No.04ビーエのむらの干し物の人（`npc_bie_village_herb_drier`）の「はなす」を初めて最後まで読み終えた時に保存する（最後のページ「レインランドのもりへ　いけるように　なった！」を閉じた後）。レインランドじょうかまちの`story.rainland_castle_town_unlocked`とは別のキーで、互いを解放しない。同義キーを別名で増やさない。
+
+```text
+story.rainland_forest_unlocked
+```
+
+レインランドじょうかまち（No.06）の`story.rainland_castle_town_unlocked`は、No.03えりまきとかげ撃破（2026-09-24）に加え、2026-09-27からNo.05レインランドのもり（その2）の奥の木こり（`npc_rainland_forest_woodcutter`）の「はなす」を初めて最後まで読み終えた時（最後のページ「レインランドじょうへ　いけるように　なった！」を閉じた後）にも保存する。同じキーを2か所が立てるだけで、別名キーは作らない。
+
+```text
+story.rainland_castle_town_unlocked
+```
+
+No.05レインランドのもり（その2）の遺跡の宝箱`chest_rainland_forest_2_ruin`は、開けた時に次のフラグを保存する（`chest.*`、再取得防止）。フラグ名は中身（現在は`かいふくやく`のTEMP_TEST_VALUE）に依存しない場所ベースの名前にしてあり、中身を変えてもセーブ互換を保つ。
+
+```text
+chest.rainland_forest_2_ruin_opened
+```
+
+コードから読み書きする上記5キー（`story.bie_forest_unlocked` / `story.rainland_forest_unlocked` / `story.rainland_castle_town_unlocked` / `story.mysterious_tower_revealed` / `event.starting_town_tower_elder_talked`）の定数は`src/config/storyFlags.ts`が正本。
+
+`story.mysterious_tower_revealed`なしはWorldMapでHIDDEN、同フラグだけはUNKNOWN（`？？？`だが移動可能）、初回外観マップの短い演出完了時に`story.mysterious_tower_discovered`と`event.mysterious_tower_first_entry_seen`を保存してDISCOVERED（不思議なとう）へ移る。塔の成長開始値はフラグではなく`GameState.tower.towerLevel = 1`として保存する。
 
 ボス戦からは勝利時だけ前者と後者の城下町解放フラグを立てる。宝箱は取得時、タロサは会話を読み終え、北側ワープ領域から去った一度だけそれぞれ保存する。タロサの加入はこのイベントでは扱わない。
 

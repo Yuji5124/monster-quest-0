@@ -5,6 +5,12 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { PLAYER } from "../src/config/player.ts";
 import { MAPS } from "../src/config/maps.ts";
+import { inflateSync } from "node:zlib";
+import { INTERACTION_REACH } from "../src/config/interaction.ts";
+import { VILLAGER_SPRITES } from "../src/config/villagerSprites.ts";
+import { bodyOffset } from "../src/config/characterWalkSprite.ts";
+import { getDialogue } from "../src/data/dialogues.ts";
+import { buildCollisionRects } from "../src/systems/ImageMapCollisionData.ts";
 import { readImageMapEvents, readImageMapManifest, readImageMapObjects } from "../src/systems/ImageMapData.ts";
 import { resolveWorldMapEntryDestination } from "../src/systems/WorldMapData.ts";
 
@@ -53,3 +59,129 @@ test("the fromWorldMap spawn's Player body clears the north exit zone (no instan
     spawn.y + PLAYER.height / 2 > gate.y && spawn.y - PLAYER.height / 2 < gate.y + gate.height;
   assert.equal(overlaps, false);
 });
+
+test("zabon-village has six data-driven villagers: four fixed at doors and two local walkers", () => {
+  const npcs = MAPS.map_zabon_village.npcs;
+  assert.equal(npcs.length, 6, "NPC_SPEC.md: 目安6人");
+  assert.equal(npcs.filter((npc) => !npc.movement).length, 4);
+  assert.equal(npcs.filter((npc) => npc.movement?.kind === "wander").length, 2);
+  let tarosaMentions = 0;
+  for (const npc of npcs) {
+    assert.equal(npc.mapId, "map_zabon_village");
+    assert.ok(npc.spriteId && VILLAGER_SPRITES[npc.spriteId], `${npc.id} uses a user-supplied villager sheet`);
+    const dialogue = getDialogue(npc.dialogueId);
+    assert.ok(dialogue && dialogue.pages.length > 0, `${npc.id} has dialogue`);
+    for (const page of dialogue.pages) assert.ok(page.split("\n").length <= 3, `${npc.id} page fits the dialogue box`);
+    if (dialogue.pages.some((page) => page.includes("タロサ"))) tarosaMentions += 1;
+  }
+  assert.ok(tarosaMentions <= 1, "not every villager talks about タロサ");
+});
+
+test("zabon-village fixed villagers can be talked to from the walkable path right below them", () => {
+  const manifest = readImageMapManifest(readJson(path.join(MAP_DIR, "map.json")));
+  const scale = manifest.worldScale;
+  const collisionRects = buildCollisionRects(readPngAsMask(path.join(MAP_DIR, "collision.png")), manifest.collisionCellSize)
+    .map((rect) => ({ x: rect.x * scale, y: rect.y * scale, width: rect.width * scale, height: rect.height * scale }));
+  const overlaps = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+  for (const npc of MAPS.map_zabon_village.npcs.filter((candidate) => !candidate.movement)) {
+    assert.equal(npc.facing, "down", `${npc.id} faces the path`);
+    const sprite = VILLAGER_SPRITES[npc.spriteId];
+    const offset = bodyOffset(sprite, PLAYER.width, PLAYER.height);
+    const npcBottom = npc.position.y * scale - sprite.frameHeight / 2 + offset.y + PLAYER.height;
+    const player = { x: npc.position.x * scale - PLAYER.width / 2, width: PLAYER.width, height: PLAYER.height };
+    let top = npcBottom;
+    while (top < npcBottom + 60 && collisionRects.some((rect) => overlaps({ ...player, y: top }, rect))) top += 1;
+    assert.equal(collisionRects.some((rect) => overlaps({ ...player, y: top }, rect)), false, `${npc.id} has walkable ground below`);
+    assert.equal(collisionRects.some((rect) => overlaps({ ...player, y: top + PLAYER.height }, rect)), false, `${npc.id} is reachable from the road`);
+    assert.ok(top + PLAYER.height / 2 - INTERACTION_REACH <= npcBottom, `${npc.id} is within talking reach (gap ${(top - npcBottom).toFixed(1)}px)`);
+  }
+});
+
+test("zabon-village walkers only wander over walkable ground", () => {
+  const manifest = readImageMapManifest(readJson(path.join(MAP_DIR, "map.json")));
+  const scale = manifest.worldScale;
+  const collisionRects = buildCollisionRects(readPngAsMask(path.join(MAP_DIR, "collision.png")), manifest.collisionCellSize)
+    .map((rect) => ({ x: rect.x * scale, y: rect.y * scale, width: rect.width * scale, height: rect.height * scale }));
+  const overlaps = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+  for (const npc of MAPS.map_zabon_village.npcs.filter((candidate) => candidate.movement)) {
+    const sprite = VILLAGER_SPRITES[npc.spriteId];
+    const offset = bodyOffset(sprite, PLAYER.width, PLAYER.height);
+    for (let step = 0; step <= 16; step += 1) {
+      const angle = Math.PI * 2 * step / 16;
+      const radius = step === 16 ? 0 : npc.movement.radius;
+      // Runtime units: position and radius are scaled by worldScale; the sprite and its feet body are not.
+      const x = (npc.position.x + Math.cos(angle) * radius) * scale;
+      const y = (npc.position.y + Math.sin(angle) * radius) * scale;
+      const body = { x: x - sprite.frameWidth / 2 + offset.x, y: y - sprite.frameHeight / 2 + offset.y, width: PLAYER.width, height: PLAYER.height };
+      assert.equal(collisionRects.some((rect) => overlaps(body, rect)), false, `${npc.id} can select a collision area at ${(x / scale).toFixed(1)},${(y / scale).toFixed(1)}`);
+    }
+  }
+});
+
+function readPngAsMask(filePath) {
+  const buffer = readFileSync(filePath);
+  let offset = 8;
+  let width = 0, height = 0, bitDepth = 0, colorType = 0;
+  const idatChunks = [];
+  while (offset < buffer.length) {
+    const length = buffer.readUInt32BE(offset);
+    const type = buffer.toString("ascii", offset + 4, offset + 8);
+    const dataStart = offset + 8;
+    if (type === "IHDR") {
+      width = buffer.readUInt32BE(dataStart);
+      height = buffer.readUInt32BE(dataStart + 4);
+      bitDepth = buffer.readUInt8(dataStart + 8);
+      colorType = buffer.readUInt8(dataStart + 9);
+    } else if (type === "IDAT") {
+      idatChunks.push(buffer.subarray(dataStart, dataStart + length));
+    }
+    offset = dataStart + length + 4;
+  }
+  assert.equal(bitDepth, 8, "collision.png must be 8-bit for this minimal decoder");
+  const channels = colorType === 6 ? 4 : colorType === 2 ? 3 : (() => { throw new Error(`unsupported PNG colorType ${colorType}`); })();
+  const raw = inflateSync(Buffer.concat(idatChunks));
+  const stride = width * channels;
+  const data = new Uint8ClampedArray(width * height * 4);
+  let prevRow = new Uint8Array(stride);
+  let rawOffset = 0;
+  for (let y = 0; y < height; y += 1) {
+    const filterType = raw[rawOffset];
+    rawOffset += 1;
+    const row = new Uint8Array(stride);
+    for (let x = 0; x < stride; x += 1) {
+      const rawByte = raw[rawOffset + x];
+      const a = x >= channels ? row[x - channels] : 0;
+      const b = prevRow[x];
+      const c = x >= channels ? prevRow[x - channels] : 0;
+      let value;
+      if (filterType === 0) value = rawByte;
+      else if (filterType === 1) value = rawByte + a;
+      else if (filterType === 2) value = rawByte + b;
+      else if (filterType === 3) value = rawByte + Math.floor((a + b) / 2);
+      else if (filterType === 4) value = rawByte + paeth(a, b, c);
+      else throw new Error(`unsupported PNG filter type ${filterType}`);
+      row[x] = value & 0xff;
+    }
+    rawOffset += stride;
+    for (let x = 0; x < width; x += 1) {
+      const pixelOffset = (y * width + x) * 4;
+      const rowOffset = x * channels;
+      data[pixelOffset] = row[rowOffset];
+      data[pixelOffset + 1] = row[rowOffset + 1];
+      data[pixelOffset + 2] = row[rowOffset + 2];
+      data[pixelOffset + 3] = channels === 4 ? row[rowOffset + 3] : 255;
+    }
+    prevRow = row;
+  }
+  return { width, height, data };
+}
+
+function paeth(a, b, c) {
+  const p = a + b - c;
+  const pa = Math.abs(p - a);
+  const pb = Math.abs(p - b);
+  const pc = Math.abs(p - c);
+  if (pa <= pb && pa <= pc) return a;
+  if (pb <= pc) return b;
+  return c;
+}

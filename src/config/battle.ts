@@ -29,7 +29,7 @@ export const DEV_BATTLE_EVENT_FADE_MS = 220;
  * Kept short enough that routine encounters do not stall exploration.
  */
 export const BATTLE_ENTRANCE_DURATION_MS = 1_300;
-export const DEV_BATTLE_MONSTER_IDS = ["001", "003", "006", "demas", "obake_tsumuri", "fancy_duck", "snow_bomb", "koakuma", "erimaki_hebi", "daija"] as const;
+export const DEV_BATTLE_MONSTER_IDS = ["001", "003", "006", "demas", "batorasu", "obake_tsumuri", "fancy_duck", "snow_bomb", "koakuma", "erimaki_hebi", "daija"] as const;
 export type DevBattleMonsterId = (typeof DEV_BATTLE_MONSTER_IDS)[number];
 
 export function readDevBattleMonsterId(search: string): DevBattleMonsterId {
@@ -57,3 +57,65 @@ export function getBattleStatusWindows(partySize: number) {
     ...bounds, x: bounds.x + index * (bounds.width + 10 * S),
   }));
 }
+
+/**
+ * 味方の通常攻撃(こうげき)で敵ポートレートに重ねる斬撃エフェクト。正式素材がないため
+ * Phaser Graphicsで手続き描画する(TEMP_VISUAL_VALUE: 色・角度・速度は人間の視覚調整対象)。
+ * 武器のhitCountぶん斬撃を重ね、2撃目以降は角度を反転して交差させる。
+ */
+export interface BattleSlashEffectStyle {
+  /** 斬撃の芯の色。 */
+  readonly coreColor: number;
+  /** 斬撃の外側の光の色。 */
+  readonly glowColor: number;
+  /** 水平からの傾き(度)。正で右下がり。 */
+  readonly angleDeg: number;
+}
+
+export const BATTLE_SLASH_EFFECT_TIMING = {
+  /** 斬撃が伸びきるまで。 */
+  drawMs: 90,
+  /** 伸びきってから消えるまで。 */
+  fadeMs: 200,
+  /** 多段攻撃の各撃の間隔。 */
+  hitIntervalMs: 120,
+} as const;
+
+const DEFAULT_SLASH_STYLE: BattleSlashEffectStyle = { coreColor: 0xffffff, glowColor: 0xbfd8ff, angleDeg: -35 };
+
+export const BATTLE_SLASH_EFFECT_STYLES: Readonly<Record<string, BattleSlashEffectStyle>> = {
+  hero: { coreColor: 0xffffff, glowColor: 0x9fd0ff, angleDeg: -35 },
+  tarosa: { coreColor: 0xfffbe0, glowColor: 0xffc857, angleDeg: 30 },
+  mirei: { coreColor: 0xffffff, glowColor: 0xff9fd8, angleDeg: -20 },
+};
+
+/** 各撃の斬撃の角度(度)を返す。2撃目以降は交互に反転させてX字に交差させる。 */
+export function getBattleSlashAngles(memberId: string, hitCount = 1): { style: BattleSlashEffectStyle; anglesDeg: number[] } {
+  const style = BATTLE_SLASH_EFFECT_STYLES[memberId] ?? DEFAULT_SLASH_STYLE;
+  const count = Math.max(1, Math.floor(hitCount));
+  const anglesDeg = Array.from({ length: count }, (_, index) => (index % 2 === 0 ? style.angleDeg : -style.angleDeg));
+  return { style, anglesDeg };
+}
+
+/**
+ * だいヒット(とくだいヒット含む)時の大げさな斬撃。通常の斬撃を大きく太くし、金色の光・
+ * 追加の交差斬撃・画面の揺れと閃光・「だいヒット！」の文字を重ねる(TEMP_VISUAL_VALUE)。
+ */
+export const BATTLE_BIG_HIT_EFFECT = {
+  /** 刃の長さ・太さの倍率。 */
+  lengthScale: 1.7,
+  thicknessScale: 2.2,
+  /** 刃の外側の光。キャラ色の外にさらに重ねる。 */
+  auraColor: 0xffd75e,
+  /** 各撃に追加する交差斬撃の数。 */
+  extraSlashes: 1,
+  sparkCount: 16,
+  /** 斬撃の表示時間の倍率(少し長く残して見せる)。 */
+  durationScale: 1.6,
+  shakeMs: 280,
+  shakeIntensity: 0.014,
+  flashMs: 160,
+  /** 斬撃が伸びきった瞬間に止める時間(ヒットストップ)。 */
+  hitStopMs: 70,
+  bannerMs: 900,
+} as const;

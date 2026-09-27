@@ -23,6 +23,7 @@
 - `MAP_FLOW_SPEC.md` — No.01〜20、No.01再訪、No.20再戦
 - `SPECIAL_GAMEPLAY_SPEC.md` — 特殊ダンジョン・No.09・No.20の縦シューティング・ボス攻略骨格
 - `MAP_SYSTEM.md` — 新規ローカルマップとワールドマップの制作・データ方針
+- `TOWER_EXPANSION_BOUNDARY.md` — 不思議なとうの任意地点・成長／NPC移住／AI連携の境界
 - `NPC_SPEC.md` — NPC会話方針
 - `GLITCH_SPEC.md` — 終盤異常 / 「もういちど」
 

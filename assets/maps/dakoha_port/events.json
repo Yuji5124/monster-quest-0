@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_dakoha_port_north_gate",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 592, "y": 48, "width": 40, "height": 20 },
+      "commands": [{ "type": "world-map", "worldMapEntryId": "from_dakoha_port" }]
+    }
+  ]
+}

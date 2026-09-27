@@ -1,4 +1,4 @@
-import type { AnomalyHotspot, MapAnomalyConfig } from "../config/bieVillageAnomaly.ts";
+import type { AnomalyHotspot, MapAnomalyConfig, VillagerGlitchConfig } from "../config/bieVillageAnomaly.ts";
 
 /**
  * 画像マップの小さな異変(チリチリ・横ずれ・マップチップ化け)の「どこに・どれだけ」を決める純粋関数。
@@ -89,4 +89,31 @@ export function planBlock(random: Random, config: MapAnomalyConfig, map: MapSize
     size,
     durationMs: randomInt(random, config.blockDurationMs),
   };
+}
+
+const WALK_DIRECTIONS = ["down", "left", "right", "up"] as const;
+
+export interface VillagerGlitchPlan {
+  /** バグらせる村人の番号。 */
+  readonly index: number;
+  /** 残像の横ずれ[背景px]。正なら右、負なら左。 */
+  readonly shift: number;
+  readonly durationMs: number;
+  readonly color: number;
+  /** 残像だけ別の向きの絵にする場合の向き。undefinedなら本体と同じ絵。 */
+  readonly wrongFacing?: (typeof WALK_DIRECTIONS)[number];
+}
+
+/** Phaserに依存しない抽選。村人がいなければ何もしない。 */
+export function planVillagerGlitch(random: Random, config: VillagerGlitchConfig, villagerCount: number): VillagerGlitchPlan | undefined {
+  if (villagerCount <= 0) return undefined;
+  const index = Math.min(villagerCount - 1, Math.floor(random() * villagerCount));
+  const magnitude = randomInt(random, config.shift);
+  const shift = random() < 0.5 ? -magnitude : magnitude;
+  const durationMs = randomInt(random, config.durationMs);
+  const color = config.ghostColors[Math.min(config.ghostColors.length - 1, Math.floor(random() * config.ghostColors.length))];
+  const wrongFacing = random() < config.wrongFacingChance
+    ? WALK_DIRECTIONS[Math.min(WALK_DIRECTIONS.length - 1, Math.floor(random() * WALK_DIRECTIONS.length))]
+    : undefined;
+  return wrongFacing ? { index, shift, durationMs, color, wrongFacing } : { index, shift, durationMs, color };
 }

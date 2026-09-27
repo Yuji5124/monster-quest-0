@@ -68,6 +68,8 @@ export class MajinCaveRunState {
   playerMp: number;
   turnCount = 0;
   enemyPhaseCount = 0;
+  /** One normal enemy per run grants the guaranteed cave-only emergency escape item. */
+  private escapeRopeDropClaimed = false;
   private readonly now: () => number;
   private readonly runStartedAtMs: number;
   private readonly floorVisits: MajinCaveFloorVisitMetrics[] = [];
@@ -146,6 +148,13 @@ export class MajinCaveRunState {
     return true;
   }
 
+  /** Returns true once per run after a defeated normal enemy; the Scene owns inventory persistence. */
+  claimEscapeRopeDrop(enemy: MajinCaveEnemyState): boolean {
+    if (this.escapeRopeDropClaimed || !enemy.defeated || enemy.definitionId === "majin") return false;
+    this.escapeRopeDropClaimed = true;
+    return true;
+  }
+
   /** ヒートで止まっていなければ、敵phaseごとに`regenPercentPerTurn`分だけ自己再生させる。 */
   applyEnemyRegen(): void {
     for (const enemy of this.getAliveEnemies()) {
@@ -176,6 +185,14 @@ export class MajinCaveRunState {
     return true;
   }
 
+  /** Restores only the missing HP and records it in the existing per-floor recovery metrics. */
+  recoverPlayer(amount: number): number {
+    const recovered = Math.min(Math.max(0, amount), this.hero.maxHp - this.playerHp);
+    this.playerHp += recovered;
+    this.recordRecovery(recovered);
+    return recovered;
+  }
+
   damagePlayer(amount: number): boolean {
     const damage = Math.min(this.playerHp, Math.max(0, amount));
     this.playerHp -= damage;
@@ -193,10 +210,10 @@ export class MajinCaveRunState {
     this.setPlayerPosition(this.currentFloor.upStair);
   }
 
-  completePlayerAction(kind: "move" | "attack" | "wait"): void {
+  completePlayerAction(kind: "move" | "attack" | "wait" | "magic" | "item"): void {
     this.turnCount += 1;
     if (kind === "move" && this.activeVisit) this.activeVisit.steps += 1;
-    if (kind === "attack" && this.activeVisit) this.activeVisit.combatActions += 1;
+    if ((kind === "attack" || kind === "magic") && this.activeVisit) this.activeVisit.combatActions += 1;
   }
 
   completeEnemyPhase(): void {

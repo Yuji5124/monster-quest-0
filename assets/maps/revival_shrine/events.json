@@ -1,0 +1,19 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_revival_shrine_south_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 784, "y": 912, "width": 104, "height": 29 },
+      "commands": [{ "type": "world-map", "worldMapEntryId": "from_revival_shrine" }]
+    },
+    {
+      "id": "event_revival_shrine_altar",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 800, "y": 96, "width": 72, "height": 40 },
+      "commands": [{ "type": "message", "text": "[DEV] ゆうしゃのかんむりの台座（入手演出・条件TBD）" }]
+    }
+  ]
+}

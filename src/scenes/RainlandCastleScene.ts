@@ -24,8 +24,10 @@ export const RAINLAND_CASTLE_PACKAGE: RainlandMapPackage = {
  * 正式な導線: レインランドじょうかまちの北の城門(events.json)→ このScene(spawn: fromCastleTown)。
  * 出口(events.json)→ レインランドじょうかまちの北の城門前(spawn: fromCastle)。世界地図にはこの城を直接載せない。
  *
- * 2026-09-23: ブロック城(3D)はRainlandCastle3DSceneとして実装済み。2Dが既定で、V/「3D」ボタンでいつでも切り替えられる。
- * 以下は、将来3Dを既定にする(城内を常にブロック城にする)場合の差し替え点:
+ * 2026-09-23: ブロック城(3D)はRainlandCastle3DSceneとして実装済み。V/「3D」「2D」ボタンでいつでも切り替えられる。
+ * 2026-09-25: じょうかまちの北の城門から入ったときは3Dが初期表示(RainlandCastleTownSceneのtransferSceneOverrides)。
+ *   王の間から戻るときと3D→2D切替の戻り先は、引き続きMAPSのsceneKey(このScene)。
+ * 以下は、将来すべての入口で3Dを既定にする(城内を常にブロック城にする)場合の差し替え点:
  *   - 入口の約束は「MapId(map_05_rainland_castle) + spawnId(fromCastleTown)」と「出口Eventで町の城門前へ戻る」だけ。
  *     町の北門Eventは`MAPS[..].sceneKey`経由で遷移するため、このSceneを直接知らない。
  *   - よって差し替えは、新Sceneを作って main.ts に登録し、config/maps.ts の sceneKey を切り替えるだけで済む。

@@ -1,8 +1,144 @@
 # Monster Quest 0 Project Status
 
-最終更新: 2026-09-24 JST
+最終更新: 2026-09-27 JST
 
 > **正本表示注記（2026-09-24）:** 現行の物語順・名称・仲間時期は `STORY_FLOW.md`、`MAP_FLOW_SPEC.md`、`PLAY_ORDER_SPEC.md` を優先する。本書の過去実装記録に残る旧番号・旧名称・旧仮仕様は履歴であり、現行本線の仕様として読まない。
+
+## DEBUG_MODE（戦闘は3人Lv30で開始）= DONE（2026-09-27 JST）
+
+ユーザー指示「デバックモードとして運用します。戦闘は3人みんなレベル30で始められるようにしてください。仲間は戦闘のみ参加でよいです」を反映した。**DEBUG_ONLY**であり正式仕様ではない。詳細: `BATTLE_SPEC.md` §12、`CHARACTER_GROWTH.md` §11.1、`QA_SPEC.md` §6。
+
+- `src/config/debugMode.ts`（新規）: DEVビルド（`npm run dev`）では既定でON、`?debug=0`（`off`/`false`も可）でOFF、本番ビルドは`import.meta.env.DEV`が偽のため常にOFF。
+- 戦闘: ON中は敵・入口（フィールド遭遇／会話イベント戦／`?battleTest=`）・加入状況・セーブを問わず、主人公→タロサ→ミレイの3人がLv30・全快・全魔法習得・レベル基準の最強自動装備で始まる（`buildDebugParty`）。デーマス戦の専用検証編成（`devParty`）よりも優先する。仲間はフィールドへ加入・追従させず、戦闘のみ参加（`partySystem`とセーブの加入状況は不変）。
+- セーブ: デバッグ戦闘はEXP・現在HP/MPを書き込まず、レベルアップ表示も出さない。G・道具の報酬は通常どおり。
+- 表示: 戦闘画面左上に「DEBUG　ぜんいんLv30」を出す（状態窓にレベル表示が無いため）。
+- Lv30は正式な成長上限Lv25の外側の値。`getCharacterBaseStatsAtLevel`／`buildPartyCombatant`へ省略可能な`maxLevel`引数（既定はLv25）を足し、Lv23のTEMP_TEST_VALUEカーブを同じ傾きで直線延長しているだけ。EXPテーブル・`getLevelForTotalExp`・Lv25上限は無変更。
+
+検証: 新規`tests/debugMode.test.mjs`6件PASS（DEV既定ON・`?debug=0`でOFF・本番/Nodeでは常にOFF・編成順・Lv30が同カーブの延長でHP/MP/攻撃の大小関係を保つ・全魔法と最強武器・`maxLevel`省略時はLv25のまま）。`npm run typecheck` PASS。`npm test`は521件中518 PASS・todo2（`bossBalance`既存）・失敗1（村人スプライトの既存失敗、本変更と無関係）。ブラウザ実機で、セーブを実際に読み書きする経路（`?mapTest=starting-forest`）のイベント戦を比較した: ONは3人Lv30（HP 280/255/204）でEXP0のまま・vitals空・加入は主人公のみ・Gのみ+3、`?debug=0`は主人公1人Lv1（HP32）でEXP+8・vitals保存（従来どおり）。`?battleTest=003`（単体）とデーマス戦（`?battleTest=demas`）も3人Lv30、コンソールエラー0。
+既知の注意: デバッグ中はEXP・レベルアップ・持ち越しHP/MP・通常のボス難度を確認できない（`?debug=0`を使う）。全魔法・最強装備のため、ボス難度の体感は通常進行より大幅に易しくなる。iPhone Safari実機は未確認（DEVサーバー経由で同じく既定ON、入力・UIの変更は表示バッジ1行のみ）。
+
+## No.05 レインランドのもり（その2）の木こり・宝箱 = PARTIAL（2026-09-27 JST）
+
+ユーザー指示「レインランドのもりの奥にオレンジで書いた場所に木こりがいるので、この人に話しかけるとレインランドじょうに行けるようになる。赤色部分には宝箱があります。」（注釈画像つき）を反映した。詳細: `MAP_FLOW_SPEC.md`§4.10、`NPC_SPEC.md`§2、`SAVE_FLAG_SPEC.md`§5。
+
+- 位置合わせ: 注釈画像は`rainland_forest_2/background.png`の上端を縮小したものと判明（縮尺1.6701・ずれ0で一致）。ポイント中心をネイティブ背景pxで測り、オレンジ (651, 299)＝木こり、赤 (133.5, 195)＝宝箱とした。
+- 木こり: `npc_rainland_forest_woodcutter`（`role: "story"`、`villager_03`、下向き、その場に立つ）を北の橋の北東の道の左端に配置。5ページ話し、初回だけ末尾に「レインランドじょうへ　いけるように　なった！」を出し、閉じた時点で`story.rainland_castle_town_unlocked`を保存→世界地図でレインランドじょうかまちが選べる。2回目以降は5ページのみ（`getDialogue`の`FIRST_TALK_UNLOCKS`へ3件目として追加）。
+- 宝箱: `assets/maps/rainland_forest_2/objects.json`の`chest_rainland_forest_2_ruin`（北西の遺跡のアーチの根元）。`かいふくやく`1個、`chest.rainland_forest_2_ruin_opened`で再取得なし。**中身は指示がなかったためNo.03の宝箱と同じ`かいふくやく`をTEMP_TEST_VALUEで置いた。**
+- 実装: `RainlandImageMapScene`へ`chest`型Object（取得後に消える）と会話後の`story-flags`保存を追加。宝箱の見た目生成を`systems/ChestTexture.ts`の`createChestVisual`へ共通化し、`StartingForestScene`も同じ関数を使う（挙動は変えていない）。
+- **確認待ち**: No.03えりまきとかげ撃破（2026-09-24仕様）も同じ`story.rainland_castle_town_unlocked`を保存するため、木こりは現状「じょうかまちを解放する手段の1つ」であり唯一の条件ではない。唯一にするなら、ボス側（`starting_forest/objects.json`の`unlockFlag`、`ImageMapBossObject`、`tests/startingForest.test.mjs`）を外す変更が必要で、確定仕様に触れるため今回は変更していない。
+
+検証: `tests/rainlandForest.test.mjs`へ4件追加（木こりの位置・足元Bodyが歩行可能／会話の初回・2回目と世界地図の解放／宝箱の位置・前から調べられる／木こりと宝箱を障害物にしても全spawn・出口・主要地点へ主人公Bodyで到達可）、`townStoryEvents.test.mjs`にじょうかまち解放の1段を追加。`npm test`は518件PASS・1件FAIL（`villagerSprites.test.mjs`＝他作業のvillager画像追加中の件数不一致で本変更と無関係）、`tsc`は本変更分のエラー0（他作業の`SwampCaveActionRun.ts`のみ）。ブラウザ実機（Browser pane、`?mapTest=rainland-forest`→その2）で、木こりがオレンジポイントの位置に立つこと、会話→通知ページ→閉じた後にだけフラグ保存、2回目は通知なし、フラグ保存後の世界地図にレインランドじょうかまちが名称つきで表示されること（フラグなしの`？？？`は`tests/`で確認、実機での選択遷移は未確認）、宝箱が遺跡の根元に描かれ前から調べると`かいふくやく`+1・フラグ保存・宝箱が消え、シーン再入場でも復活しないこと、コンソールエラーなしを確認。
+PARTIALの理由: 台詞本文と宝箱の中身は`DIALOGUE_DRAFT`／TEMP_TEST_VALUE。木こりの唯一の解放条件化は確認待ち。ビーエのむらで戻らない木こりとの関係・救出イベントはTBDのまま。iPhone Safari実機は未確認（既存の決定入力のみ使用）。
+
+## No.06 レインランドじょうかまち 村人の会話を高密度化 = PARTIAL（2026-09-27 JST）
+
+ユーザー指示「レインランドじょうかまちの村人の話す内容を更新してほしい。もっと密度の高い情報がいきかっています」を反映した。配置済みの8人（固定5・歩く3）と各人の話題（1人1話題）は変えず、`src/data/dialogues.ts`の`npc_rainland_town_*`8件を初稿の2ページから**各4〜6ページ（計約44ページ）**へ書き直した。詳細は`NPC/03_rainland_no_machi.md`§8、`NPC_SPEC.md`§2。
+
+- 密度の上げ方: はじまりのまち（ぶきやの繁盛・やどやの客減り・荷馬車の遅れ）、ビーエのむら（干し物をレインランドの町へ運べない）、ザボンのむら（毛皮を売る・王の使い・モンスターの皮が硬い）、レインランドのもり（木こりが道を教える）で既に出た話を、城下町の市場・桟橋・広場の言葉で言い換え、人から人へ情報が伝わる形にした。
+- 守った制約: 王に触れるのは北西の家の1人だけ、ミレイ・姫・王家の事情・ジャンカード・たびのあいことばに触れない、まじんのどうくつ／No.07以降の地域／王の依頼の中身に触れない、金額や出港日の数値を書かない、1ページ3行以内。レインランドのもりの木こりとビーエのむらの戻らない木こりが同一人物かは示さない（TBDのまま）。
+- 配置・当たり判定・スプライト・セーブ形式・フラグは変更なし（会話本文のみ）。
+
+検証: `tests/rainlandCastleTownNpcs.test.mjs`へ「1人4ページ以上」を追加し、`rainlandCastleTown*.test.mjs`の11件PASS。
+PARTIALの理由: 台詞本文は`DIALOGUE_DRAFT`（正式本文`NPC_DIALOGUE_MASTER.md`は未提供）。「王への報告後」など進行による会話変化は未実装。iPhone Safari実機での会話テンポ（1人最大6ページの長さ）は未確認。
+
+## No.18 いしのまち = PARTIAL（2026-09-27 JST）
+
+ユーザー指示「いしのまちを実装」（石化した町・分かりやすいイベント町、1枚絵歩行方式、石像を調べて広場の象徴石像を目覚めさせる、町の奥で次の手がかりを得る）を反映した。詳細: `MAP_FLOW_SPEC.md`§4.20、`NPC_SPEC.md`、`SAVE_FLAG_SPEC.md`。
+
+- **素材の現状（重要）**: ユーザー提供は絵画調の`いしのまち_イメージ.png`（1448×1086）だけで、他の町にある見下ろしの歩行背景が無い。そのためイメージ画像は入場演出（`entry_splash.png`、無加工コピー、世界地図から入るときに5秒）にだけ使い、歩行背景は**`DEV_PLACEHOLDER`**を`tools/build_stone_town_assets.py`で手続き生成した（背景と`collision.png`を同じレイアウトから生成。石像は既存の村人スプライトを石化色にして貼り込み）。正式な見下ろし背景が届いたら`background.png`を差し替え、`map.json`の`assetStatus`を`CURRENT`へ、Collision・`objects.json`・`events.json`の矩形を絵に合わせて再配置する。
+- **構成**: `assets/maps/stone_town/`のBACKGROUND/COLLISION/EVENT/OBJECT。`map_stone_town`／`StoneTownScene`（共通`RainlandImageMapScene`、`worldScale 1.5`）。南門（入口）から入り、パンや・広場・井戸と水路の橋・北の階段・上段の広場・北門（奥の出口）が一本の軸になる。出入口はどちらも世界地図（`from_stone_town`）。世界地図の`destination_stone_town`を`planned`→`implemented`へ更新（実装済み19／予定1）。
+- **遊び**: 初回入場で短い語り（石になった町の第一印象）→ 入口の門番の石像で「突然、町全体が石になった」ことが分かる → パンや・井戸の女・橋の旅人の石像から「のこった声」（記憶の残響）を3つ集める → 広場の星を掲げる石像を調べると星が光り（カメラ寄り・閃光・ひび割れ・粉じん）、北の階段をふさぐ石の壁が崩れる → 上段の老人の石像から「光は東のとりでの方から来たように見えた」という手がかりを聞き、北門から世界地図へ出る。石像は全18体（上記のほか子ども・犬・猫・鳩・親子・学者・露店の商人など）が短い文を返す。目覚めた後は一部の石像の文が変わり、頭上に光の粒が昇る。
+- **実装**: 共通Sceneへ画像マップ`OBJECT`の新型`statue`／`barrier`／`awakening`（`ImageMapData.ts`）と、それを扱う`ImageMapStoryLayer`（フラグ規則は純関数`ImageMapStoryState.ts`、演出は`StoneTownEffects.ts`、数値と語りは`config/stoneTown.ts`）を追加。初回入場の語りはパッケージの`entryNarration`。セーブ形式は変更なし（`flags`へ`event.stone_town_*`を追加するだけ）。
+- **検証**: 新規`tests/stoneTown.test.mjs` 10件（パッケージ整合・入場演出・出入口・OBJECTのフラグ整合・台詞の行数／禁止語・石像の足元がCollisionに載ること・星が石の壁の下にあること・フラグ規則・実プレイヤー体格での到達性と石の壁による北ルートの遮断・全石像が調べられる位置に立てること）、`bodyPassability`へ追加、`worldMapData`を更新。`npm run typecheck` PASS。ブラウザ（`?mapTest=stone-town`）で、入場の語り→各石像の文とフラグ保存→広場の石像（未収集は促す文・3つ収集後に演出）→石の壁の崩落→階段を上り老人→北門で世界地図（`from_stone_town`）→入場演出→再入場で状態復元（語りは再生しない・ひび・星の光は残る）を確認、コンソールエラー0件。
+- **PARTIALの理由**: 歩行背景が仮素材（人間の視覚調整・正式画像への差し替え待ち）。台詞は`DIALOGUE_DRAFT`（石化の原因・正体は断定しない）。**三人自身の異常に触れる会話（ミレイの未来記憶の断片・主人公のまとまった台詞、`STORY_FLOW.md` No.18）は`TBD_REGISTRY.md`のとおり未実装**。演出の数値（TEMP_TEST_VALUE）・BGM・SEは未調整。iPhone Safari実機は未確認。
+
+## No.14 ポサロ城の世界地図往復 = PARTIAL（2026-09-27 JST）
+
+ユーザー指示「ポサロじょうに出入りできるようにしてください」を、地域間の正式方式であるポイント選択式`WorldMapScene`との往復として反映した。`destination_posaro_castle`を`planned`→`implemented`へ更新し、`map_posaro_castle` / `PosaroCastleScene`の`fromWorldMap`へ解決する。世界地図からは外観を5秒表示して南の大階段へ入り、階段の下端へ歩くと`from_posaro_castle`として世界地図へ戻る。到着spawnは出口ゾーン外に置き、到着直後の自動退出は発生しない。
+
+歩行背景は提供済みの見下ろしボス間画像、入場演出は提供済みの外観画像をそれぞれ無加工で採用した。南の階段・中央ホール・玉座への階段・上段だけを歩行可能にし、溶岩・壁・柱・像・脇部屋はCollisionで塞ぐ。入口／出口の利用ではセーブフラグ・所持品を変更しない。
+
+検証: `node --test tests/posaroCastle.test.mjs tests/worldMapData.test.mjs tests/bodyPassability.test.mjs`は42件PASS、`npx vite build`もPASS。`npm run typecheck`は今回と無関係な並行作業中の`src/systems/SwampCaveActionRun.ts`の3エラーで失敗（ポサロ城のエラーなし）。ブラウザ自動操作はこの環境のsandbox制限で起動できず、iPhone Safari実機も未確認。
+
+PARTIALの理由: バクラー戦、ゆうしゃのけんの取得演出／条件、NPC、会話、BGM、No.15への本編導線はTBD。iPhone Safari実機は未確認。
+
+## No.04 ビーエのむらでレインランドのもり解放 = PARTIAL（2026-09-27 JST）
+
+ユーザー指示「ビーエのむらには、レインランドじょうにいくまでにはレインランドの森を通らなくてはいけないという会話があります。レインランドの森が解放されます」を反映した。詳細: `MAP_FLOW_SPEC.md`§4.5、`NPC/02_bie_no_mura.md`§8、`SAVE_FLAG_SPEC.md`§5。
+
+- 会話の担当は、既に「レインランドの町へ売りに行く」と話していた干し物の人`npc_bie_village_herb_drier`（店先の日よけの前で固定、探しやすい）。既存の3ページの2ページ目のあとへ「レインランドじょうへ　いくには　レインランドの　もりを　とおらなくては　いけないの。」を1ページ足した。
+- 初めて最後まで読むと、末尾に「レインランドのもりへ　いけるように　なった！」を出し、閉じた時点で`story.rainland_forest_unlocked`を保存する。2回目以降は通常の4ページのみ（ぶきやの`story-flags`方式と同じ。`getDialogue`内の`FIRST_TALK_UNLOCKS`表へ2件をまとめ、ぶきやの挙動は変えていない）。
+- `destinations.json`の`destination_rainland_forest`を`unlockFlag: null`（常時選択）から`"story.rainland_forest_unlocked"`へ変更。話を聞くまでは世界地図で`？？？`で選べない。レインランドじょうかまち（`story.rainland_castle_town_unlocked`）・ビーエのもり（`story.bie_forest_unlocked`）とは独立したキーで、互いを解放しない。
+- `BieVillageScene`に、会話を閉じた後の`story-flags`保存（`GameStateRepository`）を追加。既存のセーブ形式は変更なし（`flags`へキーを追加するだけ）。
+
+検証: `tests/townStoryEvents.test.mjs`（干し物の人の初回／2回目、ぶきやとの独立、フラグと世界地図の解放遷移）と`tests/worldMapData.test.mjs`（`unlockFlag`・`？？？`・解放後の名称と移動可否、じょうかまちは解放されないこと）を更新し、関連5ファイル51件PASS。`tsc`は本変更分のエラー0（未追跡の`SwampCaveActionRun.ts`の他作業由来のエラーのみ）。ブラウザ実機で、干し物の人に話しかけ→5ページ→最後のページを閉じた後にだけフラグが保存、再度話すと通知なし、世界地図でフラグ無しは`？？？`で選択・移動できず、フラグ有りは`レインランドのもり`を選択して`RainlandForest1Scene`へ遷移、コンソールエラーなしを確認。
+PARTIALの理由: 台詞本文は`DIALOGUE_DRAFT`。ビーエのむらの`developmentUnlockedFlags`によりむら自体は本編のフラグなしで入れる暫定状態のまま（`TBD_REGISTRY.md`）。iPhone Safari実機は未確認（ビーエのむらの会話は既存の決定入力のみ）。
+
+## No.02 ぶきやでビーエのもり解放 / 不思議なとうのおじいさん = PARTIAL（2026-09-27 JST）
+
+ユーザー指示「はじまりのまちの武器屋でビーエのもりの情報をもらうとビーエの森が解放される。ふしぎなとうの老人がここにいて、話しかけるとふしぎなとうが解放される。老人にはなしかける→老人が説明→私は先に行っているので、後で来てほしい→暗転→いなくなる。一度だけのイベント」を反映した。詳細: `MAP_FLOW_SPEC.md`§4、`NPC/01_hajimari_no_machi.md`§9、`SAVE_FLAG_SPEC.md`§5。
+
+- ビーエのもり: `destinations.json`の`destination_starting_forest`を`unlockFlag: "story.bie_forest_unlocked"`へ変更（それまでは`？？？`で選べない）。ぶきやの店主の「はなす」を初めて最後まで読むと（場所を教える1ページ＋「ビーエのもりへ　いけるように　なった！」）、読み終えた時点でフラグを保存する。2回目以降は通常の会話のみ。
+- 不思議なとうのおじいさん: 赤ポイント7人とは別枠のストーリーNPC`npc_start_town_tower_elder`（`role: "story"`、`villager_17`、ぶきやの東の道、左向き）。6ページで説明し「先に行っている、後から来てほしい」と告げた後、暗転して暗転中に退場。`event.starting_town_tower_elder_talked`と`story.mysterious_tower_revealed`を同時に保存し、以後は町に生成しない（`NpcDefinition.departedFlag`）。`world_map/map.json`の`developmentUnlockedFlags`から`story.mysterious_tower_revealed`を外したため、不思議なとうが世界地図に現れる（`？？？`・移動可）のはこの会話の後だけ。
+- 実装: `src/config/storyFlags.ts`（フラグ定数）、`DialogueAfterEvent`へ`story-flags`／`npc-depart`を追加（`BattleEventData.ts`）、`StartingTownScene`が読み終え後に保存・暗転退場を処理、`getDialogue`がぶきやの初回だけ通知ページと保存イベントを付ける。既存のセーブ形式は変更なし（`flags`へキーを追加するだけ）。
+
+検証: 新規`tests/townStoryEvents.test.mjs`（ぶきや初回／2回目、おじいさんの会話とフラグ、NPC定義・退場判定、世界地図の解放状態遷移）、`startingTown.test.mjs`（NPC 8人・おじいさんの立ち位置）、`worldMapData.test.mjs`を更新。ブラウザ実機で、おじいさんに話しかけ→6ページ→暗転（NPCが消えフラグ保存）→明転、再入場でおじいさんがいないこと、ぶきや「はなす」→フラグは最後のページを閉じた後に保存、世界地図でビーエのもり（解放前`？？？`／後に名称）と不思議なとう（解放後に`？？？`）を確認。
+PARTIALの理由: 台詞本文は`DIALOGUE_DRAFT`、暗転の長さ・おじいさんの立ち位置はTEMP_TEST_VALUE。塔の外で「先に来ていた」おじいさんを受ける演出は未実装（塔の外のおじいさんは従来どおり常駐）。iPhone Safari実機は未確認。
+
+## ビーエのもり 南端の出口追加 = DONE（2026-09-27 JST）
+
+ユーザー指示「ビーエのもりのオレンジ部分（道の最下端）からも出れるようにしてください」を反映した。`assets/maps/starting_forest/events.json`へ`event_starting_forest_south_exit`（背景座標 x684〜868 / y1000〜1024）を追加し、北の石アーチと同じく`WorldMapScene`（`from_starting_forest`）へ戻る。コード変更はなく、既存の画像マップEvent機構のデータ追加のみ（`maps.ts`はコメントのみ更新）。セーブ・フラグへの影響なし。世界地図から入るspawn(770,970)は出口ゾーンの外にあり、到着直後に退場しない。詳細: `MAP_FLOW_SPEC.md`§4.7。
+
+検証: `tests/startingForest.test.mjs`を更新（Event2件、南端Eventが下端に達し最下端の道幅を覆い、spawnのBody下端がゾーンより上にあること）。ブラウザ実機で南へ歩くと出口が発火して世界地図へ遷移し、`fromWorldMap`spawnへ入り直しても退場しないことを確認。`npm test` 490/491（残り1件は村人スプライト数の既存失敗で本変更と無関係）、typecheck PASS。iPhone Safari実機は未確認。
+
+## No.19 バトラスのとりでの世界地図往復 = PARTIAL（2026-09-27 JST）
+
+ユーザー指示「フィールドから出入りできるようにしてください」を、地域間の正式方式であるポイント選択式`WorldMapScene`との往復として反映した。`destination_batras_fortress`を`planned`→`implemented`へ更新し、`map_batorasu_fortress` / `BatorasuFortressScene`の`fromWorldMap`へ解決する。砦の生成入口には「もどる」表示を置き、そこで決定した場合だけ`from_batorasu_fortress`として世界地図へ戻る。到着直後の自動退出は発生しない。
+
+No.18・No.20は未実装のため接続していない。入口／出口の利用で新規セーブフラグは書き込まず、既存の宝箱・ボス撃破フラグだけを保持する。
+
+検証: `npm run typecheck` PASS、`npm run build` PASS、`tests/worldMapData.test.mjs`と`tests/battleFortressGenerator.test.mjs`10件PASS。世界地図契約テストは実装済み地点16／予定地点4、No.19のMapId・spawn・復帰entry IDを検証する。
+
+PARTIALの理由: 通常敵・正式BGM・No.20への出口／終盤イベントはTBD。iPhone Safari実機での操作確認は未実施。
+
+## No.13 コタンカイムの洞窟 = PARTIAL（2026-09-26 JST）
+
+ユーザー指示「コタンカイムのどうくつを実装。1から2、2から3につなげる」を反映した。ユーザー提供の`コタンカイムのどうくつ1〜3.png`を無加工の背景として、共通画像マップRuntime（`RainlandImageMapScene`）の3フロア（`map_kotankaim_cave_1〜3` / `KotankaimCave1〜3Scene`）を追加した。
+
+- 導線: 世界地図「コタンカイムの洞窟」（`destination_kotankaim_cave`を`planned`→`implemented`）→(1)南端。(1)右上の扉⇄(2)南の石段、(2)左上の扉⇄(3)南の石段。(1)南端から世界地図へ戻る。世界地図から(1)へ入るときだけ`コタンカイムのどうくつ_イメージ.png`を5秒の入場演出に使う。
+- (1)の正規ルートは南入口→西の通路→西の石段→西の台地（アーチをくぐる）→左端の影の砂利道→北の帯→北西の石段→木のはしご橋→中央の島→東の橋→東のはしご→北東の通路→右上の扉。入口広場と東の床帯の間は絵のとおり崖で、近道はない。
+- (2)は南の石段→中央の道→中央広場→北の橋→北西の通路→左上の扉。(3)は南の石段→南広場→中央広場（アーチの下）→中段→魔法陣の間。
+- Collisionは`tools/build_kotankaim_cave_collision.py`で生成（床色判定＋手測りの石段・橋・扉・石畳広場、柱とアーチの脚は障害物）。各フロアとも実プレイヤー体格で入口から扉／魔法陣まで到達できることをテストで保証。
+- 未実装（TBD）: ゆうしゃのたて入手（(3)魔法陣はDEVメッセージのみ。`item.hero_shield_obtained`は書き込まない）、敵・エンカウント、ボス、NPC、宝箱。北東・南西などの行き止まりの脇エリアの一部は通行不可のまま。
+
+検証: 新規`tests/kotankaimCave.test.mjs`9件PASS、typecheck PASS、`npm test` 485/488（残り1件は村人スプライト数の既存失敗で本変更と無関係、2件はtodo）。`tests/worldMapData.test.mjs`の実装済み地点数を15/予定5へ更新（変更前から14/6で古い期待値だった）。ブラウザ（`?mapTest=kotankaim-cave`）で(1)扉→(2)、(2)石段→(1)、(2)扉→(3)、(3)石段→(2)、(1)南端→世界地図の遷移と、(3)南から魔法陣まで歩けることを確認。コンソールエラーなし。セーブ形式への影響なし（新フラグなし）。
+PARTIALの理由: ゆうしゃのたて入手・敵などTBD。iPhone Safari実機未確認。
+
+## 世界地図の雲エフェクト = PARTIAL（2026-09-26 JST）
+
+ユーザー指示「世界地図フィールドのエフェクトを追加。くもっぽい表現が希望」を反映した。見た目だけで、地点の選択・移動・解放条件・セーブには触れない。
+
+- `src/systems/WorldMapClouds.ts`が、背景に描かれた縁の雲と同じ白い積雲4つと、薄いすじ雲3つを地図の上空へゆっくり流す。積雲は右下へずれた薄い影を地面に落とし、下側をわずかに青灰色にして立体感を出す。風の強さが約14秒周期でゆっくり増減し、雲ごとに上下へ小さく揺れる。
+- 雲は地図（ワールド座標）に置くため、行き先選択時のズーム・パンにも一緒に付いてくる。表示順は背景より上・地点マーカー（depth 19〜22）より下で、地名とマーカーは常に雲の上に読める。HUD用Cameraからは除外している。
+- 数値は`src/config/worldMapPresentation.ts`の`WORLD_MAP_CLOUDS`（TEMP_TEST_VALUE）。テクスチャは起動時にCanvasで作る（画像ファイル追加なし）。表示物は計15個。
+
+検証: 新規`tests/worldMapClouds.test.mjs`3件（表示順がマーカーより下、濃さ・数・速さの上限、Sceneからの起動とHUD Cameraからの除外）PASS。ブラウザで世界地図を開き、雲の流れ・影・ズーム時の見た目（縁が直線で切れないこと）・マーカーが雲の上に出ることを確認。本変更由来のコンソールエラーなし（記録された500は並行作業中の`MajinCaveTurnSystem.ts`の構文エラーによるもの）。
+PARTIALの理由: 濃さ・数・速さは人間の視覚調整待ち。iPhone Safari実機未確認。
+
+## フィールド画面の環境エフェクト = PARTIAL（2026-09-26 JST）
+
+ユーザー指示「フィールド画面に薄いエフェクトを足して、飽きさせない自然なフィールド画面にしたい」を反映した。
+歩行マップの上へ見た目だけの環境エフェクトをうすく重ねる。背景画像・Collision・Event・入力・セーブ・進行フラグには触れない。
+
+- 設定は`src/config/fieldAmbience.ts`（マップ別プロファイル、数値はすべてTEMP_TEST_VALUE）、描画は`src/systems/FieldAmbience.ts`、動きの計算は`src/systems/FieldAmbiencePlan.ts`（Phaser非依存の純粋関数）。
+- プロファイル: **night**（No.01。現行背景は夜版のみのため、蛍と谷からの薄い霧）、**forest**（ビーエのもり・レインランドのもり1/2。木漏れ日の帯・黄緑〜橙の落ち葉・光の粒）、**town**（No.02・レインランドじょうかまち・ザボンのむら・かくれざと。雲の影・花粉・花びら）、**quietVillage**（ビーエのむら。既存の異変表示を読みやすく保つため雲の影と少しの花粉だけ）、**indoor**（レインランドじょう2D。ほこりの粒だけ）。昼の草原用**meadow**はNo.01昼版の背景が入ったときの切替先として用意した。
+- 単調さを避けるため、数〜十数秒ごとに風が吹き（ときどき逆向き）、落ち葉・粒が横へ流れ、雲の影が少し速くなる。
+- 洞窟・塔・まじんのどうくつ・3D城・ワールドマップには入れない（暗さ・不穏さを優先。追加は`FIELD_AMBIENCE_BY_MAP`へ1行足すだけ）。
+- 表示物はすべて画面固定で、カメラのスクロールを視差付きで差し引いて地面に置かれているように見せる。マップの広さに関係なく数は一定（最大20個程度）、テクスチャは起動時にCanvasで作る（画像ファイル追加なし）。タッチ端末は粒の数を60%、OSの「視差効果を減らす」設定時はさらに30%へ減らす。
+- 表示順は主人公(1000)より上・DEV表示(2000)／会話(2500)／メニュー(3000)より下（雲の影は人物にもかかる）。
+
+検証: `npm test` 448件中445 PASS・todo2・FAIL1（FAILは並行作業中の`villagerSprites.test.mjs`の村人シート数17≠16で本変更と無関係）。新規`tests/fieldAmbience.test.mjs`7件（濃さの上限、洞窟・塔へ割り当てないこと、表示順、回り込み計算、粒が画面＋余白の外へ出ないこと、風の立ち上がり・収まり、各Sceneからの起動）。`tsc --noEmit`は本変更分のエラー0（並行作業中のMajinCave関連のエラーのみ）。ブラウザで`?mapTest=image-no01`（蛍・霧）、`no02`（雲の影・花粉・花びら）、`rainland-forest`（落ち葉・光の粒・木漏れ日）の表示と数値を確認。
+PARTIALの理由: 濃さ・数・速さは人間の視覚調整待ち（TEMP_TEST_VALUE）。iPhone Safari実機のFPS未確認。No.01昼版背景が未提供のためmeadowは未使用。
 
 ## レベルアップ演出の変更と能力増加の説明 = DONE（2026-09-24 JST）
 

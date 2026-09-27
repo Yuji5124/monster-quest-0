@@ -48,7 +48,8 @@ test("starting-forest background and collision share the same pixel dimensions a
 test("starting-forest package routes its north archway to the world map and keeps boss/chest/arrival state as objects", () => {
   const events = readImageMapEvents(JSON.parse(readFileSync(path.join(MAP_DIR, "events.json"), "utf-8")));
   const objects = readImageMapObjects(JSON.parse(readFileSync(path.join(MAP_DIR, "objects.json"), "utf-8")));
-  assert.equal(events.length, 1);
+  assert.equal(events.length, 2);
+  assert.equal(events[0].id, "event_starting_forest_north_exit");
   assert.equal(events[0].trigger, "enter");
   assert.equal(events[0].commands[0].type, "world-map");
   assert.equal(events[0].commands[0].worldMapEntryId, "from_starting_forest");
@@ -90,6 +91,34 @@ test("starting-forest package routes its north archway to the world map and keep
     && arrival.x + arrival.width <= events[0].bounds.x + events[0].bounds.width
     && arrival.y + arrival.height <= events[0].bounds.y + events[0].bounds.height,
   "Tarosa must enter and leave through the actual north warp zone");
+});
+
+test("starting-forest south edge of the trail is a second world-map exit that does not swallow the arrival spawn", () => {
+  const manifest = readImageMapManifest(JSON.parse(readFileSync(path.join(MAP_DIR, "map.json"), "utf-8")));
+  const events = readImageMapEvents(JSON.parse(readFileSync(path.join(MAP_DIR, "events.json"), "utf-8")));
+  const south = events.find((event) => event.id === "event_starting_forest_south_exit");
+  assert.ok(south, "south exit event must exist");
+  assert.equal(south.trigger, "enter");
+  assert.equal(south.commands[0].type, "world-map");
+  assert.equal(south.commands[0].worldMapEntryId, "from_starting_forest");
+  assert.equal(south.bounds.y + south.bounds.height, manifest.height, "the south exit zone must reach the bottom edge of the map");
+
+  // 主人公のBody下端はスプライト中心から32px(world)下(protagonistSprite.tsのbaselineY 67 - 高さ70/2)。
+  // spawn位置でBodyが出口ゾーンに重なると、世界地図から入った直後に退場してしまう。
+  const spawnY = 970;
+  const bodyBottom = spawnY + 32 / manifest.worldScale;
+  assert.ok(bodyBottom < south.bounds.y, `spawn body bottom ${bodyBottom} must stay above the south exit zone (${south.bounds.y})`);
+
+  // 出口ゾーンの横幅は、最下端の歩行可能な道の幅の中に収まり、その全幅をカバーする(道の端まで歩いても出られる)。
+  const mask = readPngAsMask(path.join(MAP_DIR, "collision.png"));
+  const rects = buildCollisionRects(mask, manifest.collisionCellSize);
+  const isBlocked = (x, y) => rects.some((rect) => x >= rect.x && x < rect.x + rect.width && y >= rect.y && y < rect.y + rect.height);
+  const rowY = manifest.height - 2;
+  const walkable = [];
+  for (let x = 0; x < manifest.width; x += 1) if (!isBlocked(x, rowY)) walkable.push(x);
+  assert.ok(walkable.length > 0, "the trail must reach the bottom edge of the mask");
+  assert.ok(south.bounds.x <= walkable[0] + manifest.collisionCellSize && south.bounds.x + south.bounds.width >= walkable[walkable.length - 1],
+    "the south exit zone must span the walkable trail at the bottom edge");
 });
 
 test("starting-forest collision mask keeps the south gate and north archway walkable and reaches both map edges", () => {

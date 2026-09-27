@@ -1,10 +1,9 @@
 import Phaser from "phaser";
 import { INTERACTION_REACH, INTERACTION_SPAN } from "../config/interaction.ts";
-import { MAPS, MAP_TRANSITION_FADE_MS } from "../config/maps.ts";
-import type { BuildingDefinition } from "../config/maps.ts";
+import { MAPS, MAP_TRANSITION_FADE_MS, isNpcPresent } from "../config/maps.ts";
 import { getDialogue } from "../data/dialogues.ts";
-import type { DialogueAfterEvent } from "../events/BattleEventData.ts";
-import { isBattleDialogueEvent, isPartyJoinDialogueEvent } from "../events/BattleEventData.ts";
+import type { DialogueAfterEvent, NpcDepartDialogueEvent } from "../events/BattleEventData.ts";
+import { isBattleDialogueEvent, isNpcDepartDialogueEvent, isPartyJoinDialogueEvent, isStoryFlagsDialogueEvent } from "../events/BattleEventData.ts";
 import { beginDialogueBattleEvent } from "../events/DialogueEvents.ts";
 import { Npc } from "../entities/Npc.ts";
 import { Player } from "../entities/Player.ts";
@@ -19,12 +18,16 @@ import { MIREI_SPRITE } from "../config/mireiSprite.ts";
 import { VILLAGER_SPRITES } from "../config/villagerSprites.ts";
 import { ensureWalkAnimations, preloadWalkSprite } from "../systems/CharacterWalkSprite.ts";
 import { configureMapCamera } from "../systems/MapCamera.ts";
+import { startFieldAmbience } from "../systems/FieldAmbience.ts";
 import { PartyFollowers } from "../systems/PartyFollowers.ts";
 import { partySystem } from "../systems/PartySystem.ts";
+import { GameStateRepository } from "../systems/GameStateRepository.ts";
 import { canInteract } from "../systems/Interaction.ts";
-import { beginMapTransition, createExitZone } from "../systems/MapTransition.ts";
+import { beginMapTransition } from "../systems/MapTransition.ts";
 import { DialogueBox } from "../ui/DialogueBox.ts";
 import { FieldMenu } from "../ui/FieldMenu.ts";
+import { ShopWindow } from "../ui/ShopWindow.ts";
+import { getShop } from "../config/shops.ts";
 
 const MAP_ID = "map_02_starting_town";
 const MANIFEST_KEY = "image-map.starting-town.manifest";
@@ -39,6 +42,10 @@ const COLLISION_PATH = new URL("../../assets/maps/starting_town/collision.png", 
 const EVENTS_PATH = new URL("../../assets/maps/starting_town/events.json", import.meta.url).toString();
 const OBJECTS_PATH = new URL("../../assets/maps/starting_town/objects.json", import.meta.url).toString();
 
+// TEMP_TEST_VALUE: おじいさんが去る時の暗転(暗くする→真っ暗のまま間を置く→明るく戻す)のミリ秒。
+const NPC_DEPART_FADE_MS = 500;
+const NPC_DEPART_HOLD_MS = 700;
+
 const isDevMode = typeof import.meta.env !== "undefined" && import.meta.env.DEV;
 
 export interface StartingTownSceneData {
@@ -50,7 +57,7 @@ export interface StartingTownSceneData {
  * No.02「はじまりのまち」。StartingPlaceScene(No.01)と同じBACKGROUND/COLLISION/EVENT/OBJECT
  * 画像マップ方式をそのまま再利用する。建物の壁Collisionはcollision.png側で表現するため、
  * 旧DEV_PLACEHOLDER時代のBuilding entity(単色矩形+壁セグメント計算)は使用しない。
- * 建物のドア判定(interiorIdがある建物だけInteriorSceneへ遷移)、NPC/会話/パーティ加入/戦闘イベントは
+ * 建物へ入る入口判定は持たない(2026-09-24削除)。NPC/会話/パーティ加入/戦闘イベントは
  * 既存のPhase 7〜8-Bの実装をそのまま再利用する。
  */
 export class StartingTownScene extends Phaser.Scene {
@@ -60,12 +67,14 @@ export class StartingTownScene extends Phaser.Scene {
   private collisionRuntime!: ImageMapCollisionRuntime;
   private dialogueBox!: DialogueBox;
   private fieldMenu!: FieldMenu;
+  private shopWindow!: ShopWindow;
   private partyFollowers!: PartyFollowers;
   private notice?: Phaser.GameObjects.Text;
   private consumedEventIds = new Set<string>();
   private transitioning = false;
   private afterDialogueEvent: DialogueAfterEvent | undefined;
   private awaitBattleReturnRelease = false;
+  private readonly gameState = new GameStateRepository();
 
   constructor(sceneKey = "StartingTownScene") {
     super({ key: sceneKey, physics: { arcade: { gravity: { x: 0, y: 0 } } } });
@@ -123,7 +132,11 @@ export class StartingTownScene extends Phaser.Scene {
 
     const map = MAPS[MAP_ID];
     // definition.position / movementはmaps.tsのネイティブ背景ピクセル座標なので、worldScaleを掛けた複製をNpcへ渡す。
-    this.npcs = map.npcs.map((definition) => new Npc(this, scaleNpcDefinition(definition, worldScale)));
+    // 一度きりのイベントで去ったNPC(departedFlag保存済み)は最初から生成しない。
+    const savedFlags = this.gameState.getFlags();
+    this.npcs = map.npcs
+      .filter((definition) => isNpcPresent(definition, savedFlags))
+      .map((definition) => new Npc(this, scaleNpcDefinition(definition, worldScale)));
 
     const spawnId = data?.spawnId && map.spawns[data.spawnId] ? data.spawnId : Object.keys(map.spawns)[0];
     const spawn = map.spawns[spawnId];
@@ -161,20 +174,24 @@ export class StartingTownScene extends Phaser.Scene {
       this.physics.add.overlap(this.player.body, zone.body as Phaser.Physics.Arcade.StaticBody, () => this.handleEvent(event));
     }
 
-    // 入口(door)はinteriorIdがある建物だけInteriorSceneへの遷移トリガーを重ねる。
-    // 壁のCollisionはcollision.png側(ドアの帯だけ通行可能)で表現済み。building.doorもネイティブ座標なので
-    // worldScaleを掛けてからExit Zoneを作る。
-    for (const building of map.buildings) {
-      if (!building.interiorId) continue;
-      const doorZoneBody = createExitZone(this, scaleRect(building.door, worldScale));
-      this.physics.add.overlap(this.player.body, doorZoneBody, () => this.handleEnterBuilding(building));
-    }
+    // 建物の入口判定は2026-09-24ユーザー指示で削除した(建物の中には入らない)。
+    // 固定の村人がドアの真ん前に立ち、主人公はドア前の道から話しかける。
 
     // 会話ウィンドウは他の表示物の後に作り、常に最前面へ描画する。
     this.dialogueBox = new DialogueBox(this);
     this.fieldMenu = new FieldMenu(this);
+    // やどや・ぶきや・どうぐやの店主は、話しかけると店の窓を開く。「はなす」で通常の会話へ移る。
+    this.shopWindow = new ShopWindow(this, (npcId) => {
+      const dialogue = getDialogue(MAPS[MAP_ID].npcs.find((npc) => npc.id === npcId)?.dialogueId ?? "");
+      if (!dialogue) return;
+      // ぶきやの店主の「はなす」は、初めて聞いた時だけ読み終えたあとに世界地図の解放を保存する。
+      this.afterDialogueEvent = dialogue.afterDialogue;
+      this.dialogueBox.open(dialogue.pages);
+    });
 
     configureMapCamera(this, this.player.visual, { x: 0, y: 0, width: manifest.width * worldScale, height: manifest.height * worldScale });
+    // 雲の影・漂う粒などの環境エフェクト(config/fieldAmbience.ts)。見た目だけで、背景・判定・進行には触れない。
+    startFieldAmbience(this, MAP_ID);
     this.cameras.main.setBackgroundColor("#101018");
     this.cameras.main.fadeIn(MAP_TRANSITION_FADE_MS, 0, 0, 0);
 
@@ -200,6 +217,10 @@ export class StartingTownScene extends Phaser.Scene {
       }
       if (this.dialogueBox.isOpen) {
         if (confirmPressed && this.dialogueBox.advance()) this.handleAfterDialogue();
+        return;
+      }
+      if (this.shopWindow.isOpen) {
+        this.shopWindow.handleInput(this.actions, confirmPressed);
         return;
       }
       if (this.fieldMenu.isOpen) {
@@ -257,6 +278,13 @@ export class StartingTownScene extends Phaser.Scene {
       )
     );
     if (!npc) return;
+    const shop = getShop(npc.definition.id);
+    if (shop) {
+      this.player.body.setVelocity(0, 0);
+      npc.stop();
+      this.shopWindow.open(npc.definition.id, shop);
+      return;
+    }
     const dialogue = getDialogue(npc.definition.dialogueId);
     if (!dialogue) return;
     // 会話開始時点の残存速度を確実に止める(次の物理stepを待たない)。
@@ -273,9 +301,44 @@ export class StartingTownScene extends Phaser.Scene {
       if (partySystem.addMember(event.memberId)) this.partyFollowers.syncMembers();
       return;
     }
+    if (isStoryFlagsDialogueEvent(event)) {
+      for (const flag of event.flags) this.gameState.setFlag(flag);
+      return;
+    }
+    if (isNpcDepartDialogueEvent(event)) {
+      this.beginNpcDeparture(event);
+      return;
+    }
     if (!isBattleDialogueEvent(event) || this.transitioning) return;
     this.transitioning = true;
     beginDialogueBattleEvent(this, this.actions, event);
+  }
+
+  /**
+   * 会話を読み終えたNPCが去る一度きりのイベント: 暗転 → 真っ暗な間にNPCを消してフラグを保存 → 明転。
+   * 明転後はそのNPCが最初からいない状態(次回以降の入場でもdepartedFlagで生成されない)と同じになる。
+   */
+  private beginNpcDeparture(event: NpcDepartDialogueEvent): void {
+    if (this.transitioning) return;
+    this.transitioning = true;
+    this.actions.setLocked(true);
+    const camera = this.cameras.main;
+    camera.fadeOut(NPC_DEPART_FADE_MS, 0, 0, 0);
+    camera.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+      const npc = this.npcs.find((candidate) => candidate.definition.id === event.npcId);
+      if (npc) {
+        this.npcs = this.npcs.filter((candidate) => candidate !== npc);
+        npc.destroy();
+      }
+      for (const flag of event.flags) this.gameState.setFlag(flag);
+      this.time.delayedCall(NPC_DEPART_HOLD_MS, () => {
+        camera.fadeIn(NPC_DEPART_FADE_MS, 0, 0, 0);
+        camera.once(Phaser.Cameras.Scene2D.Events.FADE_IN_COMPLETE, () => {
+          this.actions.setLocked(false);
+          this.transitioning = false;
+        });
+      });
+    });
   }
 
   private handleEvent(event: ImageMapEvent): void {
@@ -297,17 +360,6 @@ export class StartingTownScene extends Phaser.Scene {
       throw new Error(`image-map transfer ${event.id} has an unknown target ${command.targetMapId}/${command.targetSpawnId}`);
     }
     beginMapTransition(this, this.actions, target.sceneKey, { spawnId: command.targetSpawnId }, MAP_TRANSITION_FADE_MS);
-  }
-
-  private handleEnterBuilding(building: BuildingDefinition): void {
-    // 入口領域に立ち続けても二重遷移しないようにする。
-    if (this.transitioning || !building.interiorId) return;
-    this.transitioning = true;
-    beginMapTransition(
-      this, this.actions, "InteriorScene",
-      { interiorId: building.interiorId, returnSpawnId: building.frontSpawnId },
-      MAP_TRANSITION_FADE_MS,
-    );
   }
 
   private setNotice(message: string): void {

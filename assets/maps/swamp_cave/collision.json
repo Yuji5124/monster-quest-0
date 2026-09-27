@@ -1,0 +1,6 @@
+{
+  "formatVersion": 1,
+  "kind": "action-terrain-zones",
+  "note": "No.17 first action slice. The Scene clamps the party to the background bounds; slow swamp and fast high-ground/root zones are sourced from src/config/swampCaveAction.ts for human tuning.",
+  "bounds": { "x": 0, "y": 0, "width": 1672, "height": 941 }
+}

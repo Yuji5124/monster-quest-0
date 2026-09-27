@@ -1,0 +1,19 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_kotankaim_cave_1_world_map_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 704, "y": 1056, "width": 112, "height": 30 },
+      "commands": [{ "type": "world-map", "worldMapEntryId": "from_kotankaim_cave" }]
+    },
+    {
+      "id": "event_kotankaim_cave_1_door_to_2",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 1176, "y": 56, "width": 48, "height": 24 },
+      "commands": [{ "type": "transfer", "targetMapId": "map_kotankaim_cave_2", "targetSpawnId": "fromCave1" }]
+    }
+  ]
+}

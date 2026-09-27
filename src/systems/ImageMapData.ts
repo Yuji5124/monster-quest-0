@@ -97,7 +97,66 @@ export interface ImageMapShootingObject extends ImageMapObjectBase {
   readonly clearedFlag: string;
 }
 
-export type ImageMapObject = ImageMapNpcObject | ImageMapChestObject | ImageMapBossObject | ImageMapArrivalObject | ImageMapShootingObject;
+/** A non-NPC object that opens its data-owned message when inspected. */
+export interface ImageMapInteractableObject extends ImageMapObjectBase {
+  readonly type: "interactable";
+  readonly message: string;
+  /** Temporary visual only; replacing it with a formal asset stays data-driven. */
+  readonly presentation: "tower-core" | "none";
+}
+
+/**
+ * A petrified person/animal painted into the BACKGROUND (No.18 いしのまち). Examining it opens `pages` (text stays data,
+ * not a Scene literal). `examinedFlag` records that the statue was heard; other objects can require that flag.
+ * After `changedFlag` is saved (the plaza awakening) `changedPages` replace `pages` and a faint glow marks the statue.
+ * The statue's footprint is blocked by the collision mask itself, so `blocking` is normally false.
+ */
+export interface ImageMapStatueObject extends ImageMapObjectBase {
+  readonly type: "statue";
+  readonly pages: readonly string[];
+  readonly examinedFlag?: string;
+  readonly changedFlag?: string;
+  readonly changedPages?: readonly string[];
+}
+
+/** A blocking obstacle that disappears once `openedFlag` is saved (the fallen wall across the north stairs). */
+export interface ImageMapBarrierObject extends ImageMapObjectBase {
+  readonly type: "barrier";
+  /** Shown while the barrier still stands. */
+  readonly pages: readonly string[];
+  readonly openedFlag: string;
+  /** Temporary code-drawn look; a formal asset replaces it without touching the data. */
+  readonly presentation: "stone-rubble" | "none";
+}
+
+/**
+ * The plaza's giant statue. It needs every `requiredFlags` memory echo; then it plays the awakening once
+ * (glow, dust, crack, the barrier crumbles) and saves `awakenedFlag`.
+ */
+export interface ImageMapAwakeningObject extends ImageMapObjectBase {
+  readonly type: "awakening";
+  readonly requiredFlags: readonly string[];
+  readonly lockedPages: readonly string[];
+  readonly pages: readonly string[];
+  readonly afterPages: readonly string[];
+  readonly repeatPages: readonly string[];
+  readonly awakenedFlag: string;
+  /** Id of the `barrier` object that opens when the awakening finishes. */
+  readonly opensBarrierId: string;
+  /** Native background-pixel anchor of the statue's star; the glow is drawn here. */
+  readonly glow: { readonly x: number; readonly y: number };
+}
+
+export type ImageMapObject =
+  | ImageMapNpcObject
+  | ImageMapChestObject
+  | ImageMapBossObject
+  | ImageMapArrivalObject
+  | ImageMapShootingObject
+  | ImageMapInteractableObject
+  | ImageMapStatueObject
+  | ImageMapBarrierObject
+  | ImageMapAwakeningObject;
 
 export interface ImageMapBounds {
   readonly x: number;
@@ -232,8 +291,80 @@ export function readImageMapObjects(value: unknown): ImageMapObject[] {
         clearedFlag: requireSaveFlag(object, "clearedFlag", label),
       };
     }
-    throw new Error("image-map object type must be npc, chest, boss, arrival, or shooting");
+    if (type === "interactable") {
+      const presentation = requireString(object, "presentation", label);
+      if (presentation !== "tower-core" && presentation !== "none") {
+        throw new Error("image-map interactable presentation must be tower-core or none");
+      }
+      return { ...common, type, message: requireString(object, "message", label), presentation };
+    }
+    if (type === "statue") {
+      const changedFlag = readOptionalSaveFlag(object, "changedFlag", label);
+      const changedPages = readOptionalPages(object, "changedPages", label);
+      if ((changedFlag === undefined) !== (changedPages === undefined)) {
+        throw new Error(`${label} needs changedFlag and changedPages together`);
+      }
+      return {
+        ...common,
+        type,
+        pages: requirePages(object, "pages", label),
+        examinedFlag: readOptionalSaveFlag(object, "examinedFlag", label),
+        changedFlag,
+        changedPages,
+      };
+    }
+    if (type === "barrier") {
+      const presentation = requireString(object, "presentation", label);
+      if (presentation !== "stone-rubble" && presentation !== "none") {
+        throw new Error("image-map barrier presentation must be stone-rubble or none");
+      }
+      return { ...common, type, pages: requirePages(object, "pages", label), openedFlag: requireSaveFlag(object, "openedFlag", label), presentation };
+    }
+    if (type === "awakening") {
+      const requiredFlags = object.requiredFlags;
+      if (!Array.isArray(requiredFlags) || requiredFlags.length === 0) throw new Error(`${label}.requiredFlags must be a non-empty array`);
+      const glow = requireRecord(object.glow, `${label}.glow`);
+      return {
+        ...common,
+        type,
+        requiredFlags: requiredFlags.map((flag, flagIndex) => requireSaveFlagValue(flag, `${label}.requiredFlags[${flagIndex}]`)),
+        lockedPages: requirePages(object, "lockedPages", label),
+        pages: requirePages(object, "pages", label),
+        afterPages: requirePages(object, "afterPages", label),
+        repeatPages: requirePages(object, "repeatPages", label),
+        awakenedFlag: requireSaveFlag(object, "awakenedFlag", label),
+        opensBarrierId: requireString(object, "opensBarrierId", label),
+        glow: { x: requireNonNegativeNumber(glow, "x", `${label}.glow`), y: requireNonNegativeNumber(glow, "y", `${label}.glow`) },
+      };
+    }
+    throw new Error("image-map object type must be npc, chest, boss, arrival, shooting, interactable, statue, barrier, or awakening");
   });
+}
+
+function requirePages(record: Record<string, unknown>, key: string, label: string): readonly string[] {
+  const value = readOptionalPages(record, key, label);
+  if (value === undefined) throw new Error(`${label}.${key} must be a non-empty array of non-empty strings`);
+  return value;
+}
+
+function readOptionalPages(record: Record<string, unknown>, key: string, label: string): readonly string[] | undefined {
+  const value = record[key];
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value) || value.length === 0 || value.some((page) => typeof page !== "string" || page.length === 0)) {
+    throw new Error(`${label}.${key} must be a non-empty array of non-empty strings`);
+  }
+  return value as readonly string[];
+}
+
+function readOptionalSaveFlag(record: Record<string, unknown>, key: string, label: string): string | undefined {
+  return record[key] === undefined ? undefined : requireSaveFlag(record, key, label);
+}
+
+function requireSaveFlagValue(value: unknown, label: string): string {
+  if (typeof value !== "string" || !/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/.test(value)) {
+    throw new Error(`${label} must be a dot-separated lower-case save flag`);
+  }
+  return value;
 }
 
 function readBounds(value: unknown, label: string): ImageMapBounds {

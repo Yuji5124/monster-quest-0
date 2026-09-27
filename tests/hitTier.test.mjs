@@ -59,3 +59,11 @@ test("とくだいヒット: an enemy without the flag can never trigger it on i
   const s = battle.confirm(); // enemy's counterattack
   assert.doesNotMatch(s.message, /とくだいヒット/);
 });
+
+test("snapshot.lastHitTier reports the latest physical attack's tier for the slash effect", () => {
+  const big = new BattleSystem(combatant("hero"), combatant("enemy"), () => 0);
+  assert.equal(big.getSnapshot().lastHitTier, "normal");
+  assert.equal(big.confirm("fight").lastHitTier, "dai");
+  const normal = new BattleSystem(combatant("hero"), combatant("enemy"), () => 1);
+  assert.equal(normal.confirm("fight").lastHitTier, "normal");
+});

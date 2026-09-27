@@ -1,0 +1,17 @@
+{
+  "formatVersion": 1,
+  "objects": [
+    {
+      "id": "object_mysterious_tower_core",
+      "label": "塔の核",
+      "type": "interactable",
+      "x": 436,
+      "y": 288,
+      "width": 88,
+      "height": 80,
+      "blocking": true,
+      "presentation": "tower-core",
+      "message": "……。"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_demas_tower_1_world_map_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 672, "y": 1048, "width": 104, "height": 38 },
+      "commands": [{ "type": "world-map", "worldMapEntryId": "from_demas_tower" }]
+    },
+    {
+      "id": "event_demas_tower_1_stairs_to_2f",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 672, "y": 104, "width": 104, "height": 44 },
+      "commands": [{ "type": "transfer", "targetMapId": "map_demas_tower_2", "targetSpawnId": "fromTower1F" }]
+    }
+  ]
+}

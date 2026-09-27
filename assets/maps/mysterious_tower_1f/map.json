@@ -1,0 +1,15 @@
+{
+  "id": "map_mysterious_tower_1f",
+  "name": "不思議なとう（1F）",
+  "formatVersion": 1,
+  "coordinateSpace": "background-pixels",
+  "width": 960,
+  "height": 720,
+  "background": "background.png",
+  "collision": "collision.png",
+  "events": "events.json",
+  "objects": "objects.json",
+  "collisionCellSize": 8,
+  "assetStatus": "DEV_PLACEHOLDER",
+  "worldScale": 1
+}

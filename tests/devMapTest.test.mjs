@@ -12,6 +12,7 @@ test("DEV map test accepts only the registered map targets", () => {
   assert.equal(readDevMapTest("?mapTest=rainland-castle-town"), "rainland-castle-town");
   assert.equal(readDevMapTest("?mapTest=rainland-castle"), "rainland-castle");
   assert.equal(readDevMapTest("?mapTest=majin-cave"), "majin-cave");
+  assert.equal(readDevMapTest("?mapTest=mysterious-tower"), "mysterious-tower");
   assert.equal(readDevMapTest("?mapTest=unknown"), null);
   assert.equal(readDevMapTest("?battleTest=demas"), null);
 });

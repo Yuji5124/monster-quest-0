@@ -1,0 +1,19 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_kotankaim_cave_2_stairs_to_1",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 696, "y": 1056, "width": 64, "height": 30 },
+      "commands": [{ "type": "transfer", "targetMapId": "map_kotankaim_cave_1", "targetSpawnId": "fromCave2" }]
+    },
+    {
+      "id": "event_kotankaim_cave_2_door_to_3",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 168, "y": 40, "width": 48, "height": 24 },
+      "commands": [{ "type": "transfer", "targetMapId": "map_kotankaim_cave_3", "targetSpawnId": "fromCave2" }]
+    }
+  ]
+}

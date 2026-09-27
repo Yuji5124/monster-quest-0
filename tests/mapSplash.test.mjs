@@ -61,6 +61,16 @@ test("entering ザボンのむら from the world map plays its own 5-second spla
   assert.ok(readFileSync(new URL(splash.imageUrl)).equals(reference), "the splash must be an unmodified copy of the reference image");
 });
 
+test("entering みずうみの古城 from the world map plays the supplied exterior image before the 3D Scene", () => {
+  const splash = MAP_ENTRY_SPLASHES.map_lake_castle_1;
+  assert.ok(splash);
+  assert.equal(getEntrySplashDurationMs(splash), 5000);
+  assert.equal(splash.caption, "みずうみの古城");
+  assert.equal(findEntrySplash("LakeCastle3DScene", "fromWorldMap")?.mapId, "map_lake_castle_1");
+  const reference = readFileSync(path.join(REPO_ROOT, "assets/maps/reference/reference/みずうみの古城_イメージ.png"));
+  assert.ok(readFileSync(new URL(splash.imageUrl)).equals(reference), "No.11's exterior splash must remain the user-provided source image");
+});
+
 test("the transition helper routes through the splash Scene and the game registers that Scene", () => {
   const transition = readFileSync(path.join(REPO_ROOT, "src/systems/MapTransition.ts"), "utf-8");
   assert.match(transition, /findEntrySplash\(targetSceneKey, data\.spawnId\)/);

@@ -161,6 +161,7 @@
 - オロチまおう: Lv23前後
 - 通常クリア帯: Lv23 / 寄り道あり: Lv24 / かなり育成: Lv25
 - **Lv25を実質的な成長上限とする。Lv25以降を前提にバランスを組まない。**
+- 例外（DEBUG_ONLY、2026-09-27）: `DEBUG_MODE`の戦闘だけは、確認用に3人をLv30で始める。これは通常のEXP・レベルテーブル・セーブへは接続せず、`getCharacterBaseStatsAtLevel`の`maxLevel`引数でカーブを延長するだけ（既定はLv25で頭打ち）。詳細: `BATTLE_SPEC.md` §12。
 
 ### 11.2 Lv1〜25累積EXPテーブル（確定）
 `src/data/expTable.ts`の`EXP_TABLE`が正本。

@@ -1,6 +1,8 @@
 import { getNextJumpCard, JUMP_CARD_COIN_COST, JUMP_CARD_DEFINITIONS } from "../data/jumpCards.ts";
 import type { JumpCardDefinition } from "../data/jumpCards.ts";
 import { getExpForLevel } from "../data/expTable.ts";
+import { createDefaultTowerState, normalizeTowerState } from "./TowerState.ts";
+import type { TowerSaveState } from "./TowerState.ts";
 
 /**
  * SaveSystem未実装中の最小GameState境界。
@@ -26,6 +28,15 @@ export interface CharacterProgressSaveState {
   readonly totalExp: number;
 }
 
+/**
+ * 戦闘の外へ持ち越す現在HP/MP(SAVE_FLAG_SPEC.md「現在HP / MP」)。記録が無いメンバーは全快扱い。
+ * 最大値はレベルから都度算出するため、ここでは現在値だけを持ち、読み出し側で最大値へ丸める。
+ */
+export interface CharacterVitalsSaveState {
+  readonly hp: number;
+  readonly mp: number;
+}
+
 export interface GameState {
   readonly version: number;
   readonly player: {
@@ -36,9 +47,15 @@ export interface GameState {
   readonly party: {
     readonly joinedMemberIds: readonly string[];
     readonly characterProgress: Readonly<Record<string, CharacterProgressSaveState>>;
+    /** 現在HP/MP。記録の無いメンバーは全快。やどやで空へ戻す。 */
+    readonly vitals: Readonly<Record<string, CharacterVitalsSaveState>>;
+    /** ぶきやで買って装備した武器ID。未購入のメンバーはレベル基準の自動装備を使う。 */
+    readonly equippedWeaponIds: Readonly<Record<string, string>>;
   };
   /** Item quantities from battle rewards. Item effects remain outside this storage boundary. */
   readonly inventory: Readonly<Record<string, number>>;
+  /** 不思議なとうの永続状態。旧セーブでは安全にtowerLevel 1へ補完する。 */
+  readonly tower: TowerSaveState;
   /** True-only, named progress flags for one-time events, chests, bosses, and world unlocks. */
   readonly flags: Readonly<Record<string, true>>;
 }
@@ -79,8 +96,9 @@ export function createDefaultGameState(options: DefaultGameStateOptions = {}): G
     version: GAME_STATE_VERSION,
     player: { money },
     cards: { jumpCoinCount, jumpCardCount: 0, obtainedJumpCards: [] },
-    party: { joinedMemberIds: ["hero"], characterProgress: createInitialCharacterProgress() },
+    party: { joinedMemberIds: ["hero"], characterProgress: createInitialCharacterProgress(), vitals: {}, equippedWeaponIds: {} },
     inventory: {},
+    tower: createDefaultTowerState(),
     flags: {},
   };
 }
@@ -96,8 +114,9 @@ export function normalizeGameState(value: unknown): GameState | undefined {
     version?: unknown;
     player?: { money?: unknown };
     cards?: { jumpCoinCount?: unknown; obtainedJumpCards?: unknown };
-    party?: { joinedMemberIds?: unknown; characterProgress?: unknown };
+    party?: { joinedMemberIds?: unknown; characterProgress?: unknown; vitals?: unknown; equippedWeaponIds?: unknown };
     inventory?: unknown;
+    tower?: unknown;
     flags?: unknown;
   };
   if (candidate.version !== GAME_STATE_VERSION) return undefined;
@@ -116,13 +135,20 @@ export function normalizeGameState(value: unknown): GameState | undefined {
   const joinedMemberIds = normalizePartyMemberIds(savedPartyIds);
   const characterProgress = normalizeCharacterProgress(candidate.party?.characterProgress);
   const inventory = normalizeInventory(candidate.inventory);
+  const tower = normalizeTowerState(candidate.tower);
   const flags = normalizeFlags(candidate.flags);
   return {
     version: GAME_STATE_VERSION,
     player: { money },
     cards: { jumpCoinCount, jumpCardCount: uniqueIds.length, obtainedJumpCards: uniqueIds },
-    party: { joinedMemberIds, characterProgress },
+    party: {
+      joinedMemberIds,
+      characterProgress,
+      vitals: normalizeVitals(candidate.party?.vitals),
+      equippedWeaponIds: normalizeEquippedWeaponIds(candidate.party?.equippedWeaponIds),
+    },
     inventory,
+    tower,
     flags,
   };
 }
@@ -206,6 +232,44 @@ export class GameStateRepository {
     return nextState;
   }
 
+  /**
+   * お店・やどやの支払い。足りなければ何も変えずundefinedを返す(所持金をマイナスにしない)。
+   * 減らすのは戦闘報酬のG(player.money)だけで、ジャンコインには触れない。
+   */
+  spendMoney(amount: number): GameState | undefined {
+    const state = this.load();
+    const safeAmount = isFiniteNonNegativeNumber(amount) ? Math.floor(amount) : 0;
+    if (state.player.money < safeAmount) return undefined;
+    const nextState: GameState = { ...state, player: { money: state.player.money - safeAmount } };
+    this.save(nextState);
+    return nextState;
+  }
+
+  /** 戦闘後の現在HP/MPを保存する。他の保存項目は保持する。 */
+  savePartyVitals(vitals: Readonly<Record<string, CharacterVitalsSaveState>>): GameState {
+    const state = this.load();
+    const nextState: GameState = { ...state, party: { ...state.party, vitals: normalizeVitals(vitals) } };
+    this.save(nextState);
+    return nextState;
+  }
+
+  /** やどや等の全回復。現在HP/MPの記録を消し、全員(戦闘不能も含む)を最大値へ戻す。 */
+  restorePartyVitals(): GameState {
+    const state = this.load();
+    const nextState: GameState = { ...state, party: { ...state.party, vitals: {} } };
+    this.save(nextState);
+    return nextState;
+  }
+
+  /** ぶきやで買った武器を装備する。武器IDの妥当性は呼び出し側(weapons.ts)で確認する。 */
+  setEquippedWeapon(memberId: string, weaponId: string): GameState {
+    const state = this.load();
+    const equippedWeaponIds = normalizeEquippedWeaponIds({ ...state.party.equippedWeaponIds, [memberId]: weaponId });
+    const nextState: GameState = { ...state, party: { ...state.party, equippedWeaponIds } };
+    this.save(nextState);
+    return nextState;
+  }
+
   /** Adds gacha-only ジャンコイン without affecting battle gold or card ownership. */
   addJumpCoins(amount: number): GameState {
     const state = this.load();
@@ -233,6 +297,15 @@ export class GameStateRepository {
   saveInventory(inventory: Readonly<Record<string, number>>): GameState {
     const state = this.load();
     const nextState: GameState = { ...state, inventory: normalizeInventory(inventory) };
+    this.save(nextState);
+    return nextState;
+  }
+
+  /** Persists the current tower level while retaining all unrelated game state. */
+  saveTowerLevel(towerLevel: number): GameState {
+    const state = this.load();
+    const tower = normalizeTowerState({ towerLevel });
+    const nextState: GameState = { ...state, tower };
     this.save(nextState);
     return nextState;
   }
@@ -295,6 +368,28 @@ function normalizeCharacterProgress(value: unknown): Record<string, CharacterPro
     }
   }
   return initial;
+}
+
+function normalizeVitals(value: unknown): Record<string, CharacterVitalsSaveState> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const result: Record<string, CharacterVitalsSaveState> = {};
+  for (const memberId of Object.keys(createInitialCharacterProgress())) {
+    const entry = (value as Record<string, unknown>)[memberId] as { hp?: unknown; mp?: unknown } | undefined;
+    if (!entry || typeof entry !== "object") continue;
+    if (!isFiniteNonNegativeNumber(entry.hp) || !isFiniteNonNegativeNumber(entry.mp)) continue;
+    result[memberId] = { hp: Math.floor(entry.hp), mp: Math.floor(entry.mp) };
+  }
+  return result;
+}
+
+function normalizeEquippedWeaponIds(value: unknown): Record<string, string> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const result: Record<string, string> = {};
+  for (const memberId of Object.keys(createInitialCharacterProgress())) {
+    const weaponId = (value as Record<string, unknown>)[memberId];
+    if (typeof weaponId === "string" && weaponId.length > 0) result[memberId] = weaponId;
+  }
+  return result;
 }
 
 function normalizeInventory(value: unknown): Record<string, number> {

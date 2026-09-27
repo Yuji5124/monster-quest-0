@@ -28,9 +28,19 @@ import { TitleScene } from "./scenes/TitleScene.ts";
 import { WorldMapScene } from "./scenes/WorldMapScene.ts";
 import { WorldMapTestScene } from "./scenes/WorldMapTestScene.ts";
 import { ZabonVillageScene } from "./scenes/ZabonVillageScene.ts";
+import { DakohaPortScene } from "./scenes/DakohaPortScene.ts";
+import { PosaroCastleScene } from "./scenes/PosaroCastleScene.ts";
+import { RevivalShrineScene } from "./scenes/RevivalShrineScene.ts";
 import { HiddenVillageScene } from "./scenes/HiddenVillageScene.ts";
 import { IwayamaCave1Scene, IwayamaCave2Scene } from "./scenes/IwayamaCaveScene.ts";
+import { DemasTower1Scene, DemasTower2Scene, DemasTower3Scene } from "./scenes/DemasTowerScene.ts";
+import { KotankaimCave1Scene, KotankaimCave2Scene, KotankaimCave3Scene } from "./scenes/KotankaimCaveScene.ts";
 import { IwayamaShootingScene } from "./scenes/IwayamaShootingScene.ts";
+import { LakeCastle3DScene } from "./scenes/LakeCastle3DScene.ts";
+import { BatorasuFortressScene } from "./scenes/BatorasuFortressScene.ts";
+import { MysteriousTower1FScene, MysteriousTowerExteriorScene } from "./scenes/MysteriousTowerScene.ts";
+import { SwampCaveActionScene } from "./scenes/SwampCaveActionScene.ts";
+import { StoneTownScene } from "./scenes/StoneTownScene.ts";
 import "./style.css";
 
 // DEV_BATTLE_TEST is isolated from normal Title → Opening → map startup.
@@ -40,7 +50,7 @@ const cardBookTestRequested = new URLSearchParams(window.location.search).has("c
 const worldMapTestRequested = new URLSearchParams(window.location.search).has("worldMapTest");
 // DEV_MAP_TEST (?mapTest=no01|no02|image-no01): 通常起動に接続せず、対象マップだけを確認する。
 const mapTestRequested = readDevMapTest(window.location.search);
-const normalScenes = [BootScene, OpeningIntroScene, TitleScene, OpeningGlitchScene, StartingPlaceScene, WorldMapScene, FieldScene, StartingTownScene, StartingForestScene, BieVillageScene, RainlandForest1Scene, RainlandForest2Scene, RainlandCastleTownScene, RainlandCastleScene, RainlandCastle3DScene, RainlandThroneRoomScene, RainlandThroneRoom3DScene, MajinCaveScene, ZabonVillageScene, HiddenVillageScene, IwayamaCave1Scene, IwayamaCave2Scene, IwayamaShootingScene, MapSplashScene, InteriorScene, BattleScene, JumpCardGachaScene, JumpCardEncyclopediaScene];
+const normalScenes = [BootScene, OpeningIntroScene, TitleScene, OpeningGlitchScene, StartingPlaceScene, WorldMapScene, FieldScene, StartingTownScene, StartingForestScene, BieVillageScene, RainlandForest1Scene, RainlandForest2Scene, RainlandCastleTownScene, RainlandCastleScene, RainlandCastle3DScene, RainlandThroneRoomScene, RainlandThroneRoom3DScene, MajinCaveScene, ZabonVillageScene, DakohaPortScene, PosaroCastleScene, RevivalShrineScene, HiddenVillageScene, IwayamaCave1Scene, IwayamaCave2Scene, IwayamaShootingScene, KotankaimCave1Scene, KotankaimCave2Scene, KotankaimCave3Scene, DemasTower1Scene, DemasTower2Scene, DemasTower3Scene, SwampCaveActionScene, MysteriousTowerExteriorScene, MysteriousTower1FScene, LakeCastle3DScene, BatorasuFortressScene, StoneTownScene, MapSplashScene, InteriorScene, BattleScene, JumpCardGachaScene, JumpCardEncyclopediaScene];
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -67,11 +77,11 @@ const game = new Phaser.Game({
         ? [JumpCardEncyclopediaScene]
         : worldMapTestRequested
           // ワールド地図から全ての正式ローカルマップへ移る検証用。
-          ? [WorldMapTestScene, StartingPlaceScene, StartingTownScene, StartingForestScene, BieVillageScene, RainlandForest1Scene, RainlandForest2Scene, RainlandCastleTownScene, RainlandCastleScene, RainlandCastle3DScene, RainlandThroneRoomScene, RainlandThroneRoom3DScene, MajinCaveScene, ZabonVillageScene, HiddenVillageScene, IwayamaCave1Scene, IwayamaCave2Scene, IwayamaShootingScene, MapSplashScene, BattleScene]
+          ? [WorldMapTestScene, StartingPlaceScene, StartingTownScene, StartingForestScene, BieVillageScene, RainlandForest1Scene, RainlandForest2Scene, RainlandCastleTownScene, RainlandCastleScene, RainlandCastle3DScene, RainlandThroneRoomScene, RainlandThroneRoom3DScene, MajinCaveScene, ZabonVillageScene, DakohaPortScene, PosaroCastleScene, RevivalShrineScene, HiddenVillageScene, IwayamaCave1Scene, IwayamaCave2Scene, IwayamaShootingScene, KotankaimCave1Scene, KotankaimCave2Scene, KotankaimCave3Scene, DemasTower1Scene, DemasTower2Scene, DemasTower3Scene, SwampCaveActionScene, MysteriousTowerExteriorScene, MysteriousTower1FScene, LakeCastle3DScene, BatorasuFortressScene, StoneTownScene, MapSplashScene, BattleScene]
         : mapTestRequested === "no01"
           ? [MapTestNo01Scene]
           : mapTestRequested === "no02"
-            // No.02単体確認: 西端でWorldMapSceneへ、建物入口でInteriorSceneへ、NPC経由でBattleSceneへ遷移する。
+            // No.02単体確認: 西端でWorldMapSceneへ、NPC経由でBattleSceneへ遷移する(建物入口は2026-09-24削除)。
             ? [StartingTownScene, WorldMapScene, InteriorScene, BattleScene]
             : mapTestRequested === "image-no01"
               // 正式No.01画像マップの北門EventはWorldMapSceneへ遷移する。
@@ -101,6 +111,15 @@ const game = new Phaser.Game({
                       : mapTestRequested === "zabon-village"
                         // No.08ザボンのむら単体確認: 北口でWorldMapSceneへ(世界地図から再入場すると入場演出を挟む)。
                         ? [ZabonVillageScene, WorldMapScene, MapSplashScene]
+                      : mapTestRequested === "dakoha-port"
+                        // No.12港町ダコハ単体確認: 北門でWorldMapSceneへ(世界地図から再入場すると入場演出を挟む)。
+                        ? [DakohaPortScene, WorldMapScene, MapSplashScene]
+                      : mapTestRequested === "posaro-castle"
+                        // No.14ポサロ城単体確認: 南の大階段でWorldMapSceneへ戻り、世界地図から再入場すると外観演出を挟む。
+                        ? [PosaroCastleScene, WorldMapScene, MapSplashScene]
+                      : mapTestRequested === "revival-shrine"
+                        // No.15ふっかつのほこら単体確認: 南口でWorldMapSceneへ(世界地図から再入場すると入場演出を挟む)。
+                        ? [RevivalShrineScene, WorldMapScene, MapSplashScene]
                       : mapTestRequested === "hidden-village"
                         // No.10かくれざと単体確認: 北西の木門でWorldMapSceneへ遷移する。
                         ? [HiddenVillageScene, WorldMapScene]
@@ -111,9 +130,30 @@ const game = new Phaser.Game({
                         // いわやまのどうくつ崩落シューティング単体確認(&shootingSection=rocks|medium|enemies|explosion|chain|collapse|wall または a〜g)。
                         // クリアすると1Fの赤い丸の場所へ戻る。
                         ? [IwayamaShootingScene, IwayamaCave1Scene, IwayamaCave2Scene, WorldMapScene, MapSplashScene, BattleScene]
+                      : mapTestRequested === "kotankaim-cave"
+                        // No.13コタンカイムの洞窟単体確認: (1)右上の扉⇄(2)南の石段、(2)左上の扉⇄(3)南の石段、(1)南の出口でWorldMapSceneへ(再入場で入場演出)。
+                        ? [KotankaimCave1Scene, KotankaimCave2Scene, KotankaimCave3Scene, WorldMapScene, MapSplashScene]
+                      : mapTestRequested === "batorasu-fortress"
+                        // No.19 generator QA. &seed=1 etc. reproduces the exact room chain.
+                        ? [BatorasuFortressScene, BattleScene]
+                      : mapTestRequested === "demas-tower"
+                        // No.16 only: floors, boss battle, victory return, and world-map exit.
+                        ? [DemasTower1Scene, DemasTower2Scene, DemasTower3Scene, WorldMapScene, MapSplashScene, BattleScene]
+                      : mapTestRequested === "mysterious-tower"
+                        // 不思議なとう単体確認: 外→入口→1Fの核→外→WorldMapSceneを確認する。
+                        ? [MysteriousTowerExteriorScene, MysteriousTower1FScene, WorldMapScene]
+                      : mapTestRequested === "lake-castle-3d"
+                        // No.11一人称3D。&floor=1|2|3 と &lakeCastleDebug=1 で各階・Collision/FPSを単体確認できる。
+                        ? [LakeCastle3DScene, WorldMapScene, MapSplashScene, BattleScene]
+                      : mapTestRequested === "stone-town"
+                        // No.18いしのまち単体確認: 南門・北門でWorldMapSceneへ(世界地図から再入場すると入場演出を挟む)。石像を調べて広場の石像を目覚めさせると北の石の壁が崩れる。
+                        ? [StoneTownScene, WorldMapScene, MapSplashScene]
                       : mapTestRequested === "majin-cave"
                         // 正式No.07（内部map_08_majin_cave）単体確認: 通常WorldMapSceneを経由・登録せず、このSceneだけを起動する。
                         ? [MajinCaveScene]
+                      : mapTestRequested === "swamp-cave"
+                        // 正式No.17の短い三人アクション区画。DEV中は宝箱・進行フラグを実セーブへ書き込まない。
+                        ? [SwampCaveActionScene, WorldMapScene]
                       : normalScenes,
 });
 

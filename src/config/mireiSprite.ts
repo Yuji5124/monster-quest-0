@@ -13,6 +13,7 @@ export const MIREI_SPRITE: WalkSpriteGeometry = {
   path: new URL("../../assets/characters/playable/mirei_walk.png", import.meta.url).toString(),
   frameWidth: 54,
   frameHeight: 70,
-  walkFrameRate: 7,
+  // 主人公・タロサと同じ3フレーム往復を約0.33秒で1周期にし、隊列追従を滑らかにする。
+  walkFrameRate: 12,
   baselineY: 67,
 };

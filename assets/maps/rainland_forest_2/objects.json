@@ -1,4 +1,17 @@
 {
   "formatVersion": 1,
-  "objects": []
+  "objects": [
+    {
+      "id": "chest_rainland_forest_2_ruin",
+      "type": "chest",
+      "label": "たからばこ",
+      "x": 112,
+      "y": 177,
+      "width": 44,
+      "height": 36,
+      "blocking": true,
+      "itemId": "kaifukuyaku",
+      "openedFlag": "chest.rainland_forest_2_ruin_opened"
+    }
+  ]
 }

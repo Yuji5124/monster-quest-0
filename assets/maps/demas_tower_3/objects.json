@@ -1,0 +1,18 @@
+{
+  "formatVersion": 1,
+  "objects": [
+    {
+      "id": "boss_demas_tower_demas",
+      "type": "boss",
+      "label": "デーマス",
+      "x": 650,
+      "y": 328,
+      "width": 148,
+      "height": 144,
+      "blocking": false,
+      "monsterId": "demas",
+      "victoryFlag": "boss.demas_defeated",
+      "unlockFlag": "story.demas_tower_cleared"
+    }
+  ]
+}

@@ -39,10 +39,15 @@ export interface BattleCombatantDefinition {
   readonly weaponAction?: WeaponActionDefinition;
   /** 状態異常耐性。trueなら完全無効。 */
   readonly statusResistance?: { readonly poison?: boolean };
+  /** Optional data-owned first-application message for a status effect. */
+  readonly statusApplyMessage?: { readonly poison?: string };
   /** ワタベ専用の固有攻撃「とくだいヒット」(BATTLE_SPEC.md §6)を使えるか。現状どの正式パーティメンバーにも設定しない。 */
   readonly canUseTokudaiHit?: boolean;
   /** TEMP_TEST_VALUE: battle reward balance pending the formal monster-data pass. */
   readonly reward?: BattleRewardDefinition;
+  /** 戦闘開始時のHP/MP(前の戦闘から持ち越した値)。省略時は全快。最大値へ丸める。 */
+  readonly initialHp?: number;
+  readonly initialMp?: number;
 }
 
 export interface BattleItemDropDefinition {
@@ -88,6 +93,21 @@ export interface BattleSnapshot {
   readonly message: string;
   /** Set exactly once when the battle enters VICTORY. */
   readonly reward?: BattleReward;
+  /** 直前の物理攻撃のヒット種別。攻撃演出(だいヒット時の大げさな斬撃)の出し分けに使う。 */
+  readonly lastHitTier: BattleHitTier;
+  /** Latest resolved action for renderer-only enemy presentation. */
+  readonly lastAction?: Readonly<BattleActionTrace>;
+}
+
+export type BattleHitTier = "tokudai" | "dai" | "normal";
+
+/** Renderer-facing trace for the one action resolved by the latest confirm. It never changes game rules. */
+export interface BattleActionTrace {
+  readonly casterId: string;
+  readonly targetId: string;
+  readonly actionId: string;
+  readonly kind: BattleAction["kind"];
+  readonly reflected: boolean;
 }
 
 /** Rolls a single first-match item drop. Invalid values safely produce no reward. */
@@ -117,7 +137,10 @@ export function calculateDamage(attacker: Pick<BattleCombatantDefinition, "attac
 }
 
 function toCombatant(definition: BattleCombatantDefinition): BattleCombatant {
-  return { ...definition, hp: definition.maxHp, mp: definition.maxMp ?? 0, status: { mirror: 0, poisoned: false } };
+  const maxMp = definition.maxMp ?? 0;
+  const hp = Math.max(0, Math.min(definition.maxHp, Math.floor(definition.initialHp ?? definition.maxHp)));
+  const mp = Math.max(0, Math.min(maxMp, Math.floor(definition.initialMp ?? maxMp)));
+  return { ...definition, hp, mp, status: { mirror: 0, poisoned: false } };
 }
 
 function cloneCombatant(combatant: BattleCombatant): BattleCombatant {
@@ -139,6 +162,8 @@ export class BattleSystem {
   private readonly actedThisRound = new Set<string>();
   private enemyActionIndex = 0;
   private reward: BattleReward | undefined;
+  private lastHitTier: BattleHitTier = "normal";
+  private lastAction: BattleActionTrace | undefined;
   private readonly random: () => number;
 
   constructor(
@@ -163,10 +188,14 @@ export class BattleSystem {
       actingIndex: this.actingIndex,
       message: this.message,
       reward: this.reward ? { ...this.reward } : undefined,
+      lastHitTier: this.lastHitTier,
+      lastAction: this.lastAction ? { ...this.lastAction } : undefined,
     };
   }
 
   confirm(command: BattleCommandId = "fight", magicId?: string, itemId?: string): BattleSnapshot {
+    this.lastHitTier = "normal";
+    this.lastAction = undefined;
     if (this.state === "COMMAND") {
       const actor = this.party[this.actingIndex];
       let acted = false;
@@ -327,7 +356,7 @@ export class BattleSystem {
   }
 
   /** だいヒット/とくだいヒットの判定。とくだいヒットは`canUseTokudaiHit`を持つ戦闘者専用で、だいヒットの名称変更ではない。 */
-  private rollHitTier(caster: BattleCombatant): "tokudai" | "dai" | "normal" {
+  private rollHitTier(caster: BattleCombatant): BattleHitTier {
     if (caster.canUseTokudaiHit && this.random() < TOKUDAI_HIT_RATE) return "tokudai";
     if (this.random() < DAI_HIT_RATE) return "dai";
     return "normal";
@@ -339,6 +368,7 @@ export class BattleSystem {
       const hits = Math.max(1, weapon?.hitCount ?? 1);
       const pierce = Math.min(1, Math.max(0, weapon?.defensePierce ?? 0));
       const hitTier = this.rollHitTier(caster);
+      this.lastHitTier = hitTier;
       const multiplier = hitTier === "tokudai" ? TOKUDAI_HIT_MULTIPLIER : hitTier === "dai" ? DAI_HIT_MULTIPLIER : 1;
       let totalDamage = 0;
       for (let hit = 0; hit < hits && target.hp > 0; hit += 1) {
@@ -348,13 +378,14 @@ export class BattleSystem {
         totalDamage += damage;
       }
       let statusNote = "";
-      if (weapon?.statusEffect === "poison" && !target.statusResistance?.poison && this.random() < (weapon.applyChance ?? 0)) {
+      if (weapon?.statusEffect === "poison" && !target.status.poisoned && !target.statusResistance?.poison && this.random() < (weapon.applyChance ?? 0)) {
         target.status.poisoned = true;
-        statusNote = `\n${target.displayName}は　どくを　あびた！`;
+        statusNote = `\n${target.statusApplyMessage?.poison ?? `${target.displayName}は　どくを　あびた！`}`;
       }
       const hitNote = hits > 1 ? `(${hits}れんげき)` : "";
       const tierNote = hitTier === "tokudai" ? "\nとくだいヒット！！" : hitTier === "dai" ? "\nだいヒット！" : "";
       this.message = `${caster.displayName}の　こうげき${hitNote}！${tierNote}\n${target.displayName}に　${totalDamage}のダメージ！${statusNote}`;
+      this.recordAction(caster, target, action);
       return true;
     }
     if (caster.mp < action.mpCost) { this.message = "MPが　たりない！"; return false; }
@@ -362,34 +393,44 @@ export class BattleSystem {
     if (action.kind === "mirror") {
       caster.status.mirror = action.charges;
       this.message = `${caster.displayName}は　${action.name}をつかった！\nひかりのかがみが　あらわれた。`;
+      this.recordAction(caster, target, action);
       return true;
     }
     if (action.kind === "heal") {
       const healed = Math.min(action.power, target.maxHp - target.hp);
       target.hp += healed;
       this.message = `${caster.displayName}の　${action.name}！\n${target.displayName}の　HPが　${healed}かいふくした！`;
+      this.recordAction(caster, target, action);
       return true;
     }
     if (action.kind === "revive") {
       const amount = Math.min(target.maxHp, Math.round(target.maxHp * action.reviveHpPercent));
       target.hp = amount;
       this.message = `${caster.displayName}の　${action.name}！\n${target.displayName}が　いきかえった！`;
+      this.recordAction(caster, target, action);
       return true;
     }
     if (action.kind === "buff") {
       if (action.stat === "speed") target.speed = (target.speed ?? 0) + action.amount;
       if (action.stat === "defense") target.defense += action.amount;
       this.message = `${caster.displayName}の　${action.name}！\n${target.displayName}は　つよく　なった！`;
+      this.recordAction(caster, target, action);
       return true;
     }
     if (action.kind === "debuff") {
       target.attack = Math.max(1, target.attack - action.amount);
       this.message = `${caster.displayName}の　${action.name}！\n${target.displayName}は　よわく　なった！`;
+      this.recordAction(caster, target, action);
       return true;
     }
     const result = resolveMagicDamage(caster, target, action.power, action.reflectable);
     const recipient = result.reflected ? caster : target;
     this.message = `${caster.displayName}の　${action.name}！\n${result.reflected ? "ミラーが　まほうをはねかえした！\n" : ""}${recipient.displayName}に　${result.damage}のダメージ！`;
+    this.recordAction(caster, target, action, result.reflected);
     return true;
+  }
+
+  private recordAction(caster: BattleCombatant, target: BattleCombatant, action: BattleAction, reflected = false): void {
+    this.lastAction = { casterId: caster.id, targetId: target.id, actionId: action.id, kind: action.kind, reflected };
   }
 }

@@ -87,6 +87,11 @@ export class Npc {
     this.setIdle();
   }
 
+  /** 見た目とBodyをまとめて取り除く(一度きりのイベントで去るNPC用)。以後Physicsの衝突・会話対象から外れる。 */
+  destroy(): void {
+    this.visual.destroy();
+  }
+
   private chooseTarget(time: number): void {
     if (!this.movement) return;
     // A disc keeps a villager visibly tied to its red placement point instead

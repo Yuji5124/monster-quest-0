@@ -2,7 +2,10 @@ import Phaser from "phaser";
 import { DEV_MAJIN_CAVE_BALANCE, getMajinCaveTheme, MAJIN_CAVE_DEFAULT_SEED, MAJIN_CAVE_FLOOR_COUNT, MAJIN_CAVE_GRID, MAJIN_CAVE_SCENE_KEY, MAJIN_CAVE_TILESET } from "../config/majinCave.ts";
 import type { MajinCaveHeroStats, MajinCavePoint } from "../config/majinCave.ts";
 import { getLearnedMagicAtLevel } from "../config/characterGrowth.ts";
+import type { BattleAction } from "../data/battleActions.ts";
 import { MAGIC_HEAT } from "../data/battleActions.ts";
+import { ITEM_DEFINITIONS } from "../data/items.ts";
+import type { ItemId } from "../data/items.ts";
 import { CharacterProgression, characterProgression, formatLevelUpLines } from "../systems/CharacterProgression.ts";
 import { GAME_STATE_STORAGE_KEY, GameStateRepository } from "../systems/GameStateRepository.ts";
 import type { KeyValueStorage } from "../systems/GameStateRepository.ts";
@@ -13,6 +16,7 @@ import { MAJIN_CAVE_ENEMIES } from "../data/majinCaveEnemies.ts";
 import { idleFrame } from "../config/characterWalkSprite.ts";
 import { ensureWalkAnimations, preloadWalkSprite, walkAnimKey } from "../systems/CharacterWalkSprite.ts";
 import { ensureMajinCaveMonsterAnimations, MajinCaveMonsterSpriteController, preloadMajinCaveMonsterSprites, validateMajinCaveMonsterSprites } from "../systems/MajinCaveMonsterSprites.ts";
+import { Inventory, inventory } from "../systems/Inventory.ts";
 import { InputSystem } from "../systems/InputSystem.ts";
 import { beginMapTransition } from "../systems/MapTransition.ts";
 import { pointKey } from "../systems/MajinCaveGenerator.ts";
@@ -21,6 +25,8 @@ import type { MajinCaveEnemyState } from "../systems/MajinCaveRunState.ts";
 import { MajinCaveAttackPresentation } from "../systems/MajinCaveAttackPresentation.ts";
 import { MajinCaveTurnSystem } from "../systems/MajinCaveTurnSystem.ts";
 import type { MajinCaveDirection, MajinCaveEnemyEvent, MajinCavePlayerAction } from "../systems/MajinCaveTurnSystem.ts";
+import { MajinCaveActionMenu } from "../ui/MajinCaveActionMenu.ts";
+import type { MajinCaveKnownMagic } from "../ui/MajinCaveActionMenu.ts";
 
 const WINDOW_COLOR = 0x080d18;
 const UI_DEPTH = 200;
@@ -82,6 +88,7 @@ export class MajinCaveScene extends Phaser.Scene {
   private run!: MajinCaveRunState;
   private progression: CharacterProgression = characterProgression;
   private turns = new MajinCaveTurnSystem();
+  private caveInventory: Inventory = inventory;
   private playerVisual!: Phaser.GameObjects.Sprite;
   private minimap!: Phaser.GameObjects.Graphics;
   private floorLabel!: Phaser.GameObjects.Text;
@@ -94,6 +101,7 @@ export class MajinCaveScene extends Phaser.Scene {
   private readonly fogTiles = new Map<string, Phaser.GameObjects.Rectangle>();
   private monsterSprites!: MajinCaveMonsterSpriteController;
   private attackPresentation!: MajinCaveAttackPresentation;
+  private actionMenu!: MajinCaveActionMenu;
   private helpObjects: Phaser.GameObjects.GameObject[] = [];
   private mapOverlayObjects: Phaser.GameObjects.GameObject[] = [];
   private monsterHouseRevealObjects: Phaser.GameObjects.GameObject[] = [];
@@ -134,6 +142,9 @@ export class MajinCaveScene extends Phaser.Scene {
     // 2026-09-23: どうくつは主人公1人で、これまでのレベル・EXPを引き継ぐ。倒した敵のEXPは
     // 通常戦闘と同じ累積EXPへ加算され、どうくつを出た後もそのまま残る。
     this.progression = isDevMapTest ? createDevMemoryProgression() : characterProgression;
+    // DEV URLの戦利品・消費品は実セーブへ書かない。通常導線では共有Inventoryへ即時保存する。
+    const currentItems = Object.fromEntries(inventory.getSlots().map((slot) => [slot.itemId, slot.quantity])) as Partial<Record<ItemId, number>>;
+    this.caveInventory = isDevMapTest ? new Inventory(currentItems) : inventory;
     this.run = new MajinCaveRunState(runSeed, { hero: buildMajinCaveHero(this.progression) });
     if (devFloor) this.skipDevRunToFloor(devFloor);
     this.turns = new MajinCaveTurnSystem();
@@ -153,12 +164,14 @@ export class MajinCaveScene extends Phaser.Scene {
     this.configureCamera();
     this.monsterSprites.setHudCamera(this.hudCamera);
     this.attackPresentation = new MajinCaveAttackPresentation(this, this.hudCamera, ACTOR_DEPTH + 12);
+    this.actionMenu = new MajinCaveActionMenu(this, (object) => this.registerHudObject(object));
     this.createHud();
     this.createTouchControls();
     this.actions = new InputSystem(window, document);
     const cleanup = (): void => {
       this.actions.destroy();
       this.attackPresentation.dispose();
+      this.actionMenu.dispose();
       this.monsterSprites.dispose();
       this.destroyObjects(this.majinRevealObjects);
       this.cameras.remove(this.hudCamera);
@@ -179,6 +192,10 @@ export class MajinCaveScene extends Phaser.Scene {
       if (this.actions.consumePressed("map") || this.actions.consumePressed("cancel")) this.toggleMapOverlay();
       return;
     }
+    if (this.actionMenu.isOpen) {
+      this.handleActionMenuInput();
+      return;
+    }
     if (this.helpOpen) {
       if (this.actions.consumePressed("menu") || this.actions.consumePressed("cancel")) this.toggleHelp();
       return;
@@ -188,7 +205,7 @@ export class MajinCaveScene extends Phaser.Scene {
       return;
     }
     if (this.actions.consumePressed("menu")) {
-      this.toggleHelp();
+      this.openActionMenu();
       return;
     }
     if (this.actions.consumePressed("confirm")) {
@@ -277,6 +294,91 @@ export class MajinCaveScene extends Phaser.Scene {
     return null;
   }
 
+  private openActionMenu(): void {
+    this.actionMenu.open(this.getKnownMagic(), this.caveInventory.getSlots());
+  }
+
+  private getKnownMagic(): readonly MajinCaveKnownMagic[] {
+    return getLearnedMagicAtLevel("hero", this.run.hero.level)
+      .filter((magic): magic is MajinCaveKnownMagic => magic.kind !== "attack");
+  }
+
+  private handleActionMenuInput(): void {
+    const event = this.actionMenu.handleInput(this.actions);
+    if (event.kind === "magic") {
+      this.tryCastCaveMagic(event.magic);
+    } else if (event.kind === "magic_target") {
+      this.tryCastCaveMagic(event.magic, event.direction, true);
+    } else if (event.kind === "item") {
+      this.tryUseCaveItem(event.itemId);
+    } else if (event.kind === "help") {
+      this.actionMenu.close();
+      this.toggleHelp();
+    }
+  }
+
+  private tryCastCaveMagic(magic: BattleAction, direction?: MajinCaveDirection, keepTargeting = false): void {
+    const action = this.turns.castMagic(this.run, magic, direction);
+    if (!action.valid) {
+      this.setMessage(this.messageForInvalidAction(action));
+      if (!keepTargeting || action.kind !== "no_target") this.actionMenu.close();
+      return;
+    }
+    this.actionMenu.close();
+    this.resolvePlayerAction(action, direction);
+  }
+
+  private tryUseCaveItem(itemId: ItemId): void {
+    const definition = ITEM_DEFINITIONS[itemId];
+    if (!this.caveInventory.getSlots().some((slot) => slot.itemId === itemId)) {
+      this.setMessage("その どうぐは もっていない。");
+      this.actionMenu.close();
+      return;
+    }
+    if (definition.effect === "escape_cave") {
+      if (!this.caveInventory.remove(itemId)) {
+        this.setMessage("どうぐを つかえない。");
+        this.actionMenu.close();
+        return;
+      }
+      this.actionMenu.close();
+      this.leaveCaveWithRireRope();
+      return;
+    }
+    if (definition.effect !== "heal" || definition.power === null) {
+      this.setMessage("この どうぐは どうくつでは つかえない。");
+      this.actionMenu.close();
+      return;
+    }
+    if (this.run.playerHp >= this.run.hero.maxHp) {
+      this.setMessage("HPは じゅうぶんだ。");
+      this.actionMenu.close();
+      return;
+    }
+    if (!this.caveInventory.remove(itemId)) {
+      this.setMessage("どうぐを つかえない。");
+      this.actionMenu.close();
+      return;
+    }
+    const action = this.turns.useHealingItem(this.run, itemId, definition.power);
+    if (!action.valid) {
+      this.setMessage(this.messageForInvalidAction(action));
+      this.actionMenu.close();
+      return;
+    }
+    this.actionMenu.close();
+    this.resolvePlayerAction(action);
+  }
+
+  private messageForInvalidAction(action: Extract<MajinCavePlayerAction, { readonly valid: false }>): string {
+    if (action.kind === "no_mp") return "MPが たりない。";
+    if (action.kind === "not_learned") return "その まほうは まだ おぼえていない。";
+    if (action.kind === "no_target") return "となりに てきがいない。";
+    if (action.kind === "no_effect") return "いまは つかう ひつようがない。";
+    if (action.kind === "unsupported_magic") return "この まほうは どうくつでは つかえない。";
+    return "ここでは できない。";
+  }
+
   private resolvePlayerAction(action: MajinCavePlayerAction, direction?: MajinCaveDirection): void {
     if (!action.valid) {
       this.setMessage("いわかべに ぶつかった。");
@@ -322,7 +424,7 @@ export class MajinCaveScene extends Phaser.Scene {
         } else {
           await this.monsterSprites.damage(action.enemy, action.defeated);
         }
-      } else if (action.kind === "heat") {
+      } else if (action.kind === "heat" || action.kind === "magic") {
         await this.monsterSprites.damage(action.enemy, action.defeated);
       }
 
@@ -333,7 +435,9 @@ export class MajinCaveScene extends Phaser.Scene {
       if (arrivingMajin) message = `まじんが あらわれた！\n${message}`;
       const levelUpMessage = this.grantDefeatExperience(action);
       if (levelUpMessage) message = `${message}\n${levelUpMessage}`;
-      if ((action.kind === "attack" || action.kind === "heat") && action.defeated && action.enemy.definitionId === "majin") this.playReturnCue();
+      const escapeRopeMessage = this.grantEscapeRope(action);
+      if (escapeRopeMessage) message = `${message}\n${escapeRopeMessage}`;
+      if ((action.kind === "attack" || action.kind === "heat" || action.kind === "magic") && action.defeated && action.enemy.definitionId === "majin") this.playReturnCue();
       const enemyEvents = this.turns.resolveEnemyPhase(this.run);
       await this.presentEnemyPhase(enemyEvents);
       if (this.run.playerHp === 0) {
@@ -413,10 +517,13 @@ export class MajinCaveScene extends Phaser.Scene {
   private messageForPlayerAction(action: Exclude<MajinCavePlayerAction, { readonly valid: false }>): string {
     if (action.kind === "move") return "一歩 すすんだ。";
     if (action.kind === "wait") return "そのばで まった。";
+    if (action.kind === "magic_heal") return `${action.magic.name}を となえた。\nHPが ${action.recovered} かいふくした！`;
+    if (action.kind === "item_heal") return `${ITEM_DEFINITIONS[action.itemId].name}を つかった。\nHPが ${action.recovered} かいふくした！`;
     const name = this.run.enemyDefinition(action.enemy).name;
     const experience = this.run.enemyDefinition(action.enemy).experience;
     if (action.defeated && action.enemy.definitionId === "majin") return `まじんを たおした！ ${experience}EXP\nどうくつを もどろう。`;
-    return action.defeated ? `${name}を たおした！ ${experience}EXP` : `${name}に ${action.damage} ダメージ！`;
+    const prefix = action.kind === "magic" ? `${action.magic.name}！ ` : "";
+    return action.defeated ? `${prefix}${name}を たおした！ ${experience}EXP` : `${prefix}${name}に ${action.damage} ダメージ！`;
   }
 
   /**
@@ -424,12 +531,20 @@ export class MajinCaveScene extends Phaser.Scene {
    * どうくつ内の能力値も即座に更新する。レベルアップ行(なければnull)を返す。
    */
   private grantDefeatExperience(action: Exclude<MajinCavePlayerAction, { readonly valid: false }>): string | null {
-    if ((action.kind !== "attack" && action.kind !== "heat") || !action.defeated) return null;
+    if ((action.kind !== "attack" && action.kind !== "heat" && action.kind !== "magic") || !action.defeated) return null;
     const experience = this.run.enemyDefinition(action.enemy).experience;
     const { levelUps } = this.progression.awardExperience(["hero"], experience);
     if (levelUps.length === 0) return null;
     this.run.applyHeroStats(buildMajinCaveHero(this.progression));
     return formatLevelUpLines(levelUps).join("\n");
+  }
+
+  /** A single guaranteed emergency exit tool keeps the cave from becoming a one-way run. */
+  private grantEscapeRope(action: Exclude<MajinCavePlayerAction, { readonly valid: false }>): string | null {
+    if ((action.kind !== "attack" && action.kind !== "heat" && action.kind !== "magic") || !action.defeated) return null;
+    if (!this.run.claimEscapeRopeDrop(action.enemy)) return null;
+    if (!this.caveInventory.add("rire_rope")) return null;
+    return "リレロープを てにいれた！\nメニューの どうぐで つかえる。";
   }
 
   private messageForEnemyPhase(events: readonly MajinCaveEnemyEvent[]): string | null {
@@ -470,6 +585,12 @@ export class MajinCaveScene extends Phaser.Scene {
     this.transitioning = true;
     this.logDevTempoReport();
     this.setMessage("まじんのどうくつを でた。");
+    beginMapTransition(this, this.actions, this.returnSceneKey, this.returnData, MAP_TRANSITION_FADE_MS);
+  }
+  private leaveCaveWithRireRope(): void {
+    this.transitioning = true;
+    this.logDevTempoReport();
+    this.setMessage("リレロープを つかった。\nまじんのどうくつを でた。");
     beginMapTransition(this, this.actions, this.returnSceneKey, this.returnData, MAP_TRANSITION_FADE_MS);
   }
 

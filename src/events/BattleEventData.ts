@@ -22,6 +22,10 @@ export interface BattleDialogueEvent {
   readonly returnSpawnX?: number;
   readonly returnSpawnY?: number;
   readonly returnFacing?: Facing;
+  /** Optional scene-specific floor/layer to restore after a battle. */
+  readonly returnFloor?: number;
+  /** Optional exact first-person camera yaw. 2D maps continue to use returnFacing. */
+  readonly returnYaw?: number;
 }
 
 /** DEV recruitment event. The dialogue chooses this only when its prerequisite is satisfied. */
@@ -31,7 +35,25 @@ export interface PartyJoinDialogueEvent {
   readonly memberId: "tarosa" | "mirei";
 }
 
-export type DialogueAfterEvent = BattleDialogueEvent | PartyJoinDialogueEvent;
+/** 会話を読み終えた時点で、一度きりの進行フラグを保存する(店主から場所を聞いて世界地図の地点が解放される等)。 */
+export interface StoryFlagsDialogueEvent {
+  readonly type: "story-flags";
+  readonly eventId: string;
+  readonly flags: readonly string[];
+}
+
+/**
+ * 会話を読み終えると画面が暗転し、そのNPCが町から去る一度きりのイベント。
+ * フラグは暗転中(NPCを消す瞬間)に保存し、明転後には最初からいない状態と同じになる。
+ */
+export interface NpcDepartDialogueEvent {
+  readonly type: "npc-depart";
+  readonly eventId: string;
+  readonly npcId: string;
+  readonly flags: readonly string[];
+}
+
+export type DialogueAfterEvent = BattleDialogueEvent | PartyJoinDialogueEvent | StoryFlagsDialogueEvent | NpcDepartDialogueEvent;
 
 export interface BattleSceneStartData extends BattleDialogueEvent {
   readonly mode: "event";
@@ -47,6 +69,14 @@ export function isBattleDialogueEvent(event: DialogueAfterEvent | undefined): ev
 
 export function isPartyJoinDialogueEvent(event: DialogueAfterEvent | undefined): event is PartyJoinDialogueEvent {
   return event?.type === "party-join";
+}
+
+export function isStoryFlagsDialogueEvent(event: DialogueAfterEvent | undefined): event is StoryFlagsDialogueEvent {
+  return event?.type === "story-flags";
+}
+
+export function isNpcDepartDialogueEvent(event: DialogueAfterEvent | undefined): event is NpcDepartDialogueEvent {
+  return event?.type === "npc-depart";
 }
 
 /** Tiled Object properties -> existing dialogue battle contract. Coordinates stay with the map. */

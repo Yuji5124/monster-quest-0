@@ -69,3 +69,37 @@ export const BIE_VILLAGE_ANOMALY: MapAnomalyConfig = {
     { id: "watermill_falls", area: { x: 40, y: 20, width: 260, height: 520 }, weight: 1 },
   ],
 };
+
+/**
+ * 村人のバグり(2026-09-26ユーザー指示「少しバグリのエフェクトを足して」→同日「ときどきエフェクトをかけて」で
+ * 気づける強さへ調整)。数秒おきに村人1人へ、左右2色に分かれた残像が重なり、カクカクと位置を変えながら
+ * 本体がちらつく(約0.2〜0.35秒)。まれに残像だけ別の向きの絵になる。
+ * 背景の異変と同じく一瞬・小さく・無音で、会話・当たり判定・移動・進行フラグには触れない。数値はTEMP_TEST_VALUE。
+ */
+export interface VillagerGlitchConfig {
+  /** 次のバグりまでの間隔[ms](村全体で1つのタイマー)。 */
+  readonly intervalMs: { readonly min: number; readonly max: number };
+  /** 残像の横ずれ[背景px]。左右どちらかへ出す。 */
+  readonly shift: { readonly min: number; readonly max: number };
+  /** 残像・ちらつきの表示時間[ms]。 */
+  readonly durationMs: { readonly min: number; readonly max: number };
+  readonly ghostColors: readonly number[];
+  readonly ghostAlpha: number;
+  /** ちらつき中の本体の不透明度。 */
+  readonly flickerAlpha: number;
+  /** 残像だけが別の向きの絵になる確率(0〜1)。 */
+  readonly wrongFacingChance: number;
+  /** 1回のバグりの中で残像の位置と本体のちらつきを切り替える回数(カクカク感)。 */
+  readonly jitterSteps: number;
+}
+
+export const BIE_VILLAGER_GLITCH: VillagerGlitchConfig = {
+  intervalMs: { min: 2000, max: 5000 },
+  shift: { min: 6, max: 12 },
+  durationMs: { min: 200, max: 350 },
+  ghostColors: [0x7ae8ff, 0xff7ad9],
+  ghostAlpha: 0.75,
+  flickerAlpha: 0.25,
+  wrongFacingChance: 0.3,
+  jitterSteps: 3,
+};

@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_posaro_castle_south_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 648, "y": 1056, "width": 152, "height": 30 },
+      "commands": [{ "type": "world-map", "worldMapEntryId": "from_posaro_castle" }]
+    }
+  ]
+}

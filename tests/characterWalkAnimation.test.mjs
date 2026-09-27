@@ -13,7 +13,7 @@ test("the protagonist walk keeps the three-pose yoyo cycle but advances at a smo
   assert.equal(PROTAGONIST_SPRITE.walkFrameRate, 12);
 });
 
-test("party members retain their existing walk tempo", () => {
-  assert.equal(TAROSA_SPRITE.walkFrameRate, 7);
-  assert.equal(MIREI_SPRITE.walkFrameRate, 7);
+test("Tarosa and Mirei match the protagonist's smooth walk tempo", () => {
+  assert.equal(TAROSA_SPRITE.walkFrameRate, 12);
+  assert.equal(MIREI_SPRITE.walkFrameRate, 12);
 });

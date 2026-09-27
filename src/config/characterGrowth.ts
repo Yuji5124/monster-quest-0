@@ -72,8 +72,12 @@ export interface CharacterBaseStats {
   readonly speed: number;
 }
 
-export function getCharacterBaseStatsAtLevel(memberId: PartyMemberId, level: number): CharacterBaseStats {
-  const clampedLevel = Math.min(MAX_CHARACTER_LEVEL, Math.max(1, Math.floor(level)));
+/**
+ * 通常は正式な成長上限(Lv25)で止める。`maxLevel`はDEBUG_MODEの確認用レベル(Lv30)が同じ直線カーブを
+ * 延長して使うためだけの引数で、通常のプレイ経路は省略する。
+ */
+export function getCharacterBaseStatsAtLevel(memberId: PartyMemberId, level: number, maxLevel: number = MAX_CHARACTER_LEVEL): CharacterBaseStats {
+  const clampedLevel = Math.min(maxLevel, Math.max(1, Math.floor(level)));
   const curve = CHARACTER_CURVES[memberId];
   return {
     level: clampedLevel,

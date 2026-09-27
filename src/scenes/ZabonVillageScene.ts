@@ -17,7 +17,7 @@ const ZABON_VILLAGE: RainlandMapPackage = {
 /**
  * No.08「ザボンのむら」(タロサの故郷、狩人の村)。共通の画像マップSceneへ村のパッケージを渡すだけの薄いScene。
  * 世界地図から入る際の入場演出(ザボンのむら_イメージ.png)は`config/mapSplash.ts`で定義し、遷移側(MapTransition)が挟む。
- * NPC・会話・店・建物内部は docs/NPC_SPEC.md で人数・構成が再検討中のため未実装(follow-up)。戦闘なし。
+ * 村人6人(MAPS.npcs、固定はドアの真ん前＋周辺を歩く人)と会話初稿を持つ。店・建物内部は未実装。戦闘なし。
  */
 export class ZabonVillageScene extends RainlandImageMapScene {
   constructor() {

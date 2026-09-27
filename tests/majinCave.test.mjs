@@ -4,6 +4,7 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { getMajinCaveEnemyTable, MAJIN_CAVE_ENEMIES } from "../src/data/majinCaveEnemies.ts";
+import { ITEM_DEFINITIONS } from "../src/data/items.ts";
 import { DEV_MAJIN_CAVE_BALANCE, MAJIN_CAVE_MONSTER_HOUSE_CANDIDATE_FLOORS } from "../src/config/majinCave.ts";
 import { MAJIN_CAVE_PRESENTATION, MAJIN_CAVE_SLASH_PRESENTATION, getMajinCaveFogAlpha, getMajinCaveSlashRotation, isMajinCavePointVisible } from "../src/config/majinCavePresentation.ts";
 import {
@@ -222,7 +223,28 @@ test("No.08 has the specified floor-band enemy tables", () => {
   assert.deepEqual(getMajinCaveEnemyTable(7).map((id) => MAJIN_CAVE_ENEMIES[id].name), ["こあくま", "エリマキヘビ", "ダイジャ"]);
   assert.deepEqual(getMajinCaveEnemyTable(10).map((id) => MAJIN_CAVE_ENEMIES[id].name), ["こあくま", "エリマキヘビ", "ダイジャ"]);
 });
+test("a defeated normal enemy grants exactly one cave-only emergency escape rope", () => {
+  const run = new MajinCaveRunState(8008);
+  const enemy = run.currentFloor.enemies[0];
+  assert.ok(enemy);
+  assert.equal(run.claimEscapeRopeDrop(enemy), false, "an undefeated enemy cannot grant a rope");
+  assert.equal(run.damageEnemy(enemy, enemy.hp), true);
+  assert.equal(run.claimEscapeRopeDrop(enemy), true);
+  assert.equal(run.claimEscapeRopeDrop(enemy), false, "only one rope is available per run");
+  assert.deepEqual(ITEM_DEFINITIONS.rire_rope, {
+    id: "rire_rope",
+    name: "リレロープ",
+    type: "consumable",
+    price: null,
+    sellPrice: null,
+    effect: "escape_cave",
+    power: null,
+    usableInBattle: false,
+    usableOnField: true,
+    description: "まじんのどうくつから　そとへ　でる　ロープ。",
 
+});
+});
 test("only valid player actions produce exactly one enemy phase; a wall never consumes a turn", () => {
   const turns = new MajinCaveTurnSystem();
   const directions = [["up", 0, -1], ["down", 0, 1], ["left", -1, 0], ["right", 1, 0]];

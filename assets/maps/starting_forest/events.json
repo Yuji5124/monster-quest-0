@@ -12,6 +12,18 @@
           "worldMapEntryId": "from_starting_forest"
         }
       ]
+    },
+    {
+      "id": "event_starting_forest_south_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 684, "y": 1000, "width": 184, "height": 24 },
+      "commands": [
+        {
+          "type": "world-map",
+          "worldMapEntryId": "from_starting_forest"
+        }
+      ]
     }
   ]
 }

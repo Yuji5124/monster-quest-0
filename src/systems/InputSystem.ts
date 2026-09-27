@@ -28,6 +28,11 @@ export class InputSystem {
     return INPUT_BINDINGS[action].some((code) => this.keys.has(code));
   }
 
+  /** 3D Scene向け: 同じactionに束ねない物理キーの区別が必要な時だけ使う。 */
+  isCodeDown(code: string): boolean {
+    return this.keys.has(code);
+  }
+
   // 長押しの自動リピートや、同じactionの別キーで二重発火させない。
   consumePressed(action: InputAction): boolean {
     return this.pressed.delete(action);

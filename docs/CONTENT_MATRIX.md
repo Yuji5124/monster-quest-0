@@ -1,6 +1,6 @@
 # モンスタークエスト0 コンテンツ進捗表
 
-最終更新: 2026-09-24 JST
+最終更新: 2026-09-27 JST
 
 > **2026-09-24 同期済み:** 地域表は最新の正式No.01〜20・表示名・実装状態へ更新した。本文に残るPhase 8.6 / Tiled / ROUGH_FIELDの記録は履歴であり、`PLAY_ORDER_SPEC.md`、`MAP_FLOW_SPEC.md`、`STORY_FLOW.md`と衝突する仕様には使わない。内部`mapId`は互換のため残す。
 
@@ -40,7 +40,7 @@ Phase 8.6では既存世界地図REFERENCEを背景にしたROUGH_FIELDを追加
 | 02 | はじまりのまち | CONFIRMED | DIALOGUE_DRAFT（7人） | PARTIAL: CURRENT背景、建物5棟・内部5室、世界地図接続、村人7人 | 店／宿／教会機能、正式会話はTBD |
 | 03 | ビーエのもり | CONFIRMED | - | PARTIAL: 背景、ランダム戦闘、宝箱、えりまきとかげ、タロサの一度限りの到着会話 | タロサ加入ではない |
 | 04 | ビーエのむら | CONFIRMED | DIALOGUE_DRAFT（目安6人） | PARTIAL: 背景、Collision、北門、入場演出、小さな景観異常 | 木こりイベント・正式会話はTBD |
-| 05 | レインランドのもり | CONFIRMED | - | PARTIAL: 2画面の画像マップ、世界地図接続、ランダム戦闘 | NPC・BGM・No.06への本編接続はTBD |
+| 05 | レインランドのもり | CONFIRMED | - | PARTIAL: 2画面の画像マップ、世界地図接続、ランダム戦闘、その2の木こり（話すとじょうかまち解放）・遺跡の宝箱 | 木こりの唯一の解放条件化・宝箱の中身・BGM・No.06への本編接続はTBD |
 | 06 | レインランドじょうかまち／レインランドじょう | CONFIRMED | DIALOGUE_DRAFT（町8／城7目安） | PARTIAL: 城下町、城、王の間、2D／3D切替を実装 | 王への正式報告・正式NPC会話はTBD |
 | 07 | まじんのどうくつ | CONFIRMED | - | PARTIAL: 10層ターン制Dungeon RPG | 正式解放・攻略手段・BGMはTBD。`map_08_majin_cave`は互換ID |
 | 08 | ザボンのむら | CONFIRMED | DIALOGUE_DRAFT（目安6人） | PARTIAL: 背景、Collision、世界地図接続、入場演出 | タロサ関係イベント・NPC・内部はTBD |
@@ -48,13 +48,13 @@ Phase 8.6では既存世界地図REFERENCEを背景にしたROUGH_FIELDを追加
 | 10 | かくれざと | CONFIRMED | PROVISIONAL | PARTIAL: 背景、Collision、世界地図接続 | 住民5人 + ミレイが最新目安。現行仮住民8人・ミレイイベントは未確定 |
 | 11 | みずうみの古城 | CONFIRMED | - | 未実装 | ミレイ正式同行 |
 | 12 | 港町ダコハ | CONFIRMED | 未作成（目安7人） | 未実装 | 港・交易 |
-| 13 | コタンカイムの洞窟 | CONFIRMED | - | 未実装 | ゆうしゃのたて |
-| 14 | ポサロ城 | CONFIRMED | 未作成（目安4人） | 未実装 | バクラー戦・ゆうしゃのけん |
+| 13 | コタンカイムの洞窟 | CONFIRMED | - | PARTIAL: 3フロア探索・世界地図接続（戦闘なし） | ゆうしゃのたて（入手演出・条件TBD、(3)の魔法陣はDEVメッセージ） |
+| 14 | ポサロ城 | CONFIRMED | 未作成（目安4人） | PARTIAL: 背景、Collision、世界地図往復、入場演出 | バクラー戦・ゆうしゃのけん・NPC・BGMはTBD |
 | 15 | ふっかつのほこら | CONFIRMED | 未作成（目安2人） | 未実装 | ゆうしゃのかんむり・薄い反射ヒント |
 | 16 | デーマスのとう | CONFIRMED | - | DEV戦闘のみ | ミラー反射本戦 |
-| 17 | ぬまちのどうくつ | CONFIRMED | - | 未実装 | 小型敵多数のアクション |
-| 18 | いしのまち | CONFIRMED | 未作成（目安7人） | 未実装 | 旧「いしのむら」はSUPERSEDED |
-| 19 | バトラスのとりで | CONFIRMED | - | 未実装 | タロサの毒の矢 |
+| 17 | ぬまちのどうくつ | CONFIRMED | - | PARTIAL: 三人アクション区画、最奥の宝箱、世界地図往復 | 小型敵多数のアクション。正式な全域構成・敵編成・BGMはTBD |
+| 18 | いしのまち | CONFIRMED | DIALOGUE_DRAFT（石像18体） | PARTIAL: DEV_PLACEHOLDER背景・Collision、石像、広場の石像の目覚め、石の壁、世界地図往復、入場演出 | 正式な見下ろし背景、三人の異常会話（ミレイの記憶・主人公の台詞）、BGMはTBD。旧「いしのむら」はSUPERSEDED |
+| 19 | バトラスのとりで | CONFIRMED | - | PARTIAL: モジュール生成・ボス戦・世界地図往復 | タロサの毒の矢 |
 | 20 | オロチへの道／オロチのしろ／最終地点 | CONFIRMED | - | 未実装 | 縦シューティング→コマンドRPG。裏ボスは公開時伏せる |
 
 ## 主要キャラクター

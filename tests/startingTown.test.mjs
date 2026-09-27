@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { inflateSync } from "node:zlib";
 import { MAPS } from "../src/config/maps.ts";
 import { PLAYER } from "../src/config/player.ts";
+import { INTERACTION_REACH } from "../src/config/interaction.ts";
 import { VILLAGER_SPRITES } from "../src/config/villagerSprites.ts";
 import { bodyOffset } from "../src/config/characterWalkSprite.ts";
 import { buildCollisionRects } from "../src/systems/ImageMapCollisionData.ts";
@@ -88,13 +89,15 @@ test("starting-town collision mask keeps the plaza, west exit and every building
   assert.equal(isBlocked(1350, 200), true, "the river must stay blocked");
 });
 
-test("starting-town red points are seven data-driven villagers: four fixed shopkeepers and three local walkers", () => {
+test("starting-town red points are seven data-driven villagers: four fixed shopkeepers and three local walkers, plus the one-time tower elder", () => {
   const town = MAPS.map_02_starting_town;
   const shopkeepers = town.npcs.filter((npc) => npc.role === "shopkeeper");
   const walkers = town.npcs.filter((npc) => npc.role === "resident");
-  assert.equal(town.npcs.length, 7);
+  const storyNpcs = town.npcs.filter((npc) => npc.role === "story");
+  assert.equal(town.npcs.length, 8);
   assert.equal(shopkeepers.length, 4);
   assert.equal(walkers.length, 3);
+  assert.deepEqual(storyNpcs.map((npc) => npc.id), ["npc_start_town_tower_elder"], "the tower elder is the only story NPC outside the seven red-point villagers");
   assert.equal(shopkeepers.every((npc) => !npc.movement), true, "shopkeepers must stay at their storefronts");
   assert.equal(walkers.every((npc) => npc.movement?.kind === "wander"), true, "non-shop red points must wander");
   assert.equal(town.npcs.every((npc) => npc.spriteId), true, "every town villager must select an asset-backed sprite");
@@ -128,6 +131,74 @@ test("starting-town villagers' feet bodies begin on walkable ground", () => {
       };
       assert.equal(collisionRects.some((rect) => overlaps(body, rect)), false, `${npc.id} can select a collision area at ${position.x.toFixed(1)},${position.y.toFixed(1)}`);
     }
+  }
+});
+
+test("fixed villagers stand at a door and can be talked to from the walkable path right below", () => {
+  const manifest = readImageMapManifest(JSON.parse(readFileSync(path.join(MAP_DIR, "map.json"), "utf-8")));
+  const scale = manifest.worldScale;
+  const collisionRects = buildCollisionRects(readPngAsMask(path.join(MAP_DIR, "collision.png")), manifest.collisionCellSize)
+    .map((rect) => ({ x: rect.x * scale, y: rect.y * scale, width: rect.width * scale, height: rect.height * scale }));
+  const overlaps = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+  const town = MAPS.map_02_starting_town;
+
+  for (const npc of town.npcs.filter((candidate) => candidate.role === "shopkeeper")) {
+    const building = town.buildings.find((candidate) =>
+      npc.position.x >= candidate.footprint.x && npc.position.x <= candidate.footprint.x + candidate.footprint.width &&
+      Math.abs(npc.position.y - (candidate.door.y + candidate.door.height / 2)) <= 40);
+    assert.ok(building, `${npc.id} must stand at a building's door`);
+    assert.equal(npc.facing, "down", `${npc.id} faces the path`);
+
+    // Runtime: position is scaled by worldScale; the sprite and its feet body are not.
+    const sprite = VILLAGER_SPRITES[npc.spriteId];
+    const offset = bodyOffset(sprite, PLAYER.width, PLAYER.height);
+    const npcBottom = npc.position.y * scale - sprite.frameHeight / 2 + offset.y + PLAYER.height;
+    const player = { x: npc.position.x * scale - PLAYER.width / 2, width: PLAYER.width, height: PLAYER.height };
+    // The closest spot right below the NPC where the player's feet body fits on walkable ground.
+    let top = npcBottom;
+    while (top < npcBottom + 60 && collisionRects.some((rect) => overlaps({ ...player, y: top }, rect))) top += 1;
+    const reachEnd = top + PLAYER.height / 2 - INTERACTION_REACH;
+    assert.ok(reachEnd <= npcBottom, `${npc.id} is within talking reach (gap ${(top - npcBottom).toFixed(1)}px)`);
+  }
+});
+
+test("the tower elder stands on open road east of the weapon shop, clear of other villagers, and can be reached from the side he faces", () => {
+  const manifest = readImageMapManifest(JSON.parse(readFileSync(path.join(MAP_DIR, "map.json"), "utf-8")));
+  const scale = manifest.worldScale;
+  const collisionRects = buildCollisionRects(readPngAsMask(path.join(MAP_DIR, "collision.png")), manifest.collisionCellSize)
+    .map((rect) => ({ x: rect.x * scale, y: rect.y * scale, width: rect.width * scale, height: rect.height * scale }));
+  const overlaps = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+  const town = MAPS.map_02_starting_town;
+  const feetBody = (npc) => {
+    const sprite = VILLAGER_SPRITES[npc.spriteId];
+    const offset = bodyOffset(sprite, PLAYER.width, PLAYER.height);
+    return {
+      x: npc.position.x * scale - sprite.frameWidth / 2 + offset.x,
+      y: npc.position.y * scale - sprite.frameHeight / 2 + offset.y,
+      width: PLAYER.width,
+      height: PLAYER.height,
+    };
+  };
+
+  const elder = town.npcs.find((npc) => npc.id === "npc_start_town_tower_elder");
+  const body = feetBody(elder);
+  assert.equal(collisionRects.some((rect) => overlaps(body, rect)), false, "his feet must start on walkable ground");
+  // 主人公が立てる足元Bodyの余白: 向いている左側に、Bodyが1つ入る空きがある。
+  const facingSide = { ...body, x: body.x - PLAYER.width - 2 };
+  assert.equal(elder.facing, "left");
+  assert.equal(collisionRects.some((rect) => overlaps(facingSide, rect)), false, "the player can stand on the side he faces");
+
+  const weaponShop = town.buildings.find((building) => building.kind === "weapon_shop");
+  assert.ok(elder.position.x > weaponShop.footprint.x + weaponShop.footprint.width / 2, "east of the weapon shop's centre");
+  assert.ok(Math.abs(elder.position.x - weaponShop.door.x) < 160 && elder.position.y > weaponShop.door.y, "within a short walk of the weapon shop door");
+  for (const other of town.npcs.filter((npc) => npc.id !== elder.id)) {
+    const otherBodies = other.movement
+      ? Array.from({ length: 16 }, (_, step) => {
+          const angle = Math.PI * 2 * step / 16;
+          return feetBody({ ...other, position: { x: other.position.x + Math.cos(angle) * other.movement.radius, y: other.position.y + Math.sin(angle) * other.movement.radius } });
+        })
+      : [feetBody(other)];
+    for (const otherBody of otherBodies) assert.equal(overlaps(body, otherBody), false, `${other.id} must never overlap the elder`);
   }
 });
 

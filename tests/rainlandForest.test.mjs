@@ -4,11 +4,20 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { inflateSync } from "node:zlib";
+import { bodyOffset } from "../src/config/characterWalkSprite.ts";
+import { INTERACTION_REACH, INTERACTION_SPAN } from "../src/config/interaction.ts";
 import { MAPS } from "../src/config/maps.ts";
 import { PLAYER } from "../src/config/player.ts";
+import { STORY_FLAGS } from "../src/config/storyFlags.ts";
+import { VILLAGER_SPRITES } from "../src/config/villagerSprites.ts";
+import { DIALOGUES, getDialogue } from "../src/data/dialogues.ts";
+import { ITEM_DEFINITIONS } from "../src/data/items.ts";
+import { isStoryFlagsDialogueEvent } from "../src/events/BattleEventData.ts";
+import { canInteract } from "../src/systems/Interaction.ts";
 import { buildCollisionRects } from "../src/systems/ImageMapCollisionData.ts";
 import { readImageMapEvents, readImageMapManifest, readImageMapObjects } from "../src/systems/ImageMapData.ts";
-import { readWorldMapDestinations, readWorldMapManifest, resolveWorldMapEntryDestination } from "../src/systems/WorldMapData.ts";
+import { readInterimUnlockedFlags, readWorldMapDestinations, readWorldMapManifest, resolveWorldMapDestinations, resolveWorldMapEntryDestination } from "../src/systems/WorldMapData.ts";
+import { analyseBodyReachability } from "./helpers/bodyReachability.mjs";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const REFERENCE_DIR = path.join(REPO_ROOT, "assets/maps/reference/reference");
@@ -92,7 +101,8 @@ for (const n of [1, 2]) {
     assert.equal(manifest.collision, "collision.png");
     assert.equal(manifest.events, "events.json");
     assert.equal(manifest.objects, "objects.json");
-    assert.deepEqual(readImageMapObjects(readJson(path.join(mapDir(n), "objects.json"))), []);
+    // 2026-09-27: その2だけ遺跡の宝箱を持つ。その1は引き続きObjectなし。
+    assert.deepEqual(readImageMapObjects(readJson(path.join(mapDir(n), "objects.json"))).map((object) => object.id), n === 2 ? ["chest_rainland_forest_2_ruin"] : []);
     for (const asset of [manifest.background, manifest.collision, manifest.events, manifest.objects]) {
       assert.ok(existsSync(path.join(mapDir(n), asset)), `${asset} must exist beside map.json`);
     }
@@ -226,6 +236,107 @@ test("rainland forests: only their trail ends touch the map border, with no walk
       }
     }
   }
+});
+
+// 2026-09-27 ユーザー指示: 注釈画像(レインランドのもり その2)のオレンジ = 木こり、赤 = 宝箱。
+// 注釈画像をbackground.pngへ重ねて位置合わせし、印の中心を測ったネイティブ背景ピクセル。
+const ORANGE_MARKER = { x: 651, y: 298.7 };
+const RED_MARKER = { x: 133.5, y: 195.1 };
+const WOODCUTTER = "npc_rainland_forest_woodcutter";
+const CHEST_ID = "chest_rainland_forest_2_ruin";
+
+const overlaps = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+const centerOf = (rect) => ({ x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 });
+const blockedRects = (n) => buildCollisionRects(readPngAsMask(path.join(mapDir(n), "collision.png")), loadManifest(n).collisionCellSize);
+const forest2Chest = () => readImageMapObjects(readJson(path.join(mapDir(2), "objects.json"))).find((object) => object.id === CHEST_ID);
+
+/** 木こりの足元Body(ネイティブ背景ピクセル)。Npc.tsと同じくスプライト中心+bodyOffsetから求める。 */
+function woodcutterBodyNative() {
+  const npc = MAPS.map_rainland_forest_2.npcs.find((candidate) => candidate.id === WOODCUTTER);
+  const scale = loadManifest(2).worldScale;
+  const sprite = VILLAGER_SPRITES[npc.spriteId];
+  const offset = bodyOffset(sprite, PLAYER.width, PLAYER.height);
+  return {
+    x: (npc.position.x * scale - sprite.frameWidth / 2 + offset.x) / scale,
+    y: (npc.position.y * scale - sprite.frameHeight / 2 + offset.y) / scale,
+    width: PLAYER.width / scale,
+    height: PLAYER.height / scale,
+  };
+}
+
+test("rainland forest 2: the woodcutter stands still on the orange marker, on free ground; forest 1 has no NPC", () => {
+  assert.deepEqual(MAPS.map_rainland_forest_1.npcs, []);
+  const npcs = MAPS.map_rainland_forest_2.npcs;
+  assert.deepEqual(npcs.map((npc) => npc.id), [WOODCUTTER]);
+  const [woodcutter] = npcs;
+  assert.equal(woodcutter.mapId, "map_rainland_forest_2");
+  assert.equal(woodcutter.role, "story");
+  assert.equal(woodcutter.movement, undefined, "he stands still so the player can always find him");
+  assert.ok(VILLAGER_SPRITES[woodcutter.spriteId], "he uses a user-supplied villager sheet");
+  assert.ok(DIALOGUES[woodcutter.dialogueId], "his dialogue exists");
+
+  const body = woodcutterBodyNative();
+  const center = centerOf(body);
+  assert.ok(Math.hypot(center.x - ORANGE_MARKER.x, center.y - ORANGE_MARKER.y) <= 3, `his feet sit on the orange marker (got ${center.x.toFixed(1)},${center.y.toFixed(1)})`);
+  assert.equal(blockedRects(2).some((rect) => overlaps(body, rect)), false, "his foot body is on walkable ground");
+});
+
+test("rainland forest 2: the woodcutter's first talk unlocks Rainland castle town on the world map, later talks only repeat", () => {
+  const party = { hasMember: () => false };
+  const base = DIALOGUES[WOODCUTTER];
+  const first = getDialogue(WOODCUTTER, party, { hasFlag: () => false });
+  assert.ok(first);
+  assert.equal(isStoryFlagsDialogueEvent(first.afterDialogue), true);
+  assert.deepEqual(first.afterDialogue.flags, [STORY_FLAGS.rainlandCastleTownUnlocked]);
+  assert.equal(STORY_FLAGS.rainlandCastleTownUnlocked, "story.rainland_castle_town_unlocked", "the world map's own castle-town flag, not a synonym");
+  assert.equal(first.pages.length, base.pages.length + 1, "the first talk only adds one closing notice page");
+  assert.deepEqual(first.pages.slice(0, base.pages.length), base.pages);
+  assert.match(first.pages.at(-1), /レインランドじょうへ　いけるように/);
+  for (const page of first.pages) {
+    assert.ok(page.split("\n").length <= 3, "each page fits the dialogue box");
+    assert.doesNotMatch(page, /ジャンカード|あいことば|かいぶんしょ|ミレイ/, "no story secrets in an early NPC's talk");
+  }
+  const repeat = getDialogue(WOODCUTTER, party, { hasFlag: (flag) => flag === STORY_FLAGS.rainlandCastleTownUnlocked });
+  assert.equal(repeat.afterDialogue, undefined);
+  assert.deepEqual(repeat.pages, base.pages);
+
+  const worldDir = path.join(REPO_ROOT, "assets/maps/world_map");
+  const manifest = readWorldMapManifest(readJson(path.join(worldDir, "map.json")));
+  const destinations = readWorldMapDestinations(readJson(path.join(worldDir, "destinations.json")), manifest);
+  const castleTown = (flags) => resolveWorldMapDestinations(destinations, new Set([...readInterimUnlockedFlags(manifest), ...flags]))
+    .find((destination) => destination.id === "destination_rainland_castle_town");
+  assert.equal(castleTown([]).unlocked, false);
+  assert.equal(castleTown([STORY_FLAGS.rainlandForestUnlocked]).unlocked, false, "reaching the forest alone does not open the castle town");
+  assert.equal(castleTown([STORY_FLAGS.rainlandCastleTownUnlocked]).unlocked, true);
+  assert.equal(castleTown([STORY_FLAGS.rainlandCastleTownUnlocked]).displayName, "レインランドじょうかまち");
+});
+
+test("rainland forest 2: the ruin chest sits on the red marker and can be opened from the stone floor right below it", () => {
+  const chest = forest2Chest();
+  assert.equal(chest.type, "chest");
+  assert.equal(chest.blocking, true);
+  assert.ok(Object.hasOwn(ITEM_DEFINITIONS, chest.itemId), `${chest.itemId} is a real item`);
+  assert.match(chest.openedFlag, /^chest\./, "chest flags live under chest.*(SAVE_FLAG_SPEC.md)");
+  const center = centerOf(chest);
+  assert.ok(Math.hypot(center.x - RED_MARKER.x, center.y - RED_MARKER.y) <= 3, `the chest is centred on the red marker (got ${center.x},${center.y})`);
+
+  const scale = loadManifest(2).worldScale;
+  const standing = { x: center.x - PLAYER.width / scale / 2, y: chest.y + chest.height, width: PLAYER.width / scale, height: PLAYER.height / scale };
+  assert.equal(blockedRects(2).some((rect) => overlaps(standing, rect)), false, "the player can stand flush below the chest");
+  const player = centerOf(standing);
+  const target = { x: chest.x * scale, y: chest.y * scale, width: chest.width * scale, height: chest.height * scale };
+  assert.equal(canInteract({ x: player.x * scale, y: player.y * scale }, "up", target, INTERACTION_REACH, INTERACTION_SPAN), true, "facing up from there reaches the chest");
+});
+
+test("rainland forest 2: with the woodcutter and the chest in place the player body still reaches every spawn, exit and key spot", () => {
+  const result = analyseBodyReachability("rainland_forest_2", "map_rainland_forest_2", { margin: 6, blockers: [woodcutterBodyNative(), forest2Chest()] });
+  assert.equal(result.startFits, true);
+  for (const spawn of result.spawnResults) assert.equal(spawn.ok, true, `spawn ${spawn.id} stays reachable`);
+  for (const event of result.eventResults) assert.equal(event.ok, true, `${event.id} stays reachable`);
+  for (const [x, y, name] of [
+    [651, 335, "just south of the woodcutter"], [766, 22, "north trail end, past the woodcutter"], [1100, 290, "pond-side branch"],
+    [150, 232, "ruin 1 altar"], [134, 232, "in front of the chest"],
+  ]) assert.equal(result.canReach(x, y), true, `${name} (${x},${y}) stays reachable`);
 });
 
 // Minimal PNG reader (8-bit RGBA/RGB, non-interlaced), mirrors tests/startingPlace.test.mjs so this

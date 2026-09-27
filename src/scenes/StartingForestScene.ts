@@ -15,15 +15,19 @@ import type { ImageMapCollisionRuntime } from "../systems/ImageMapCollision.ts";
 import { readImageMapEvents, readImageMapManifest, readImageMapObjects, scaleRect } from "../systems/ImageMapData.ts";
 import type { ImageMapArrivalObject, ImageMapBossObject, ImageMapChestObject, ImageMapEvent } from "../systems/ImageMapData.ts";
 import { configureMapCamera } from "../systems/MapCamera.ts";
+import { startFieldAmbience } from "../systems/FieldAmbience.ts";
 import { beginMapTransition } from "../systems/MapTransition.ts";
 import { PROTAGONIST_SPRITE } from "../config/protagonistSprite.ts";
 import { TAROSA_SPRITE } from "../config/tarosaSprite.ts";
 import { MIREI_SPRITE } from "../config/mireiSprite.ts";
+import { PLAYER } from "../config/player.ts";
+import { DISPLAY, SCALE_FACTOR } from "../config/display.ts";
 import { idleFrame } from "../config/characterWalkSprite.ts";
 import { ensureWalkAnimations, preloadWalkSprite, walkAnimKey } from "../systems/CharacterWalkSprite.ts";
 import { PartyFollowers } from "../systems/PartyFollowers.ts";
 import { INTERACTION_REACH, INTERACTION_SPAN } from "../config/interaction.ts";
 import { canInteract } from "../systems/Interaction.ts";
+import { createChestVisual } from "../systems/ChestTexture.ts";
 import type { Facing } from "../systems/PlayerMovement.ts";
 import { advanceRandomEncounter, createRandomEncounterState } from "../systems/RandomEncounter.ts";
 import type { RandomEncounterState } from "../systems/RandomEncounter.ts";
@@ -47,6 +51,16 @@ const OBJECTS_PATH = new URL("../../assets/maps/starting_forest/objects.json", i
 const BOSS_SPRITE_KEY = "starting-forest.boss.erimaki-tokage";
 const BOSS_SPRITE_PATH = new URL("../../assets/monsters/majin_cave/monster_erimaki_hebi.png", import.meta.url).toString();
 const BOSS_IDLE_ANIMATION_KEY = `${BOSS_SPRITE_KEY}.idle`;
+// タロサ立ち姿(ユーザー提供REFERENCEのバイト一致コピー、1448×1086)。会話中だけ画面右上寄りに表示する。
+const TAROSA_PORTRAIT_KEY = "char.tarosa.portrait";
+const TAROSA_PORTRAIT_FRAME = "figure";
+const TAROSA_PORTRAIT_PATH = new URL("../../assets/characters/portraits/tarosa_standing.png", import.meta.url).toString();
+// 元画像のうち、タロサ本人と弓が収まる縦長の範囲(元画像ピクセル)。背景の森ごと額縁に入れて見せる。
+const TAROSA_PORTRAIT_CROP = { x: 380, y: 0, width: 820, height: 1086 } as const;
+const TAROSA_PORTRAIT_DISPLAY_HEIGHT = 140 * SCALE_FACTOR;
+const TAROSA_PORTRAIT_FADE_MS = 240;
+// 登場・退場の歩く速さ。主人公の歩行速度(PLAYER.moveSpeed)と同じ速さで歩かせる。
+const TAROSA_WALK_SPEED = PLAYER.moveSpeed;
 
 const isDevMode = typeof import.meta.env !== "undefined" && import.meta.env.DEV;
 
@@ -103,6 +117,7 @@ export class StartingForestScene extends Phaser.Scene {
     preloadWalkSprite(this, PROTAGONIST_SPRITE);
     preloadWalkSprite(this, TAROSA_SPRITE);
     preloadWalkSprite(this, MIREI_SPRITE);
+    if (!this.textures.exists(TAROSA_PORTRAIT_KEY)) this.load.image(TAROSA_PORTRAIT_KEY, TAROSA_PORTRAIT_PATH);
     if (!this.textures.exists(BOSS_SPRITE_KEY)) {
       this.load.spritesheet(BOSS_SPRITE_KEY, BOSS_SPRITE_PATH, { frameWidth: 64, frameHeight: 64 });
     }
@@ -190,6 +205,8 @@ export class StartingForestScene extends Phaser.Scene {
     this.encounterState = createRandomEncounterState(data?.battleEventReturn ? STARTING_FOREST_RANDOM_ENCOUNTER.postBattleCooldownDistance : 0);
 
     configureMapCamera(this, this.player.visual, { x: 0, y: 0, width: manifest.width * worldScale, height: manifest.height * worldScale });
+    // 雲の影・漂う粒などの環境エフェクト(config/fieldAmbience.ts)。見た目だけで、背景・判定・進行には触れない。
+    startFieldAmbience(this, MAP_ID);
     this.cameras.main.setBackgroundColor("#101018");
     this.cameras.main.fadeIn(MAP_TRANSITION_FADE_MS, 0, 0, 0);
 
@@ -327,18 +344,8 @@ export class StartingForestScene extends Phaser.Scene {
     bodyMarker.setDepth(900);
     addStaticBody(this, bodyMarker);
     if (definition.blocking) this.physics.add.collider(this.player.body, bodyMarker.body as Phaser.Physics.Arcade.StaticBody);
-    this.chests.push({ definition, bodyMarker, visual: this.createChestVisual(center, bounds) });
-  }
-
-  /** A small code-drawn chest avoids inventing a bitmap asset when the catalog has none. */
-  private createChestVisual(center: Phaser.Math.Vector2, bounds: ReturnType<typeof scaleRect>): Phaser.GameObjects.Container {
-    const width = Math.max(26, bounds.width * 0.8);
-    const height = Math.max(20, bounds.height * 0.8);
-    const base = this.add.rectangle(0, height * 0.16, width, height * 0.56, 0x713a1d).setStrokeStyle(2, 0x2d170d);
-    const lid = this.add.rectangle(0, -height * 0.18, width, height * 0.34, 0xa85c28).setStrokeStyle(2, 0x3a1b0e);
-    const band = this.add.rectangle(0, height * 0.02, width * 0.16, height * 0.8, 0xf0c24b);
-    const lock = this.add.rectangle(0, height * 0.17, width * 0.18, height * 0.16, 0xffdd65).setStrokeStyle(1, 0x56370d);
-    return this.add.container(center.x, center.y, [base, lid, band, lock]).setDepth(950 + center.y * 0.01);
+    // A code-drawn chest avoids inventing a bitmap asset when the catalog has none (systems/ChestTexture.ts).
+    this.chests.push({ definition, bodyMarker, visual: createChestVisual(this, center, bounds) });
   }
 
   private tryOpenChest(): boolean {
@@ -406,24 +413,23 @@ export class StartingForestScene extends Phaser.Scene {
     const target = new Phaser.Math.Vector2(bossPosition.x - 48, bossPosition.y - 4);
     const tarosa = this.add.sprite(start.x, start.y, TAROSA_SPRITE.key, idleFrame("down"))
       .setDepth(1100)
-      .play(walkAnimKey(TAROSA_SPRITE, "down"));
-    this.tweens.add({
-      targets: tarosa,
-      x: target.x,
-      y: target.y,
-      duration: 520,
-      ease: "Linear",
-      onComplete: () => {
-        tarosa.anims.stop();
-        tarosa.setFrame(idleFrame("down"));
-        this.actions.setLocked(false);
-        this.dialogueBox.open([
-          "タロサ：……倒したのは\nおまえか。",
-          "おれも　えりまきとかげを\n追っていた。",
-          "……先を　こされたな。",
-        ]);
-        this.afterDialogue = () => this.leaveTarosaAfterHuntTalk(tarosa, start, arrival.consumedFlag);
-      },
+      .setAlpha(0);
+    // 北のワープ領域からふっと現れ、主人公と同じ歩く速さで近づいてくる。
+    this.tweens.add({ targets: tarosa, alpha: 1, duration: TAROSA_PORTRAIT_FADE_MS });
+    this.walkTarosa(tarosa, target, () => {
+      tarosa.setFrame(idleFrame("down"));
+      const portrait = this.showTarosaPortrait();
+      this.actions.setLocked(false);
+      this.dialogueBox.open([
+        "タロサ：……倒したのは\nおまえか。",
+        "おれも　えりまきとかげを\n追っていた。",
+        "……先を　こされたな。",
+        "つぎの　えものは\nおれが　しとめる。",
+      ]);
+      this.afterDialogue = () => {
+        this.hideTarosaPortrait(portrait);
+        this.leaveTarosaAfterHuntTalk(tarosa, start, arrival.consumedFlag);
+      };
     });
   }
 
@@ -433,19 +439,77 @@ export class StartingForestScene extends Phaser.Scene {
     consumedFlag: string,
   ): void {
     this.actions.setLocked(true);
-    tarosa.play(walkAnimKey(TAROSA_SPRITE, "up"));
+    // 来た道を、同じ歩く速さで北のワープ領域へ戻っていき、最後に森の奥へ消える。
+    this.walkTarosa(tarosa, exit, () => {
+      this.tweens.add({
+        targets: tarosa,
+        alpha: 0,
+        duration: TAROSA_PORTRAIT_FADE_MS,
+        onComplete: () => {
+          tarosa.destroy();
+          this.gameState.setFlag(consumedFlag);
+          this.scriptedEvent = false;
+          this.actions.setLocked(false);
+        },
+      });
+    });
+  }
+
+  /** 距離÷主人公の歩行速度で所要時間を決め、進む向きの歩行アニメで移動させる。 */
+  private walkTarosa(tarosa: Phaser.GameObjects.Sprite, to: Phaser.Math.Vector2, onArrive: () => void): void {
+    const dx = to.x - tarosa.x;
+    const dy = to.y - tarosa.y;
+    const facing: Facing = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? "left" : "right") : (dy < 0 ? "up" : "down");
+    const distance = Math.hypot(dx, dy);
+    tarosa.play(walkAnimKey(TAROSA_SPRITE, facing));
     this.tweens.add({
       targets: tarosa,
-      x: exit.x,
-      y: exit.y,
-      duration: 520,
+      x: to.x,
+      y: to.y,
+      duration: Math.max(1, (distance / TAROSA_WALK_SPEED) * 1000),
       ease: "Linear",
       onComplete: () => {
-        tarosa.destroy();
-        this.gameState.setFlag(consumedFlag);
-        this.scriptedEvent = false;
-        this.actions.setLocked(false);
+        tarosa.anims.stop();
+        tarosa.setFrame(idleFrame(facing));
+        onArrive();
       },
+    });
+  }
+
+  /** 会話ウィンドウの上、画面右側に額縁つきの立ち姿を出す(カメラに追従しない)。 */
+  private showTarosaPortrait(): Phaser.GameObjects.Container {
+    const texture = this.textures.get(TAROSA_PORTRAIT_KEY);
+    if (!texture.has(TAROSA_PORTRAIT_FRAME)) {
+      const crop = TAROSA_PORTRAIT_CROP;
+      texture.add(TAROSA_PORTRAIT_FRAME, 0, crop.x, crop.y, crop.width, crop.height);
+    }
+    texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+    const height = TAROSA_PORTRAIT_DISPLAY_HEIGHT;
+    const width = height * (TAROSA_PORTRAIT_CROP.width / TAROSA_PORTRAIT_CROP.height);
+    const border = 2 * SCALE_FACTOR;
+    const margin = 8 * SCALE_FACTOR;
+    // DialogueBoxの上端(下から8+64)よりさらに上へ、余白を空けて置く。
+    const bottom = DISPLAY.height - margin - 64 * SCALE_FACTOR - 4 * SCALE_FACTOR;
+    const centerX = DISPLAY.width - margin - width / 2;
+    const centerY = bottom - height / 2;
+    const frame = this.add.rectangle(0, 0, width + border * 2, height + border * 2, 0x0a0a14, 1)
+      .setStrokeStyle(border, 0xeeeeee);
+    const image = this.add.image(0, 0, TAROSA_PORTRAIT_KEY, TAROSA_PORTRAIT_FRAME).setDisplaySize(width, height);
+    const portrait = this.add.container(centerX + 12 * SCALE_FACTOR, centerY, [frame, image])
+      .setScrollFactor(0)
+      .setDepth(2400)
+      .setAlpha(0);
+    this.tweens.add({ targets: portrait, alpha: 1, x: centerX, duration: TAROSA_PORTRAIT_FADE_MS, ease: "Sine.easeOut" });
+    return portrait;
+  }
+
+  private hideTarosaPortrait(portrait: Phaser.GameObjects.Container): void {
+    this.tweens.add({
+      targets: portrait,
+      alpha: 0,
+      duration: TAROSA_PORTRAIT_FADE_MS,
+      ease: "Sine.easeIn",
+      onComplete: () => portrait.destroy(),
     });
   }
 

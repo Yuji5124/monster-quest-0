@@ -1,0 +1,19 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_mysterious_tower_entrance",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 720, "y": 312, "width": 96, "height": 72 },
+      "commands": [{ "type": "transfer", "targetMapId": "map_mysterious_tower_1f", "targetSpawnId": "fromExterior" }]
+    },
+    {
+      "id": "event_mysterious_tower_exterior_world_map_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 720, "y": 900, "width": 96, "height": 28 },
+      "commands": [{ "type": "world-map", "worldMapEntryId": "from_mysterious_tower" }]
+    }
+  ]
+}

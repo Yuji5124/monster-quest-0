@@ -1,11 +1,12 @@
 import Phaser from "phaser";
-import { BATTLE_COMMAND_LABELS, DEV_BATTLE_COMMANDS, DEV_BATTLE_EVENT_FADE_MS, DEV_BATTLE_PLAYER, DEV_BATTLE_UI_LAYOUT, getBattleStatusWindows, readDevBattleMonsterId } from "../config/battle.ts";
+import { BATTLE_BIG_HIT_EFFECT, BATTLE_COMMAND_LABELS, BATTLE_SLASH_EFFECT_TIMING, DEV_BATTLE_COMMANDS, DEV_BATTLE_EVENT_FADE_MS, DEV_BATTLE_PLAYER, DEV_BATTLE_UI_LAYOUT, getBattleSlashAngles, getBattleStatusWindows, readDevBattleMonsterId } from "../config/battle.ts";
 import { DISPLAY } from "../config/display.ts";
 import { getDevBattleMonster } from "../data/monsters.ts";
 import type { BattleSceneStartData } from "../events/BattleEventData.ts";
 import { BattleSystem } from "../battle/BattleSystem.ts";
-import type { BattleCombatant, BattleSnapshot } from "../battle/BattleSystem.ts";
-import { buildPartyCombatant } from "../battle/PartyCombatants.ts";
+import type { BattleCombatant, BattleCombatantDefinition, BattleHitTier, BattleSnapshot } from "../battle/BattleSystem.ts";
+import { buildDebugParty, buildPartyCombatant } from "../battle/PartyCombatants.ts";
+import { DEBUG_PARTY_LEVEL, isDebugMode } from "../config/debugMode.ts";
 import { ITEM_DEFINITIONS } from "../data/items.ts";
 import type { InventorySlot } from "../systems/Inventory.ts";
 import { InputSystem } from "../systems/InputSystem.ts";
@@ -14,6 +15,8 @@ import type { CharacterLevelUp } from "../systems/CharacterProgression.ts";
 import { GameStateRepository } from "../systems/GameStateRepository.ts";
 import { inventory } from "../systems/Inventory.ts";
 import { partySystem } from "../systems/PartySystem.ts";
+import { DemasBossController } from "../battle/DemasBossController.ts";
+import { DEMAS_BATTLE_PARTY_IDS, DEMAS_BATTLE_PRESENTATION } from "../data/demasBattlePresentation.ts";
 
 const WINDOW_COLOR = 0x090c18;
 const TEXT_COLOR = "#eeeeee";
@@ -67,12 +70,22 @@ export class BattleScene extends Phaser.Scene {
   private itemIndex = 0;
   private transitioning = false;
   private rewardGranted = false;
+  private vitalsSaved = false;
   /** 勝利メッセージの後に送るレベルアップ／能力増加／魔法習得ページ。 */
   private victoryPages: VictoryPage[] = [];
   /** -1 = まだ勝利メッセージを表示中。 */
   private victoryPageIndex = -1;
+  /** 固有の撃破演出が完了するまでイベントマップへの復帰を待つ。 */
+  private victoryReadyAt = 0;
+  private victoryPresentation: "fortress-stop" | undefined;
   private levelUpEffectObjects: Phaser.GameObjects.GameObject[] = [];
   private readonly gameState = new GameStateRepository();
+  /** Optional image layer so Demas can bend only its battlefield, never the HUD. */
+  private battleBackground: Phaser.GameObjects.Image | undefined;
+  /** Disposable renderer-only boss presentation. BattleSystem remains the source of truth. */
+  private demasController: DemasBossController | undefined;
+  /** Daidain owns the camera briefly so confirm input cannot skip its telegraph or reflection. */
+  private presentationLocked = false;
 
   constructor() { super("BattleScene"); }
 
@@ -83,15 +96,27 @@ export class BattleScene extends Phaser.Scene {
     // Per-enemy keys prevent the previous NPC's portrait appearing in a later battle.
     const key = `battle.monster.${enemy.id}`;
     if (!this.textures.exists(key)) this.load.image(key, enemy.portraitUrl);
+    if (enemy.battleSpriteSheet && !this.textures.exists(enemy.battleSpriteSheet.key)) {
+      this.load.spritesheet(enemy.battleSpriteSheet.key, enemy.battleSpriteSheet.url, {
+        frameWidth: enemy.battleSpriteSheet.frameWidth,
+        frameHeight: enemy.battleSpriteSheet.frameHeight,
+      });
+    }
     if (enemy.background && !this.textures.exists(enemy.background.key)) this.load.image(enemy.background.key, enemy.background.url);
   }
 
   create(data?: BattleSceneStartData): void {
+    this.demasController?.dispose();
+    this.demasController = undefined;
+    this.presentationLocked = false;
     this.battle = undefined;
     this.transitioning = false;
     this.rewardGranted = false;
+    this.vitalsSaved = false;
     this.victoryPages = [];
     this.victoryPageIndex = -1;
+    this.victoryReadyAt = 0;
+    this.victoryPresentation = undefined;
     this.levelUpEffectObjects = [];
     this.commandIndex = 0;
     this.magicMenu = false;
@@ -100,6 +125,7 @@ export class BattleScene extends Phaser.Scene {
     this.itemIndex = 0;
     this.statusTexts = [];
     this.statusWindows = [];
+    this.battleBackground = undefined;
     this.eventData = data?.mode === "event" ? data : undefined;
     const resolvedEnemy = getDevBattleMonster(this.eventData?.monsterId ?? readDevBattleMonsterId(window.location.search));
     if (!resolvedEnemy) {
@@ -111,20 +137,36 @@ export class BattleScene extends Phaser.Scene {
     const enemy = this.eventData?.monsterDisplayName
       ? { ...resolvedEnemy, displayName: this.eventData.monsterDisplayName }
       : resolvedEnemy;
-    // enemy.devPlayerがある単体確認用ボス(デーマス等)はTEMP_TEST_VALUEの単独ダミーを維持する。
-    // それ以外は実際の加入パーティ＋レベル成長＋装備(CharacterProgression/PartyCombatants)を使う。
-    this.battle = new BattleSystem(enemy.devPlayer ?? this.buildLivePartyCombatants(), enemy);
+    this.victoryPresentation = enemy.victoryPresentation;
+    // デーマス本戦は主人公・タロサ・ミレイの3人固定。開発クエリだけは、実セーブを
+    // 汚さずMirrorを確認できるTEMP_TEST_VALUEの同じ3人編成を使う。
+    const directDemasTest = !this.eventData && enemy.id === "demas";
+    // DEBUG_MODEは敵・入口を問わず、加入状況もセーブも見ずに3人Lv30の編成で始める(戦闘のみ参加)。
+    const party = isDebugMode()
+      ? buildDebugParty()
+      : directDemasTest
+        ? enemy.devParty ?? enemy.devPlayer ?? this.buildLivePartyCombatants()
+        : enemy.id === "demas"
+          ? this.buildDemasPartyCombatants(enemy.devParty)
+          : enemy.devPlayer ?? this.buildLivePartyCombatants();
+    this.battle = new BattleSystem(party, enemy);
     this.cameras.main.setBackgroundColor(0x101526);
-    this.createBackground(enemy.background);
+    this.battleBackground = this.createBackground(enemy.background, enemy.backgroundTheme);
     const key = `battle.monster.${enemy.id}`;
     this.textures.get(key).setFilter(Phaser.Textures.FilterMode.LINEAR);
     const layout = DEV_BATTLE_UI_LAYOUT;
     const scale = enemy.display?.scale ?? 1;
-    this.portrait = this.add.image(layout.enemy.x, layout.enemy.y + (enemy.display?.offsetY ?? 0) * DISPLAY.height, key).setDepth(1);
+    const enemyY = layout.enemy.y + (enemy.display?.offsetY ?? 0) * DISPLAY.height;
+    const animatedSheet = enemy.battleSpriteSheet && this.textures.exists(enemy.battleSpriteSheet.key)
+      ? enemy.battleSpriteSheet
+      : undefined;
+    const animatedDemas = animatedSheet ? this.add.sprite(layout.enemy.x, enemyY, animatedSheet.key, 0).setDepth(1) : undefined;
+    this.portrait = animatedDemas ?? this.add.image(layout.enemy.x, enemyY, key).setDepth(1);
     this.portrait.setScale(Math.min(layout.enemy.maxWidth * scale / this.portrait.width, layout.enemy.maxHeight * scale / this.portrait.height, 1));
     // 全ての敵に共通する接地影。画像固有の描き足しを避け、透明ポートレートでも背景から浮かないようにする。
     this.groundShadow = this.createGroundShadow(this.portrait);
     this.portraitOriginX = this.portrait.x;
+    if (animatedDemas && animatedSheet) this.demasController = new DemasBossController(this, animatedDemas, this.groundShadow, animatedSheet.key, this.battleBackground);
 
     const style: Phaser.Types.GameObjects.Text.TextStyle = { fontFamily: "monospace", fontSize: `${layout.fontSize}px`, color: TEXT_COLOR, lineSpacing: 5 };
     for (const bounds of getBattleStatusWindows(this.battle.getSnapshot().party.length)) {
@@ -133,7 +175,14 @@ export class BattleScene extends Phaser.Scene {
     }
     this.createWindow(layout.commandWindow);
     this.createWindow(layout.messageWindow);
-    this.commandText = this.add.text(layout.commandWindow.x + layout.padding, layout.commandWindow.y + layout.padding, "", {
+    // 状態窓にはレベルが出ないため、DEBUG_MODE中だけ編成が固定であることを小さく示す(本番ビルドには出ない)。
+    if (isDebugMode()) {
+      const bounds = layout.statusWindow;
+      this.add.text(bounds.x, bounds.y + bounds.height + 2, `DEBUG　ぜんいんLv${DEBUG_PARTY_LEVEL}`, {
+        ...style, fontSize: `${layout.fontSize * 0.85}px`, color: "#ffd75e", stroke: "#05070b", strokeThickness: 4,
+      }).setDepth(11);
+    }
+    this.commandText =this.add.text(layout.commandWindow.x + layout.padding, layout.commandWindow.y + layout.padding, "", {
       ...style, lineSpacing: layout.commandLineHeight - layout.fontSize,
     }).setDepth(11);
     this.messageText = this.add.text(layout.messageWindow.x + layout.padding, layout.messageWindow.y + layout.padding, "", {
@@ -147,6 +196,9 @@ export class BattleScene extends Phaser.Scene {
     // Pointer input is queued through the same InputSystem as keyboard input.
     this.input.on("pointerdown", this.handlePointer, this);
     const cleanup = (): void => {
+      this.demasController?.dispose();
+      this.demasController = undefined;
+      this.presentationLocked = false;
       this.actions.destroy();
       this.input.off("pointerdown", this.handlePointer, this);
       this.events.off(Phaser.Scenes.Events.SHUTDOWN, cleanup);
@@ -161,11 +213,41 @@ export class BattleScene extends Phaser.Scene {
   private buildLivePartyCombatants() {
     const members = partySystem.getActiveMembers();
     if (members.length === 0) return DEV_BATTLE_PLAYER;
-    return members.map((member) => buildPartyCombatant(member.id, characterProgression.getStats(member.id).level));
+    // ?battleTest単体確認はセーブを読まない(characterProgressionがrepository無し)ため、全快・自動装備になる。
+    return members.map((member) => buildPartyCombatant(
+      member.id,
+      characterProgression.getStats(member.id).level,
+      undefined,
+      characterProgression.getLiveState(member.id),
+    ));
+  }
+
+  /**
+   * Authored Demas party order. The story path has already introduced all three
+   * members; the temporary in-town debug event falls back to the same 3-person
+   * query fixture until that progression is present.
+   */
+  private buildDemasPartyCombatants(fallback?: readonly BattleCombatantDefinition[]) {
+    if (!DEMAS_BATTLE_PARTY_IDS.every((memberId) => partySystem.hasMember(memberId))) {
+      return fallback ?? this.buildLivePartyCombatants();
+    }
+    return DEMAS_BATTLE_PARTY_IDS.map((memberId) => buildPartyCombatant(
+      memberId,
+      characterProgression.getStats(memberId).level,
+      undefined,
+      characterProgression.getLiveState(memberId),
+    ));
   }
 
   update(): void {
     if (!this.battle || this.transitioning) return;
+    if (this.presentationLocked) {
+      this.actions.consumePressed("confirm");
+      this.actions.consumePressed("cancel");
+      this.actions.consumePressed("moveUp");
+      this.actions.consumePressed("moveDown");
+      return;
+    }
     const confirm = this.actions.consumePressed("confirm");
     const cancel = this.actions.consumePressed("cancel");
     const up = this.actions.consumePressed("moveUp");
@@ -194,7 +276,7 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private handlePointer(pointer: Phaser.Input.Pointer): void {
-    if (!this.battle || this.transitioning) return;
+    if (!this.battle || this.transitioning || this.presentationLocked) return;
     const snapshot = this.battle.getSnapshot();
     const state = snapshot.state;
     const bounds = DEV_BATTLE_UI_LAYOUT.commandWindow;
@@ -226,6 +308,10 @@ export class BattleScene extends Phaser.Scene {
       this.render();
       return;
     }
+    if (before.state === "VICTORY" && this.victoryPageIndex >= this.victoryPages.length - 1 && this.time.now < this.victoryReadyAt) {
+      this.hintText.setText("砦の　いしが　くずれていく……");
+      return;
+    }
     if (before.state === "VICTORY" || before.state === "ESCAPED") {
       if (this.eventData) this.returnToEventMap(); else this.scene.restart();
       return;
@@ -255,16 +341,42 @@ export class BattleScene extends Phaser.Scene {
     this.magicMenu = false;
     this.itemMenu = false;
     const after = this.battle.getSnapshot();
+    // 通常攻撃(コマンド「こうげき」/ まほう一覧の「こうげき」)が実行されたら斬撃を重ねる。
+    const isPhysicalAttack = command === "fight" && !magic && !item || magic?.kind === "attack";
+    if (before.state === "COMMAND" && after.state !== "COMMAND" && isPhysicalAttack) {
+      this.playSlashEffect(actor.id, actor.weaponAction?.hitCount ?? 1, after.lastHitTier);
+    }
     this.grantVictoryReward(after);
-    this.applyVisualFeedback(before, after);
-    this.render();
+    this.savePartyVitals(after);
+    const deferRenderUntilDaidainEnds = this.applyVisualFeedback(before, after);
+    if (!deferRenderUntilDaidainEnds) this.render();
+  }
+
+  /**
+   * 戦闘の結果HP/MPを持ち越す(やどやで回復する前提)。勝利・逃走はその時点の値を保存する。
+   * 全滅時の正式なペナルティ・復帰地点はBATTLE_SPEC.md §7でTBDのため、従来どおり全快へ戻して
+   * 「もういちど」／マップ復帰で詰まないようにする。?battleTest単体確認はセーブへ触れない。
+   */
+  private savePartyVitals(snapshot: BattleSnapshot): void {
+    // DEBUG_MODEの編成は毎回Lv30・全快で始まる固定値のため、セーブのHP/MPへ触れない。
+    if (this.vitalsSaved || !this.eventData || isDebugMode()) return;
+    if (snapshot.state === "VICTORY" || snapshot.state === "ESCAPED") {
+      this.vitalsSaved = true;
+      // A development shortcut may render the three-person fixture before the
+      // companions have joined. Do not write those temporary vitals into saves.
+      characterProgression.saveVitals(snapshot.party.filter((member) => partySystem.hasMember(member.id)));
+    } else if (snapshot.state === "DEFEAT") {
+      this.vitalsSaved = true;
+      characterProgression.restoreVitals();
+    }
   }
 
   /** Event battles write their reward once; standalone ?battleTest visual QA never touches a player's save. */
   private grantVictoryReward(snapshot: BattleSnapshot): void {
     if (this.rewardGranted || !this.eventData || snapshot.state !== "VICTORY" || !snapshot.reward) return;
     this.rewardGranted = true;
-    const { levelUps } = characterProgression.awardExperience(partySystem.getPartyOrder(), snapshot.reward.experience);
+    // DEBUG_MODEの編成はLv30固定(成長上限Lv25の外側)。実セーブのEXPを進めず、レベルアップ表示も出さない。
+    const levelUps = isDebugMode() ? [] : characterProgression.awardExperience(partySystem.getPartyOrder(), snapshot.reward.experience).levelUps;
     this.victoryPages = buildLevelUpPages(levelUps);
     this.gameState.addMoney(snapshot.reward.money);
     if (snapshot.reward.itemId && Object.hasOwn(ITEM_DEFINITIONS, snapshot.reward.itemId)) {
@@ -320,16 +432,136 @@ export class BattleScene extends Phaser.Scene {
     }
   }
 
-  private createBackground(background?: { readonly key: string; readonly url: string }): void {
+  /**
+   * 味方の攻撃時の斬撃: 敵ポートレートの中心を横切る細い刃の光が一瞬で伸び、白い閃光と
+   * 火花を残して消える。多段攻撃はhitCountぶん時間差で交差させる。
+   * だいヒット/とくだいヒットでは刃を大きく金色に光らせ、交差斬撃・画面の揺れ・閃光・
+   * ヒットストップ・「だいヒット！」の文字を足して大げさにする。
+   */
+  private playSlashEffect(memberId: string, hitCount: number, hitTier: BattleHitTier = "normal"): void {
+    const { style, anglesDeg } = getBattleSlashAngles(memberId, hitCount);
+    const big = hitTier !== "normal";
+    const bigHit = BATTLE_BIG_HIT_EFFECT;
+    const durationScale = big ? bigHit.durationScale : 1;
+    const drawMs = BATTLE_SLASH_EFFECT_TIMING.drawMs * durationScale;
+    const fadeMs = BATTLE_SLASH_EFFECT_TIMING.fadeMs * durationScale;
+    const centerX = this.portraitOriginX;
+    const centerY = this.portrait.y;
+    const baseLength = Math.max(this.portrait.displayWidth, this.portrait.displayHeight) * 1.1;
+    const length = baseLength * (big ? bigHit.lengthScale : 1);
+    const thickness = Math.max(6, baseLength * 0.07) * (big ? bigHit.thicknessScale : 1);
+    const sparkCount = big ? bigHit.sparkCount : 6;
+    // だいヒットは各撃に交差斬撃を足す(2本目以降は少し遅らせてX字に重ねる)。
+    const slashes = anglesDeg.flatMap((angleDeg, index) => [
+      { angleDeg, delay: index * BATTLE_SLASH_EFFECT_TIMING.hitIntervalMs },
+      ...(big ? Array.from({ length: bigHit.extraSlashes }, (_, extra) => ({
+        angleDeg: -angleDeg + (extra % 2 === 0 ? 8 : -8),
+        delay: index * BATTLE_SLASH_EFFECT_TIMING.hitIntervalMs + drawMs * 0.6 * (extra + 1),
+      })) : []),
+    ]);
+    if (big) this.playBigHitImpact(hitTier, drawMs);
+    for (const { angleDeg, delay } of slashes) {
+      this.time.delayedCall(delay, () => {
+        const blade = this.add.graphics({ x: centerX, y: centerY }).setDepth(5).setAngle(angleDeg);
+        // 両端が尖ったレンズ形。外側の光と芯を重ねる。
+        const drawLens = (width: number, color: number, alpha: number): void => {
+          blade.fillStyle(color, alpha);
+          blade.fillPoints([
+            new Phaser.Math.Vector2(-length / 2, 0),
+            new Phaser.Math.Vector2(-length / 6, -width / 2),
+            new Phaser.Math.Vector2(length / 6, -width / 2),
+            new Phaser.Math.Vector2(length / 2, 0),
+            new Phaser.Math.Vector2(length / 6, width / 2),
+            new Phaser.Math.Vector2(-length / 6, width / 2),
+          ], true);
+        };
+        if (big) drawLens(thickness * 3.2, bigHit.auraColor, 0.35);
+        drawLens(thickness * 2.2, style.glowColor, 0.45);
+        drawLens(thickness, style.coreColor, 1);
+        blade.setScale(0.05, 1);
+        this.tweens.add({
+          targets: blade,
+          scaleX: 1,
+          duration: drawMs,
+          ease: "Cubic.easeOut",
+          onComplete: () => this.tweens.add({
+            targets: blade, alpha: 0, scaleY: 0.2, duration: fadeMs, ease: "Quad.easeIn", delay: big ? bigHit.hitStopMs : 0, onComplete: () => blade.destroy(),
+          }),
+        });
+        const flash = this.add.circle(centerX, centerY, thickness * 1.2, 0xffffff, 0.6).setDepth(5).setBlendMode(Phaser.BlendModes.ADD);
+        this.tweens.add({ targets: flash, scale: big ? 2.6 : 1.8, alpha: 0, duration: drawMs + fadeMs * 0.6, onComplete: () => flash.destroy() });
+        const radians = Phaser.Math.DegToRad(angleDeg);
+        for (let spark = 0; spark < sparkCount; spark += 1) {
+          const along = (spark / (sparkCount - 1) - 0.5) * length * 0.8;
+          const sparkX = centerX + Math.cos(radians) * along;
+          const sparkY = centerY + Math.sin(radians) * along;
+          const side = spark % 2 === 0 ? 1 : -1;
+          const reach = thickness * (big ? 2 + (spark % 3) : 3);
+          const color = big && spark % 3 === 0 ? bigHit.auraColor : style.glowColor;
+          const dot = this.add.rectangle(sparkX, sparkY, thickness * 0.5, thickness * 0.5, color).setDepth(5).setAngle(45);
+          this.tweens.add({
+            targets: dot,
+            x: sparkX - Math.sin(radians) * reach * side,
+            y: sparkY + Math.cos(radians) * reach * side,
+            alpha: 0,
+            scale: 0.2,
+            duration: fadeMs + 80,
+            delay: drawMs * 0.5,
+            onComplete: () => dot.destroy(),
+          });
+        }
+      });
+    }
+  }
+
+  /** だいヒットの画面全体の演出: 白い閃光・画面の揺れ・中央に弾んで出る「だいヒット！」。 */
+  private playBigHitImpact(hitTier: BattleHitTier, drawMs: number): void {
+    const bigHit = BATTLE_BIG_HIT_EFFECT;
+    this.time.delayedCall(drawMs, () => {
+      this.cameras.main.flash(bigHit.flashMs, 255, 250, 225);
+      this.cameras.main.shake(bigHit.shakeMs, bigHit.shakeIntensity);
+    });
+    const layout = DEV_BATTLE_UI_LAYOUT;
+    const bannerY = layout.enemy.y - layout.enemy.maxHeight * 0.55;
+    const banner = this.add.text(DISPLAY.width / 2, bannerY, hitTier === "tokudai" ? "とくだいヒット！！" : "だいヒット！", {
+      fontFamily: "monospace", fontSize: `${Math.round(layout.fontSize * 2.2)}px`, fontStyle: "bold",
+      color: "#fff3b0", stroke: "#8a2a00", strokeThickness: 8,
+    }).setOrigin(0.5).setDepth(20).setScale(2.2).setAlpha(0).setAngle(-6);
+    this.tweens.add({ targets: banner, scale: 1, alpha: 1, angle: 0, duration: 180, delay: drawMs, ease: "Back.easeOut" });
+    this.tweens.add({
+      targets: banner, alpha: 0, y: bannerY - 10, duration: 260, delay: drawMs + bigHit.bannerMs, onComplete: () => banner.destroy(),
+    });
+  }
+
+  private createBackground(background?: { readonly key: string; readonly url: string }, theme?: "fortress"): Phaser.GameObjects.Image | undefined {
+    if (theme === "fortress") {
+      const stone = this.add.graphics().setDepth(0);
+      stone.fillStyle(0x17141a, 1);
+      stone.fillRect(0, 0, DISPLAY.width, DISPLAY.height);
+      stone.fillStyle(0x2a252c, 1);
+      stone.fillRect(0, DISPLAY.height * 0.56, DISPLAY.width, DISPLAY.height * 0.44);
+      for (let row = 0; row < 5; row += 1) for (let column = 0; column < 11; column += 1) {
+        const x = column * (DISPLAY.width / 10) - (row % 2) * 18;
+        const y = DISPLAY.height * 0.56 + row * 32;
+        stone.lineStyle(2, 0x494049, 0.75);
+        stone.strokeRect(x, y, DISPLAY.width / 10 - 2, 30);
+      }
+      stone.fillStyle(0x5b1f2a, 0.72);
+      stone.fillRect(0, 0, DISPLAY.width, 9);
+      stone.fillStyle(0x54c86b, 0.16);
+      stone.fillEllipse(DISPLAY.width * 0.5, DISPLAY.height * 0.7, DISPLAY.width * 0.72, DISPLAY.height * 0.24);
+      return undefined;
+    }
     if (background && this.textures.exists(background.key)) {
       this.textures.get(background.key).setFilter(Phaser.Textures.FilterMode.LINEAR);
       const image = this.add.image(DISPLAY.width / 2, DISPLAY.height / 2, background.key).setDepth(0);
       image.setScale(Math.max(DISPLAY.width / image.width, DISPLAY.height / image.height));
-      return;
+      return image;
     }
     // Existing normal-enemy DEV background, also a safe image-load fallback.
     this.add.rectangle(DISPLAY.width / 2, DISPLAY.height / 2, DISPLAY.width, DISPLAY.height, 0x1e3154);
     this.add.rectangle(DISPLAY.width / 2, DISPLAY.height * 0.65, DISPLAY.width, DISPLAY.height * 0.35, 0x243b31);
+    return undefined;
   }
 
   /** Shared grounding treatment for normal enemies and bosses; it stays behind the portrait and above the battle background. */
@@ -347,21 +579,78 @@ export class BattleScene extends Phaser.Scene {
       .setStrokeStyle(2, 0xeeeeee).setDepth(10);
   }
 
-  private applyVisualFeedback(before: BattleSnapshot, after: BattleSnapshot): void {
+  /**
+   * Presentation follows the resolved action trace; it does not alter damage, turn order, or Mirror charges.
+   * Returning true means Daidain owns the camera briefly, so render/input resume at sequence completion.
+   */
+  private applyVisualFeedback(before: BattleSnapshot, after: BattleSnapshot): boolean {
+    const action = after.lastAction;
+    const enemyAction = action?.casterId === after.enemy.id ? action : undefined;
+    const isDaidain = enemyAction?.actionId === "magic_daidain";
+    if (isDaidain && this.demasController) {
+      this.presentationLocked = true;
+      this.demasController.playDaidain({
+        reflected: enemyAction.reflected,
+        weak: this.isDemasWeak(after),
+        onPartyImpact: () => this.flashPartyDamage(),
+        onComplete: () => {
+          this.presentationLocked = false;
+          if (!this.transitioning) this.render();
+        },
+      });
+      return true;
+    }
+
     if (after.enemy.hp < before.enemy.hp) {
-      this.tweens.killTweensOf(this.portrait);
-      this.portrait.setX(this.portraitOriginX).setAlpha(1);
-      this.tweens.add({ targets: this.portrait, x: this.portraitOriginX + 8, alpha: 0.35, duration: 55, yoyo: true, repeat: 2 });
+      if (this.demasController) this.demasController.playDamage(this.isDemasWeak(after));
+      else {
+        this.tweens.killTweensOf(this.portrait);
+        this.portrait.setX(this.portraitOriginX).setAlpha(1);
+        this.tweens.add({ targets: this.portrait, x: this.portraitOriginX + 8, alpha: 0.35, duration: 55, yoyo: true, repeat: 2 });
+      }
     }
-    if (after.party.some((member, i) => member.hp < (before.party[i]?.hp ?? member.hp))) {
-      this.tweens.killTweensOf(this.statusWindows);
-      this.statusWindows.forEach(window => window.setAlpha(1));
-      this.tweens.add({ targets: this.statusWindows, alpha: 0.35, duration: 70, yoyo: true, repeat: 1 });
+    if (!before.enemy.status.poisoned && after.enemy.status.poisoned) {
+      this.cameras.main.flash(180, 88, 220, 116);
+      this.cameras.main.shake(190, 0.008);
+      this.portrait.setTint(0x82df8e);
+      this.time.delayedCall(520, () => this.portrait.clearTint());
     }
+    if (after.party.some((member, i) => member.hp < (before.party[i]?.hp ?? member.hp))) this.flashPartyDamage();
+
+    if (this.demasController && enemyAction?.kind === "attack") this.demasController.playNormalAttack(this.isDemasWeak(after));
+    if (this.demasController && enemyAction?.kind === "mirror") this.demasController.playMirrorCast(this.isDemasWeak(after));
+
     if (after.state === "VICTORY") {
+      this.demasController?.dispose();
+      this.demasController = undefined;
       this.tweens.killTweensOf([this.portrait, this.groundShadow]);
-      this.tweens.add({ targets: [this.portrait, this.groundShadow], alpha: 0, duration: 160 });
+      if (this.victoryPresentation === "fortress-stop") {
+        const dissolveMs = 1450;
+        this.victoryReadyAt = this.time.now + dissolveMs;
+        const collapseFlash = this.add.rectangle(DISPLAY.width / 2, DISPLAY.height / 2, DISPLAY.width, DISPLAY.height, 0xb5d8bb, 0)
+          .setDepth(8).setBlendMode(Phaser.BlendModes.ADD);
+        this.cameras.main.shake(320, 0.012);
+        this.portrait.setTint(0x9ddf9a);
+        this.tweens.add({ targets: collapseFlash, alpha: 0.48, duration: 120, yoyo: true, repeat: 2, onComplete: () => collapseFlash.destroy() });
+        this.tweens.add({
+          targets: [this.portrait, this.groundShadow], alpha: 0, duration: dissolveMs, ease: "Quad.easeIn",
+          onComplete: () => this.portrait.clearTint(),
+        });
+      } else {
+        this.tweens.add({ targets: [this.portrait, this.groundShadow], alpha: 0, duration: 160 });
+      }
     }
+    return false;
+  }
+
+  private flashPartyDamage(): void {
+    this.tweens.killTweensOf(this.statusWindows);
+    this.statusWindows.forEach(window => window.setAlpha(1));
+    this.tweens.add({ targets: this.statusWindows, alpha: 0.35, duration: 70, yoyo: true, repeat: 1 });
+  }
+
+  private isDemasWeak(snapshot: BattleSnapshot): boolean {
+    return snapshot.enemy.id === "demas" && snapshot.enemy.hp / snapshot.enemy.maxHp <= DEMAS_BATTLE_PRESENTATION.weakHpRatio;
   }
 
   private returnToEventMap(): void {
@@ -381,7 +670,7 @@ export class BattleScene extends Phaser.Scene {
       const hasExactReturnPosition = event.returnSpawnX !== undefined && event.returnSpawnY !== undefined;
       this.scene.start(event.returnSceneKey, {
         spawnId: event.returnSpawnId,
-        ...(hasExactReturnPosition ? { spawnX: event.returnSpawnX, spawnY: event.returnSpawnY, spawnFacing: event.returnFacing } : {}),
+        ...(hasExactReturnPosition ? { spawnX: event.returnSpawnX, spawnY: event.returnSpawnY, spawnFacing: event.returnFacing, floor: event.returnFloor, spawnYaw: event.returnYaw } : {}),
         battleEventReturn: true,
       });
     });

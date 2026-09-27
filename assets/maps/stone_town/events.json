@@ -1,0 +1,19 @@
+{
+  "formatVersion": 1,
+  "events": [
+    {
+      "id": "event_stone_town_south_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 624, "y": 1056, "width": 200, "height": 30 },
+      "commands": [{ "type": "world-map", "worldMapEntryId": "from_stone_town" }]
+    },
+    {
+      "id": "event_stone_town_north_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 664, "y": 0, "width": 128, "height": 24 },
+      "commands": [{ "type": "world-map", "worldMapEntryId": "from_stone_town" }]
+    }
+  ]
+}
