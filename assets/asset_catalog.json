@@ -27,8 +27,8 @@
       "key": "map.stone_town.background",
       "path": "assets/maps/stone_town/background.png",
       "status": "dev_placeholder",
-      "sha256": "c1f4f96656a1d928b13bebafb4b2147bdb3d6d7b7d05b208fa51625ea1cdd029",
-      "note": "2026-09-27: DEV_PLACEHOLDER 1448x1086 top-down walking BACKGROUND for No.18 いしのまち (map_stone_town). No formal top-down background was supplied, so tools/build_stone_town_assets.py paints it procedurally from the same layout as collision.png (villager sprites turned to stone are pasted in at the statue objects). Replace it with the formal artwork, then set assetStatus to CURRENT in map.json and re-derive collision.png and the objects.json / events.json rectangles."
+      "sha256": "da968cd1ec9c6330e6644992a0af741fc8bba44cab01a04673ffd551f8bac33e",
+      "note": "2026-09-27: DEV_PLACEHOLDER 1448x1086 top-down walking BACKGROUND for No.18 いしのまち (map_stone_town). No formal top-down background was supplied, so tools/build_stone_town_assets.py paints it procedurally from the same layout as collision.png (villager sprites turned to stone are pasted in at the statue objects). Same-day visual pass: replaced the illegible fountain-rim ornament blobs with small stone finials, redrew the canal bridge's underside as a shadowed stone arch instead of a flat dark hole, and kept ivy vines off statue footprints. The walkable layout is unchanged (collision.png is byte-identical). Replace this background with the formal artwork, then set assetStatus to CURRENT in map.json and re-derive collision.png and the objects.json / events.json rectangles."
     },
     {
       "key": "map.stone_town.collision",

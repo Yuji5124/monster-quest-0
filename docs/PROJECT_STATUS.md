@@ -52,6 +52,9 @@ PARTIALの理由: 台詞本文は`DIALOGUE_DRAFT`（正式本文`NPC_DIALOGUE_MA
 - **検証**: 新規`tests/stoneTown.test.mjs` 10件（パッケージ整合・入場演出・出入口・OBJECTのフラグ整合・台詞の行数／禁止語・石像の足元がCollisionに載ること・星が石の壁の下にあること・フラグ規則・実プレイヤー体格での到達性と石の壁による北ルートの遮断・全石像が調べられる位置に立てること）、`bodyPassability`へ追加、`worldMapData`を更新。`npm run typecheck` PASS。ブラウザ（`?mapTest=stone-town`）で、入場の語り→各石像の文とフラグ保存→広場の石像（未収集は促す文・3つ収集後に演出）→石の壁の崩落→階段を上り老人→北門で世界地図（`from_stone_town`）→入場演出→再入場で状態復元（語りは再生しない・ひび・星の光は残る）を確認、コンソールエラー0件。
 - **PARTIALの理由**: 歩行背景が仮素材（人間の視覚調整・正式画像への差し替え待ち）。台詞は`DIALOGUE_DRAFT`（石化の原因・正体は断定しない）。**三人自身の異常に触れる会話（ミレイの未来記憶の断片・主人公のまとまった台詞、`STORY_FLOW.md` No.18）は`TBD_REGISTRY.md`のとおり未実装**。演出の数値（TEMP_TEST_VALUE）・BGM・SEは未調整。iPhone Safari実機は未確認。
 
+### 追記（同日）: DEV_PLACEHOLDER背景の見た目調整
+テストプレイ後、自己レビューで見つけた仮背景の弱点を`tools/build_stone_town_assets.py`で修正した。判読しづらかった噴水ふちの「動物の飾り」を、小さな石の装飾（花瓶状の擬宝珠）に描き直し、水路の橋の下がただの黒い穴に見えていた表現を、淡い石のアーチ越しに影の落ちた水面が見える見た目へ描き直した。ツタが石像の頭にかかって邪魔していた箇所は、石像の足元付近を避けて生えるよう修正した。歩行可能領域・Collision（`collision.png`はバイト一致で無変更）・データ構成は変更していないため、`tests/stoneTown.test.mjs`・`bodyPassability`は無変更のままPASS。`npm run typecheck` PASS。ブラウザで、噴水ふちの装飾が視認できること、橋の下がアーチとして読めること、一連の進行（のこった声3つ→広場の石像の目覚め→石の壁の崩落→北門で世界地図）が変わらず動作することを確認した。
+
 ## No.14 ポサロ城の世界地図往復 = PARTIAL（2026-09-27 JST）
 
 ユーザー指示「ポサロじょうに出入りできるようにしてください」を、地域間の正式方式であるポイント選択式`WorldMapScene`との往復として反映した。`destination_posaro_castle`を`planned`→`implemented`へ更新し、`map_posaro_castle` / `PosaroCastleScene`の`fromWorldMap`へ解決する。世界地図からは外観を5秒表示して南の大階段へ入り、階段の下端へ歩くと`from_posaro_castle`として世界地図へ戻る。到着spawnは出口ゾーン外に置き、到着直後の自動退出は発生しない。
