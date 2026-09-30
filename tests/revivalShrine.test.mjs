@@ -3,11 +3,16 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { bodyOffset } from "../src/config/characterWalkSprite.ts";
 import { PLAYER } from "../src/config/player.ts";
 import { MAPS } from "../src/config/maps.ts";
+import { VILLAGER_SPRITES } from "../src/config/villagerSprites.ts";
 import { findEntrySplash, MAP_ENTRY_SPLASHES } from "../src/config/mapSplash.ts";
+import { DIALOGUES } from "../src/data/dialogues.ts";
+import { buildCollisionRects } from "../src/systems/ImageMapCollisionData.ts";
 import { readImageMapEvents, readImageMapManifest, readImageMapObjects } from "../src/systems/ImageMapData.ts";
 import { resolveWorldMapEntryDestination } from "../src/systems/WorldMapData.ts";
+import { analyseBodyReachability, readPngAsMask } from "./helpers/bodyReachability.mjs";
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const MAP_DIR = path.join(REPO_ROOT, "assets/maps/revival_shrine");
@@ -17,6 +22,21 @@ const readPngSize = (file) => {
   const buffer = readFileSync(file);
   return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
 };
+const overlaps = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+const blockedRects = () => buildCollisionRects(readPngAsMask(path.join(MAP_DIR, "collision.png")), readImageMapManifest(readJson(path.join(MAP_DIR, "map.json"))).collisionCellSize);
+
+/** NPCの足元Body(ネイティブ背景ピクセル)。Npc.tsと同じくスプライト中心+bodyOffsetから求める。 */
+function npcBodyNative(npc) {
+  const scale = readImageMapManifest(readJson(path.join(MAP_DIR, "map.json"))).worldScale;
+  const sprite = VILLAGER_SPRITES[npc.spriteId];
+  const offset = bodyOffset(sprite, PLAYER.width, PLAYER.height);
+  return {
+    x: (npc.position.x * scale - sprite.frameWidth / 2 + offset.x) / scale,
+    y: (npc.position.y * scale - sprite.frameHeight / 2 + offset.y) / scale,
+    width: PLAYER.width / scale,
+    height: PLAYER.height / scale,
+  };
+}
 
 test("revival-shrine package: the top-down map is the background and the painting is the entry splash, both unmodified", () => {
   const manifest = readImageMapManifest(readJson(path.join(MAP_DIR, "map.json")));

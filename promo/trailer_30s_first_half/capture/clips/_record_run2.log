@@ -1,0 +1,8 @@
+● cap_bie  /?mapTest=bie-village
+  → {"ok":false,"url":"/?mapTest=bie-village","error":"Error: page.evaluate: TypeError: Cannot read properties of null (reading 'physics')\n    at Object.playerPos (eval at evaluate (:311:30), <anonymous>:145:21)\n    at eval (eval at evaluate (:311:30), <anonymous>:1:29)\n    at UtilityScript.evaluate (<anonymous>:313:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)","errors":[]}
+● cap_majin_house  /?mapTest=majin-cave&seed=8008
+  → {"ok":true,"url":"/?mapTest=majin-cave&seed=8008","seconds":11.26,"errors":[]}
+● cap_majin_boss  /?mapTest=majin-cave&seed=8008&majinCaveFloor=10
+  → {"ok":true,"url":"/?mapTest=majin-cave&seed=8008&majinCaveFloor=10","seconds":16.83,"errors":[]}
+● cap_shoot_chain  /?mapTest=iwayama-shooting&shootingSection=chain
+  → {"ok":true,"url":"/?mapTest=iwayama-shooting&shootingSection=chain","seconds":15.03,"errors":[]}

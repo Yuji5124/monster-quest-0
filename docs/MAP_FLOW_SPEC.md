@@ -101,7 +101,7 @@
 - ローカルマップの実装方式はNo.01と同じBACKGROUND/COLLISION/EVENT/OBJECT（`MAP_SYSTEM.md`）を流用し、距離ベースのランダムエンカウント（`BATTLE_SPEC.md`§11）を持つ最初の地域である。
 - 正式No.03として扱う。旧「番号なし追加フィールド」方針はSUPERSEDEDであり、既存内部IDのみを互換として残す。
 - 2026-09-24: ユーザー注釈の緑ポイントに`objects.json`の`boss_starting_forest_erimaki_tokage`を配置する。既存のエリマキヘビ戦闘素材／BattleSceneを使い、撃破時だけ`boss.starting_forest_erimaki_tokage_defeated`と`story.rainland_castle_town_unlocked`を保存する。後者により`destination_rainland_castle_town`（No.06）が世界地図で選択可能になる。No.05レインランドのもりの解放条件は`story.rainland_forest_unlocked`（2026-09-27、No.04ビーエのむらの会話。§4.5）で、この撃破とは独立している。
-- 青ポイントの`chest_starting_forest_kaifukuyaku`は`kaifukuyaku`を1個渡し、`chest.starting_forest_kaifukuyaku_opened`で再取得を防ぐ。北の石アーチ（オレンジポイント）は既存の世界地図出口を維持する。
+- 青ポイントの`chest_starting_forest_kaifukuyaku`はジャンコインを1枚渡し、`chest.starting_forest_kaifukuyaku_opened`で再取得を防ぐ。2026-10-01ユーザー指示により、同地域の通常戦闘経験値は80%（端数切り捨て）とする。北の石アーチ（オレンジポイント）は既存の世界地図出口を維持する。
 - 撃破後の帰還時だけ、北側ワープ領域に収まる`arrival_starting_forest_tarosa`からタロサが現れ「おれも　えりまきとかげを追っていた」と短く話す。会話後は同じワープ領域から去る。`event.starting_forest_tarosa_hunt_talked`で一度限りにし、この会話は加入イベントではない。
 - 2026-09-26 タロサ登場演出の強化: 登場・退場は主人公の歩行速度(`PLAYER.moveSpeed`、距離÷速度で所要時間を算出)で歩き、ワープ領域でフェードイン/アウトする。会話中は画面右側に額縁つきの立ち姿(`assets/characters/portraits/tarosa_standing.png`)を表示し、会話は4ページ（「……倒したのは　おまえか。」「おれも　えりまきとかげを　追っていた。」「……先を　こされたな。」「つぎの　えものは　おれが　しとめる。」）。4ページ目の台詞は初稿でTBD。表示位置・大きさ・フェード時間はTEMP_TEST_VALUE。
 - 2026-09-27 南端の出口追加: ユーザー指示で、道の最下端（南の木戸の外、画像下端）も出口にした。`events.json`の`event_starting_forest_south_exit`（背景座標 x684〜868 / y1000〜1024、最下端の歩行可能な道幅いっぱい）が北の石アーチと同じ`world-map`（`worldMapEntryId: from_starting_forest`）へ戻る。世界地図から入るspawn（770,970）は出口ゾーンの外にあり、到着直後には退場しない。出口ゾーンの位置・大きさはTEMP_TEST_VALUE。
@@ -123,18 +123,19 @@
 - reference画像(`はじまりのまち.png`)に実在する建物は5棟（やどや/どうぐや/ぶきや/きょうかい/民家A）のみで、旧DEV_PLACEHOLDER時代の6棟目（民家B）に対応する建物は描かれていない。ユーザー確認のうえ、正式建物数を6→5へ縮小し、`assets/maps/data/no02_start_town_interiors.json`・`src/config/interiors.ts`・`src/config/maps.ts`から`map_02_house_b`関連データを削除した。
 - 出入口は注釈画像の青ポイントに当たる西端1か所のみを`WorldMapScene`への正式接続として実装（本書§4.5の記述と一致）。戻りは緑ポイントに当たる南端spawn。建物のドア判定は`building.door`（背景ピクセル座標）と既存の`createExitZone`をそのまま使う。
 - カメラは他の画像マップと同じ`configureMapCamera`（追従）へ変更した。旧実装は960×720に固定表示でスクロールしなかったため、`DialogueBox`にスクロール追従しない`setScrollFactor(0)`を追加した。
+- 2026-09-27 入場演出: 世界地図から入るとき（spawn `fromWorldMap`）だけ、ユーザー指定の`はじまりのまち_イメージ.png`（無加工コピー`assets/maps/starting_town/entry_splash.png`）を他の町と同じ`MapSplashScene`で5秒投影し、地名「はじまりのまち」を表示してから町へ入る。
 
 ## 4.10 No.05 レインランドのもり（旧追加フィールド実装との互換、2026-09-19）
 - 正式No.は05。既存`rainland_forest_1/2`、`destination_rainland_forest`、Scene名は番号なし追加フィールドだった時点の互換IDとして残す。
 - ユーザー提供の背景画像2枚（`レインランドのもり　その１.png`／`その2.png`、いずれも1448×1086）を、同一エリアの連続する2画面として実装した。`assets/maps/rainland_forest_1/`（`map_rainland_forest_1`、`RainlandForest1Scene`）と`rainland_forest_2/`（`map_rainland_forest_2`、`RainlandForest2Scene`）。No.01と同じBACKGROUND/COLLISION/EVENT/OBJECT方式（`MAP_SYSTEM.md`）を流用し、`worldScale: 1.5`を適用する。
-- 導線: `WorldMapScene`の`destination_rainland_forest` → その1の南の石門内側(`fromWorldMap`)。その1の南口 → 世界地図(`from_rainland_forest`)。その1の北の木の階段 → その2の南の木の階段の上(`fromForest1`)。その2の南口 → その1の北の階段の下(`fromForest2`)。
-- 背景に描かれた「その2」の北・西・東へ続く道、および「その1」の途切れた小道の先は、接続先未定の行き止まりとして残した（ビーエのむらの東の道と同じ扱い）。No.06レインランドじょうかまち／じょうへの最終ローカル接続は今回定めない。
+- 導線: `WorldMapScene`の`destination_rainland_forest` → その1の南の石門内側(`fromWorldMap`)。その1の南口 → 世界地図(`from_rainland_forest`)。その1の北の木の階段 → その2の南の木の階段の上(`fromForest1`)。その2の南口 → その1の北の階段の下(`fromForest2`)。**2026-10-01ユーザー指定:** その2の北・西・東の道端（`event_rainland_forest_2_{north,west,east}_exit`）→ 世界地図(`from_rainland_forest`)。
+- その1の途切れた小道の先は、接続先未定の行き止まりとして残す。No.06レインランドじょうかまち／じょうへの最終ローカル接続は今回定めない。
 - 地点は`unlockFlag: "story.rainland_forest_unlocked"`（2026-09-27。それ以前は`null`の常時選択可能）。ビーエのむらの干し物の人と話すまでは世界地図で`？？？`となり選べない。南口から世界地図へ戻れる。位置は`FINAL_POSITION`。出現モンスター・NPC・BGMはTBD。ランダムエンカウントは出現モンスターが未確定のため持たない。
 - 仲間（タロサ・ミレイ）は、通常フィールドの画像マップ全て（No.01/No.02/ビーエのもり（内部`starting_forest`）/ビーエのむら/レインランドのもり）で主人公に付いてくる。
 - 2026-09-27 ユーザー指示（その2の木こりと宝箱。注釈画像のオレンジ・赤のポイント）:
   - 注釈画像(867×544)は`rainland_forest_2/background.png`(1448×1086)の上端908px分を縮小したもの。背景へ重ねて縮尺1.6701・ずれ0で一致することを確認し、ポイントの中心をネイティブ背景pxで測った: **オレンジ (651, 299)**＝木こり、**赤 (133.5, 195)**＝宝箱。
   - **木こり**: オレンジポイント（北の橋の北東、道の左端）に`npc_rainland_forest_woodcutter`（`role: "story"`、`villager_03`、下向き、その場に立つ）を置く。足元Bodyの中心がポイントに一致し、道幅の残り（約45px）で北へ抜けられる。話しかけると5ページの会話（レインランドじょうへはじょうかまち経由で行くと教える）→初回だけ末尾に「レインランドじょうへ　いけるように　なった！」→閉じた時点で`story.rainland_castle_town_unlocked`を保存し、世界地図でレインランドじょうかまち（§4.12）が選べるようになる。2回目以降は通常の5ページのみ。会話本文は`DIALOGUE_DRAFT`（`data/dialogues.ts`の`FIRST_TALK_UNLOCKS`）。ビーエのむらで「戻らない」と言われている木こりと同一人物かは示さない（TBD）。
-  - **宝箱**: 赤ポイント（北西の遺跡のアーチの根元）に`objects.json`の`chest_rainland_forest_2_ruin`（`blocking: true`）。前（南）から調べると`かいふくやく`1個を得て、`chest.rainland_forest_2_ruin_opened`を保存して消える。中身は指示がなかったため、No.03の宝箱と同じ`かいふくやく`を**TEMP_TEST_VALUE**として置いた。見た目はNo.03と同じコード描画の共通宝箱（`systems/ChestTexture.ts`の`createChestVisual`）。
+  - **宝箱**: 青丸ポイント（北西の遺跡のアーチの根元）に`objects.json`の`chest_rainland_forest_2_ruin`（`blocking: true`）。前（南）から調べると`かいふくやく`1個を得て、`chest.rainland_forest_2_ruin_opened`を保存して消える。中身は2026-10-01ユーザー指定。見た目はNo.03と同じコード描画の共通宝箱（`systems/ChestTexture.ts`の`createChestVisual`）。
   - **注意**: No.03ビーエのもりのえりまきとかげ撃破（§4.7）も同じ`story.rainland_castle_town_unlocked`を保存するため、木こりが唯一の解放条件にはなっていない。唯一の条件にするかはユーザー確認待ち（`TBD_REGISTRY.md`）。
 
 ## 4.11 No.07 まじんのどうくつ（旧No.08実装との互換、特殊ターン制Dungeon RPG、2026-09-20）
@@ -164,7 +165,7 @@
   - 2026-09-23追加指示「イメージはマイクラ風の参考画像のような感じ。仲間は見せない。天井も作る」: **天井**（高さ6。壁から離れた所は2×2の青い格間の格天井、壁ぎわは2段の張り出しで段々）、天井から鎖で下がる**ランタン**8個（暖かい光源）、暖かい日差しの照明、**絨毯の金の縁取り**、台座を**青い紋章の板つきの柱＋白い花のプランター**に、植木を白い花に、外の景色（青空・雪山・塔）が見える**アーチ窓**8か所（3Dだけの飾り）。参考画像の噴水は2Dの城に無いため置いていない（2Dと3Dで配置をそろえる）。
   - 2026-09-23画質向上: 等倍解像度＋アンチエイリアス、32×32の面取りテクスチャ、床の壁ぎわの陰影、燭台とランタンの光の輪、ミップマップ・異方性フィルタ、フィルミックのトーンマッピング。
   - 2026-09-23グレードアップ: 壁の付け柱・つた・扉のアーチ枠・窓からの光の筋・漂うほこり・床のつや。人物は顔・髪・服・持ち物を描いたブロック人形で、息づかい・まばたき・見回し・話しかけると向き直る（見た目は役割に合わせた仮のもの）。
-  - **王の間**（2026-09-23、ユーザー提供`レインランドじょう_城内2.png`）: 城の北の王の間の扉（`event_rainland_castle_throne_room_entrance`、`transfer`）→ 王の間の南の入口（`map_rainland_throne_room`の`fromCastle`、上向き）。王の間の南の出口（`event_rainland_throne_room_exit`）→ 城の扉の前（`fromThroneRoom`、下向き）。2D（`RainlandThroneRoomScene`）と3D（`RainlandThroneRoom3DScene`）をV/「3D」「2D」で切り替えられる。構成: 南の入口 → 燭台の台座が並ぶ広間 → 左右の翼 → 絨毯の階段 → 一段高い壇（手すり・燭台・植木）→ 玉座と大きな紋章の垂れ幕。3Dでは壇と階段が1ブロック高く、目の高さも上がる。王（玉座に座る）と近衛兵2人はDEV_PLACEHOLDER_NPC（仮台詞、`[仮]`付き）。王への報告・依頼イベント、正式台詞、人数はTBD。`?mapTest=rainland-throne-room`で単体確認。
+  - **王の間**（2026-09-23、ユーザー提供`レインランドじょう_城内2.png`）: 城の北の王の間の扉（`event_rainland_castle_throne_room_entrance`、`transfer`）→ 王の間の南の入口（`map_rainland_throne_room`の`fromCastle`、上向き）。王の間の南の出口（`event_rainland_throne_room_exit`）→ 城の扉の前（`fromThroneRoom`、下向き）。2D（`RainlandThroneRoomScene`）と3D（`RainlandThroneRoom3DScene`）をV/「3D」「2D」で切り替えられる。構成: 南の入口 → 燭台の台座が並ぶ広間 → 左右の翼 → 絨毯の階段 → 一段高い壇（手すり・燭台・植木）→ 玉座と大きな紋章の垂れ幕。3Dでは壇と階段が1ブロック高く、目の高さも上がる。王（玉座に座る）と近衛兵2人が立つ。**2026-09-27強化**: 王の台詞を、STORY_FLOW.md確定内容（「えらばれたゆうしゃ」ではなく異常地域を実際に越えてきた旅人として信頼し、No.07まじんのどうくつの調査を依頼する。主人公は自分の意思で引き受ける）に沿った複数ページの会話へ書き直した。会話の区切りに、ザボンの狩人（タロサ、まだ正式加入前）へ言及する場面で`assets/characters/portraits/tarosa_archery_report.png`（REFERENCEのバイト一致コピー）を額縁つきで挟む（`src/events/BattleEventData.ts`の`PortraitInterludeDialogueEvent`、`RainlandImageMapScene`が汎用に処理）。No.07でまじんを倒すと`boss.majin_cave_boss_defeated`が立ち、再訪した王の間は「討伐報告」の会話（同じくタロサへの謝辞を挟む）に切り替わり、読み終えると`event.rainland_throne_majin_reported`を保存して以後は短い後日談になる（`SAVE_FLAG_SPEC.md`）。ミレイの正体・王家の事情・タロサの全過去には触れない（`docs/NPC/04_rainland_castle.md`§4・§6）。近衛兵2人の台詞・王の正式な人物設定・人数はDEV_PLACEHOLDER_NPCのままTBD。`?mapTest=rainland-throne-room`で単体確認。
   - 3D表示は共通の`Castle3DScene`（城内・王の間）で、マップごとの違いは`src/config/rainlandCastle3D.ts`の`Castle3DConfig`（絨毯・壇・低い壁・壁飾り・置物・ランタン・人物）だけに書く。
   - **仲間（タロサ・ミレイ）は3Dでは表示しない**（2026-09-23ユーザー確定）。2Dへ戻ると従来どおり付いてくる。
   - 操作: ↑↓前進・後退、←→旋回、Zで正面のNPCと話す、Cメニュー。右上にミニマップ（2Dの城の絵に現在地と向き）。タッチ用の十字・Z・C・「2D」ボタンあり。
@@ -174,39 +175,49 @@
 ## 4.14 No.08 ザボンのむら（2026-09-23）
 - ユーザー提供`ザボンのむら　新.png`（1448×1086）を無加工でCURRENT背景にした画像マップ。`assets/maps/zabon_village/`（`map_zabon_village`、`ZabonVillageScene`）。旧番号由来の`map_08_majin_cave`（正式No.07）と紛らわしいため、MapIdに番号を付けていない。レインランドの各マップと同じ共通画像マップScene（`RainlandImageMapScene`）を使い、`worldScale: 1.5`。
 - 構成（背景に描かれたもの）: 中央の広場とトーテム、北の族長の家（石段つき）、民家6棟（うち2棟は壊れた家）、井戸、弓の練習場、獣皮の干し場、畑3面、西の滝と吊り橋、南西の桟橋と小舟、北東の山のどうくつ。
-- **導線**: 世界地図の`destination_zabon_village`（`implemented`、`unlockFlag: null`）→ 北東の山道の内側（`fromWorldMap`、下向き）。ザボンは世界地図の最南にあり北のレインランド方面から来るため、画像上端へ抜ける北東の山道を正式な出入口とした。北口Event(`event_zabon_village_north_exit`) → 世界地図(`from_zabon_village`)。
+- **導線**: まじん討伐を王へ報告し終えた`event.rainland_throne_majin_reported`後、世界地図の`destination_zabon_village`（`implemented`、同フラグが`unlockFlag`）→ 北東の山道の内側（`fromWorldMap`、下向き）。ザボンは世界地図の最南にあり北のレインランド方面から来るため、画像上端へ抜ける北東の山道を正式な出入口とした。北口Event(`event_zabon_village_north_exit`) → 世界地図(`from_zabon_village`)。
 - 世界地図から入るときだけ、`ザボンのむら_イメージ.png`（`entry_splash.png`）を5秒の入場演出として挟む（`config/mapSplash.ts`、レインランドじょうかまちと同じ）。
 - Collisionは`tools/build_zabon_village_collision.py`で生成（土の道の色→8pxセル→穴埋め・孤立点除去→道の縁へ1セル拡幅（水と障害物には広げない）→吊り橋・桟橋・石段・どうくつ前・西の道を手測定矩形で追加→トーテムと井戸を除外→北東の入口につながる道だけ残す）。歩ける場所は実際のプレイヤー判定で`tests/bodyPassability.test.mjs`が確認する。
+- **タロサ**: 上記の王への報告後だけ、的場の手前に`npc_zabon_tarosa`が現れる。王の依頼を主人公が伝えると一度だけ断り、会話読了で`event.zabon_tarosa_refused`を保存する。この時点では同行しない。
 - 北東のどうくつの入口はDEVメッセージだけのEvent（`event_zabon_village_cave_mouth`）。接続先（No.09いわやまのどうくつか等）はTBD。西の吊り橋・南東の道・南の道・桟橋の先は接続先未定の行き止まり。
-- 未実装／TBD: NPC（`NPC_SPEC.md`で構成・人数を再検討中）、族長の家などの建物内部、店・宿、BGM。戦闘なし。
+- 未実装／TBD: 族長の家などの建物内部、店・宿、BGM。生活住民6人の会話は`DIALOGUE_DRAFT`。戦闘なし。
 
 ## 4.15 No.09 いわやまのどうくつ（2026-09-23）
 - ユーザー提供の縦長原画2枚（1024×1536）を無加工でCURRENT背景にした2フロアの画像マップ。1F=`いわやまのどうくつ_1.png`（`assets/maps/iwayama_cave_1/`、`map_iwayama_cave_1`、`IwayamaCave1Scene`）、2F=`いわやまのどうくつ_3.png`（`assets/maps/iwayama_cave_2/`、`map_iwayama_cave_2`、`IwayamaCave2Scene`）。`_2.png`は`_1.png`とバイト一致のため、ユーザー判断で2フロア構成とした。共通画像マップScene（`RainlandImageMapScene`）を使い、`worldScale: 1.5`。
-- **導線**: 世界地図の`destination_iwayama_cave`（`implemented`、`unlockFlag: null`）→ 1F南西の階段（`fromWorldMap`、上向き）。1F入口Event → 世界地図（`from_iwayama_cave`）。1F北東の階段の上 → 2F南の階段（`fromCaveFloor1`、背景の青い三角の上、上向き）。2F南の階段の下 → 1F北東の階段（`fromCaveFloor2`、下向き）。**入口は世界地図からのみ**（ザボンのむら北東のどうくつとは接続しない、ユーザー確定）。世界地図から入るときだけ`いわやまのどうくつ_イメージ.png`の入場演出（5秒）を挟む。
+- **導線**: タロサがザボンで断った`event.zabon_tarosa_refused`後、世界地図の`destination_iwayama_cave`（`implemented`、同フラグが`unlockFlag`）→ 1F南西の階段（`fromWorldMap`、上向き）。1F入口Event → 世界地図（`from_iwayama_cave`）。1F北東の階段の上 → 2F南の階段（`fromCaveFloor1`、背景の青い三角の上、上向き）。2F南の階段の下 → 1F北東の階段（`fromCaveFloor2`、下向き）。**入口は世界地図からのみ**（ザボンのむら北東のどうくつとは接続しない、ユーザー確定）。世界地図から入るときだけ`いわやまのどうくつ_イメージ.png`の入場演出（5秒）を挟む。
 - 構成: 1F=燭台のある岩棚を木の階段と吊り橋でつないだ回廊（地底湖つき）。2F=外周の輪の回廊と中央の台地（左右の吊り橋・中央の階段）、北の階段の上が最奥。2F南の階段の下にある岩棚は階段とつながっていないため歩行不可。
 - **ランダムエンカウント**（1F・2F共通）: こあくま・エリマキヘビ・ダイジャ（`ENCOUNTER_TABLES.iwayama_cave`、均等出現）。頻度は`IWAYAMA_CAVE_RANDOM_ENCOUNTER`(360pxごと25%。2026-09-25にビーエのもりだけ2倍にしたため、現在はビーエのもりの半分)。戦闘背景は洞窟（`mq0_battle_bg_009`）。敵の構成・出現率はTEMP_TEST_VALUE（まじんのどうくつ7〜10Fの敵を引き継いだ仮構成）。
 - Collisionは`tools/build_iwayama_cave_collision.py`で生成（石畳の色→8pxセル→穴埋め・孤立点除去→床の縁の小石ぶん2セル拡幅（床をほぼ含まない岩・暗闇には広げない）→木の階段・吊り橋を手測定矩形で追加→入口につながる床だけ残す）。歩ける場所は実際のプレイヤー判定で`tests/bodyPassability.test.mjs`が確認する。
-- 2F北の階段の上（最奥）はDEVメッセージだけのイベント予約地点（`event_iwayama_cave_2_inner_point`）。**タロサ一時参加・共闘・正式同行、ボスは未実装**（`SPECIAL_GAMEPLAY_SPEC.md` §2でTBD）。1F北東の階段手前の赤い丸から縦スクロール（見下ろし型）の崩落シューティング（`IwayamaShootingScene`、§2.1）を実装済み。NPC・宝箱なし。
+- **タロサ救援**: 上記フラグ後の1F初回入場で、主人公が単独ではがれきを越えられない会話を出す。タロサが救援に来て`event.iwayama_cave_tarosa_rescued`を保存し、一時同行として隊列へ加わる。2F北の最奥`event_iwayama_cave_2_inner_point`を通ると、共闘して洞窟を抜けた会話を出し、`story.iwayama_cave_cleared`を保存してNo.10を解放する。1F北東の階段手前の赤い丸から縦スクロール（見下ろし型）の崩落シューティング（`IwayamaShootingScene`、§2.1）を実装済み。NPC・宝箱なし。
 
 ## 4.16 No.10 かくれざと（2026-09-24）
 
 - ユーザー提供`かくれざと.png`（1536×1024）を無加工でCURRENT背景にした画像マップ。`assets/maps/hidden_village/`（`map_hidden_village`、`HiddenVillageScene`）で、BACKGROUND / COLLISION / EVENT / OBJECTの4レイヤーと`worldScale: 1.5`を使う。
-- **導線**: 世界地図の`destination_hidden_village`（`implemented`、現在の`unlockFlag: null`）→ 北西の木門内側（`fromWorldMap`、下向き）。北西門のEvent（`event_hidden_village_northwest_exit`）→ 世界地図（`from_hidden_village`）。入場演出、建物内部、店、BGMは未実装／TBD。
-- ミレイとの出会い、身分を隠した会話、No.11への導線はこのマップの実装済み住民会話で先取りしない。本編イベントとしてTBDのまま残す。
+- **導線**: `story.iwayama_cave_cleared`後、世界地図の`destination_hidden_village`（`implemented`、同フラグが`unlockFlag`）→ 北西の木門内側（`fromWorldMap`、下向き）。初回到着の語りを閉じると`event.hidden_village_visited`を保存し、No.11を解放する。北西門のEvent（`event_hidden_village_northwest_exit`）→ 世界地図（`from_hidden_village`）。入場演出、建物内部、店、BGMは未実装／TBD。
+- **ミレイ**: まず古城1Fの水流または2Fの古代文字で`event.lake_castle_inscription_needs_mage`が保存される。その後かくれざとへ戻ると、中央の道に身分を明かさないミレイが現れる。話すと古城までの仮同行を引き受け、`event.hidden_village_mirei_joined`を保存して隊列へ加わり、村から去る。
 - 最新のNPC目安は**住民5人 + ミレイ**。現コードには生活会話だけの仮住民8人があり、この目安および`NPC_DIALOGUE_MASTER.md`未提供の状態と競合する。会話本文・配置は現行正式データとして確定せず、`NPC_SPEC.md` / `TBD_REGISTRY.md`で管理する。
 
 - ユーザー提供`かくれざと.png`（1536×1024）を無加工でCURRENT背景にした画像マップ。`assets/maps/hidden_village/`（`map_hidden_village`、`HiddenVillageScene`）。No.01と同じBACKGROUND/COLLISION/EVENT/OBJECT方式、共通`RainlandImageMapScene`、`worldScale: 1.5`を使う。
-- **導線**: 北西の門から世界地図へ戻る（`event_hidden_village_northwest_exit` → `from_hidden_village`）。世界地図の`destination_hidden_village`は実装済みで、同じ門の内側`fromWorldMap`へ到着する。解放条件は未確定のため常時選択可としており、進行条件を仮定していない。
+- **導線**: 北西の門から世界地図へ戻る（`event_hidden_village_northwest_exit` → `from_hidden_village`）。世界地図の`destination_hidden_village`は`story.iwayama_cave_cleared`後に実装済みで、同じ門の内側`fromWorldMap`へ到着する。
 - Collisionは`tools/build_hidden_village_collision.py`で生成する。道色を8pxセルへ抽出し、北西の門・石段・神社前・広場・家前・木橋・水車前・洞窟前を手測定領域で補い、建物・神社・水・滝・崖・森を除外して北西入口につながる経路だけを残す。実プレイヤーの当たり判定で全spawn・出口・主要地点までの到達性をテストする。
 - 現在のコードには家・神社・水車の前の固定6人と、広場・西の花壇の小道を歩く住民2人の**仮配置**がある。全員は`assets/characters/reference/reference/村人たち/`由来の既存ランタイム村人シートを使うが、最新目安の「5人＋ミレイ」と一致しない。`NPC_DIALOGUE_MASTER.md` が未提供のため、正式会話・正式配置へ自動置換しない。
-- 未実装／TBD: ミレイが身分を隠して主人公・タロサと出会う本編イベント、建物内部・店・BGM、正式な会話本文、正式な解放条件、洞窟の接続先。
+- 未実装／TBD: 建物内部・BGM、生活住民の正式な会話本文と最終人数、洞窟の接続先。
+
+## 4.16a No.11 みずうみの古城（2026-09-29）
+
+- `LakeCastle3DScene`のコンパクトな一人称3Dを正本とし、1F・2F・3Fを個別の論理フロアとして持つ。石・水面・ステンドグラスは`assets/maps/lake_castle/materials/`の高精細反復テクスチャを読み込み、床・壁・橋の既存インスタンシング構成は維持する。壁の継ぎ目・浅い欠け・苔も少数のInstancedMeshにまとめ、反復感を抑える。1Fは水面の反射光、2Fは書庫の埃、3Fは祭壇の粒子を持ち、青緑／深い青／紫の`visualPalette`と合わせて階層を視覚的に区別する（TEMP_VISUAL_VALUE）。
+- **階層導線**: 1F北の青い石段は2Fへ、2F南の金色の石段は1Fへ、2F北の紫の石段は3Fへ、3F南の金色の石段は2Fへ戻る。実景の灯り付き石段・通路中ほどの矢印付き誘導灯、近接時のプロンプト、右上ミニマップの`○Fへ`ラベルを同じ遷移データから表示する。未解放の石段と誘導灯は灰色で`（封印）`と表示する。
+- **1F→2F**: 初回だけ石段の正面に青い水流の水門を表示して閉鎖を視覚化する。ミレイ不在なら、主人公たちだけでは流れを止められず、`event.lake_castle_inscription_needs_mage`を保存して魔法使いを探すため引き返す。ミレイ同行後は、ミレイが魔法で流れを鎮め、`event.lake_castle_stairs_unsealed`を保存する。水門は専用マテリアルを収束・フェードさせてから2Fへ遷移し、以後は通常の石段として通行する。1Fを再構築した時も水門は表示しない。
+- **2F→3F**: 古代文字を調べるまで北の石段は通れない。ミレイが同行していない場合も魔法使いを探す導線を保存する。同行時はミレイが文字を読み、`event.lake_castle_ancient_inscription`で石段を解放する。3F祭壇では壁のしるしからデーマスの存在へつながる手がかりを見つけ、`event.lake_castle_mirei_joined`と`event.lake_castle_demas_clue_found`を保存する。正確な台詞本文とNo.12への本編条件は`DIALOGUE_DRAFT`／TBD。
+- **ランダムエンカウント**: `ENCOUNTER_TABLES.lake_castle`はやきプリン／カマイタチ／きりまねき（各1、均等）を使う。HP・攻撃・防御・素早さ・EXP・Gは`MONSTER_ROSTER`のNo.10〜12確定値。戦闘前の既存1.3秒遷移には、古城の石アーチ・水紋と対象敵ごとの色を重ねるが、戦闘値・出現率・ドロップを変えない。No.11用のレベル帯はフォルダ内の正本に未定義のため、レベル値を新設しない。コンパクト3Dグリッド向けの出現間隔は`LAKE_CASTLE_RANDOM_ENCOUNTER`の`TEMP_TEST_VALUE`のままとする。
 
 ## 4.17 No.12 港町ダコハ（2026-09-26）
 - ユーザー提供`港町ダコハ.png`（1448×1086）を無加工でCURRENT背景にした画像マップ。`assets/maps/dakoha_port/`（`map_dakoha_port`、`DakohaPortScene`）。レインランド・ザボンと同じ共通画像マップScene（`RainlandImageMapScene`）、`worldScale: 1.5`。
 - **導線**: 世界地図の`destination_dakoha_port`（`planned`→`implemented`、`unlockFlag: null`、位置は従来の(820,675)のまま）→ 陸側の北門（画像上端中央のアーチ）の前の踊り場（`fromWorldMap`、下向き）。北門Event(`event_dakoha_port_north_gate`) → 世界地図(`from_dakoha_port`)。北門が唯一の出入口。
 - 世界地図から入るときだけ、`港町ダコハ_イメージ.png`（`entry_splash.png`）を5秒の入場演出として挟む（`config/mapSplash.ts`）。
 - Collisionは`tools/build_dakoha_port_collision.py`が生成する。明るい石畳の色から歩ける範囲を作り、石段・木の桟橋・東の岸壁（色が暗い石畳）・灯台への道を手で足し、露店・街灯・植え込みで狭くなる広場には主人公の足元＋余白が通れる幅の通路を確保した。建物・露店・噴水・木箱・海・崖・森は通れない。南の貨物桟橋と帆船は陸とつながっていないため歩けない。北東の教会・上段の家並みの小道は導線が絵から読み取れないため今回は歩けない。
-- 未実装: NPC・会話・店・宿、船での移動、デーマスの噂（NPC_SPEC.md §5）、BGM。
+- **村人・宿屋・武器屋（2026-09-29ユーザー指示「港町ダコハの村人を追加してください。他の村と同じように宿屋、武器屋を追加してください」）**: NPC_SPEC.mdの目安7人を配置。固定5人（やどやの主人＝宿屋の店番、ぶきやの店主＝武器屋の店番、とうだい近くの老婆、広場の屋台の女性、波止場の漁師）＋歩く2人（東の埠頭の少年、広場西の船乗り）。宿屋・武器屋はビーエのむら・かくれざとと同じく専用の店番を増やさず、やどやの主人・ぶきやの店主が兼業する（`config/shops.ts`、品揃え・価格は他の町と同じTEMP_TEST_VALUE）。ユーザー指示は宿屋・武器屋のみのため道具屋は追加していない。デーマスの噂はとうだい近くの老婆が「デーマス」という名を旅人のうわさとして口にする1段だけ（NPC_SPEC.md §5、しょうたい・ミラー・ダイダインには触れない）。村人の見た目はユーザー指示「今まで使った村人の画像は使わない」に従い、`assets/characters/reference/reference/村人たち/`のうちvillager_01〜17が未使用の生成回から新たにvillager_18〜24を作成して割り当てた（`tools/build_villager_sheets.py`）。座標は`collision.png`へ実プレイヤー体格で検証済み。
+- 未実装: 道具屋、船での移動、BGM。
 
 ## 4.18 No.14 ポサロ城（2026-09-27）
 

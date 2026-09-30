@@ -12,8 +12,18 @@
       "id": "event_iwayama_cave_2_inner_point",
       "trigger": "enter",
       "once": true,
+      "consumedFlag": "story.iwayama_cave_cleared",
       "bounds": { "x": 488, "y": 192, "width": 56, "height": 24 },
-      "commands": [{ "type": "message", "text": "[DEV] いわやまのどうくつ おく（イベント内容TBD）" }]
+      "commands": [{
+        "type": "message",
+        "text": "いわやまのどうくつを　ぬけた。",
+        "pages": [
+          "タロサと　ちからを　あわせ、\\nいわやまの　おくを　ぬけた。",
+          "タロサ「……やるじゃないか。\\nさきへ　いくなら　つきあう。」",
+          "山のむこうに　小さな里が\\nあると　聞いた。"
+        ],
+        "setFlags": ["story.iwayama_cave_cleared"]
+      }]
     }
   ]
 }

@@ -9,6 +9,7 @@ import type { ItemId } from "../data/items.ts";
 import { CharacterProgression, characterProgression, formatLevelUpLines } from "../systems/CharacterProgression.ts";
 import { GAME_STATE_STORAGE_KEY, GameStateRepository } from "../systems/GameStateRepository.ts";
 import type { KeyValueStorage } from "../systems/GameStateRepository.ts";
+import { STORY_FLAGS } from "../config/storyFlags.ts";
 import { MAP_TRANSITION_FADE_MS } from "../config/maps.ts";
 import { MAJIN_CAVE_PRESENTATION, getMajinCaveFogAlpha, isMajinCavePointVisible } from "../config/majinCavePresentation.ts";
 import { PROTAGONIST_SPRITE } from "../config/protagonistSprite.ts";
@@ -113,6 +114,8 @@ export class MajinCaveScene extends Phaser.Scene {
   private transitioning = false;
   private returnSceneKey = MAJIN_CAVE_SCENE_KEY;
   private returnData: Record<string, string> = {};
+  /** `?mapTest=majin-cave`のDEV確認中は、他のセーブ書き込みと同じく実セーブへフラグを書かない。 */
+  private isDevMapTest = false;
 
   constructor() {
     super({ key: MAJIN_CAVE_SCENE_KEY });
@@ -154,6 +157,7 @@ export class MajinCaveScene extends Phaser.Scene {
     this.resolvingTurn = false;
     // The point-selection WorldMapScene owns normal entry and return. DEV starts stay
     // standalone, and future events can still provide an explicit return route.
+    this.isDevMapTest = isDevMapTest;
     const enteredFromWorldMap = data?.spawnId === "fromWorldMap";
     this.returnSceneKey = data?.returnSceneKey ?? (enteredFromWorldMap ? "WorldMapScene" : MAJIN_CAVE_SCENE_KEY);
     this.returnData = data?.returnData ?? (enteredFromWorldMap ? { worldMapEntryId: "from_majin_cave" } : {});
@@ -584,14 +588,26 @@ export class MajinCaveScene extends Phaser.Scene {
   private leaveCave(): void {
     this.transitioning = true;
     this.logDevTempoReport();
+    this.saveMajinCaveBossDefeatedFlag();
     this.setMessage("まじんのどうくつを でた。");
     beginMapTransition(this, this.actions, this.returnSceneKey, this.returnData, MAP_TRANSITION_FADE_MS);
   }
   private leaveCaveWithRireRope(): void {
     this.transitioning = true;
     this.logDevTempoReport();
+    this.saveMajinCaveBossDefeatedFlag();
     this.setMessage("リレロープを つかった。\nまじんのどうくつを でた。");
     beginMapTransition(this, this.actions, this.returnSceneKey, this.returnData, MAP_TRANSITION_FADE_MS);
+  }
+
+  /**
+   * まじんを倒して`ascent`へ切り替わった状態でどうくつを出たときだけ、レインランドじょうの王への
+   * 報告会話を切り替えるフラグを保存する(`src/data/dialogues.ts`のrainland_throne_king)。
+   * DEVの`?mapTest=majin-cave`確認では、他の戦利品・EXPと同じく実セーブへ書かない。
+   */
+  private saveMajinCaveBossDefeatedFlag(): void {
+    if (this.isDevMapTest || this.run.phase !== "ascent") return;
+    new GameStateRepository().setFlag(STORY_FLAGS.majinCaveBossDefeated);
   }
 
   private renderFloor(): void {

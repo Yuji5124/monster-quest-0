@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { SWAMP_CAVE_ACTION } from "../src/config/swampCaveAction.ts";
+import { isPointOnSwampCaveActionRoute, isPointOnSwampCaveRoot, SWAMP_CAVE_ACTION } from "../src/config/swampCaveAction.ts";
 import {
   advanceSwampCaveActionRun,
   areAllSwampCaveEnemiesDefeated,
   canOpenSwampCaveChest,
   createSwampCaveActionRun,
+  enterSwampCaveFinalRoom,
   openSwampCaveChest,
   restoreSwampCaveActionRun,
   useSwampCaveAbility,
@@ -47,6 +48,7 @@ test("No.17 magic freezes enemies and contact damage uses a bounded party-endura
 
 test("No.17 rewards the inner chest only after the group is cleared and restores saved completion", () => {
   const run = createSwampCaveActionRun();
+  assert.equal(enterSwampCaveFinalRoom(run, SWAMP_CAVE_ACTION.exit), false, "敵が残る間は最奥区画へ進めない");
   let time = 1000;
   for (const enemy of run.enemies) {
     const firstHit = useSwampCaveAbility(run, "tarosa_bow", { x: enemy.x, y: enemy.y }, time);
@@ -57,6 +59,9 @@ test("No.17 rewards the inner chest only after the group is cleared and restores
     time += 1000;
   }
   assert.equal(areAllSwampCaveEnemiesDefeated(run), true);
+  assert.equal(canOpenSwampCaveChest(run, SWAMP_CAVE_ACTION.chest), false, "宝箱は背景を使う最奥区画へ入るまで開けない");
+  assert.equal(enterSwampCaveFinalRoom(run, SWAMP_CAVE_ACTION.exit), true);
+  assert.equal(run.phase, "final");
   assert.equal(canOpenSwampCaveChest(run, SWAMP_CAVE_ACTION.chest), true);
   assert.equal(openSwampCaveChest(run, SWAMP_CAVE_ACTION.chest), true);
   assert.equal(run.chestOpened, true);
@@ -65,4 +70,15 @@ test("No.17 rewards the inner chest only after the group is cleared and restores
   restoreSwampCaveActionRun(restored, { cleared: true, chestOpened: true });
   assert.equal(areAllSwampCaveEnemiesDefeated(restored), true);
   assert.equal(restored.chestOpened, true);
+  assert.equal(restored.phase, "final");
+  assert.equal(SWAMP_CAVE_ACTION.reward.unlockFlag, "story.stone_town_unlocked");
+});
+
+test("No.17 makes platforms and fast roots a real route instead of allowing a cave-dark shortcut", () => {
+  assert.equal(isPointOnSwampCaveActionRoute(SWAMP_CAVE_ACTION.playerStart), true, "開始地点は下段の足場にある");
+  assert.equal(isPointOnSwampCaveRoot({ x: 800, y: 640 }, SWAMP_CAVE_ACTION.terrain.roots[0]), true, "下段と中央をつなぐ根道は歩ける");
+  assert.equal(isPointOnSwampCaveActionRoute({ x: 1200, y: 700 }), false, "暗い洞窟部分を近道には使えない");
+  assert.ok(SWAMP_CAVE_ACTION.enemies.every(isPointOnSwampCaveActionRoute), "小さな魔物は全員が到達可能な足場に配置される");
+  assert.equal(isPointOnSwampCaveActionRoute(SWAMP_CAVE_ACTION.exit), true);
+  assert.equal(isPointOnSwampCaveActionRoute(SWAMP_CAVE_ACTION.chest), true);
 });

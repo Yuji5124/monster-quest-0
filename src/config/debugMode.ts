@@ -5,8 +5,8 @@ import type { PartyMemberId } from "../systems/PartySystem.ts";
  *
  * - DEVビルド(`npm run dev`)では既定でON。`?debug=0`(`off`/`false`も可)でOFFにでき、通常の
  *   成長・加入・セーブ進行のまま確認したいときに使う。本番ビルドは`import.meta.env.DEV`が偽のため常にOFF。
- * - 現在の効果は戦闘だけ: 加入状況・セーブに関係なく、主人公・タロサ・ミレイの3人がLv30・全快・
- *   最強の自動装備で始まる。仲間はフィールドへ加入・追従させず、戦闘のみ参加する。
+ * - 現在の効果は戦闘だけ: 加入状況・セーブに関係なく、主人公一人がLv30・全快・最強の自動装備で始まる。
+ * - 2026-09-29: 3人編成(主人公・タロサ・ミレイ)は戦闘がバグるとのユーザー指示で主人公一人へ戻した。
  * - デバッグ戦闘はEXP・現在HP/MPなどのキャラクター進捗をセーブへ書き込まない(G・道具の報酬は通常どおり)。
  */
 export const DEBUG_QUERY_PARAM = "debug";
@@ -14,8 +14,8 @@ export const DEBUG_QUERY_PARAM = "debug";
 /** DEBUG_ONLY: 正式な成長上限(Lv25、`expTable.ts`)の外側にある確認用レベル。 */
 export const DEBUG_PARTY_LEVEL = 30;
 
-/** 戦闘での並び順は主人公→タロサ→ミレイの固定(デーマス本戦の編成順と同じ)。 */
-export const DEBUG_PARTY_MEMBER_IDS: readonly PartyMemberId[] = ["hero", "tarosa", "mirei"];
+/** デバッグ戦闘は主人公一人。仲間は加入状況に関係なく参加させない。 */
+export const DEBUG_PARTY_MEMBER_IDS: readonly PartyMemberId[] = ["hero"];
 
 const DISABLED_VALUES: readonly string[] = ["0", "off", "false"];
 

@@ -29,7 +29,7 @@ export const DEV_BATTLE_EVENT_FADE_MS = 220;
  * Kept short enough that routine encounters do not stall exploration.
  */
 export const BATTLE_ENTRANCE_DURATION_MS = 1_300;
-export const DEV_BATTLE_MONSTER_IDS = ["001", "003", "006", "demas", "batorasu", "obake_tsumuri", "fancy_duck", "snow_bomb", "koakuma", "erimaki_hebi", "daija"] as const;
+export const DEV_BATTLE_MONSTER_IDS = ["001", "003", "006", "demas", "batorasu", "obake_tsumuri", "fancy_duck", "snow_bomb", "koakuma", "erimaki_hebi", "daija", "yaki_purin", "kamaitachi", "kirimaneki"] as const;
 export type DevBattleMonsterId = (typeof DEV_BATTLE_MONSTER_IDS)[number];
 
 export function readDevBattleMonsterId(search: string): DevBattleMonsterId {
@@ -118,4 +118,42 @@ export const BATTLE_BIG_HIT_EFFECT = {
   /** 斬撃が伸びきった瞬間に止める時間(ヒットストップ)。 */
   hitStopMs: 70,
   bannerMs: 900,
+} as const;
+
+/**
+ * TEMP_VISUAL_VALUE: one short, readable impact profile per physical-hit tier.
+ * These are presentation values only; rates, damage multipliers and all battle
+ * calculations remain in BattleSystem.
+ */
+export const BATTLE_HIT_FEEDBACK = {
+  normal: {
+    chargeMs: 42,
+    hitStopMs: 42,
+    knockbackPx: 5,
+    shakeMs: 105,
+    shakeIntensity: 0.0035,
+    flashMs: 72,
+    numberScale: 1,
+    uiShakePx: 0,
+  },
+  dai: {
+    chargeMs: 58,
+    hitStopMs: 86,
+    knockbackPx: 12,
+    shakeMs: 180,
+    shakeIntensity: 0.007,
+    flashMs: 105,
+    numberScale: 1.32,
+    uiShakePx: 3,
+  },
+  tokudai: {
+    chargeMs: 74,
+    hitStopMs: 122,
+    knockbackPx: 22,
+    shakeMs: 250,
+    shakeIntensity: 0.011,
+    flashMs: 130,
+    numberScale: 1.68,
+    uiShakePx: 6,
+  },
 } as const;

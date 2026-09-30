@@ -5,7 +5,7 @@ import { VILLAGER_SPRITES } from "../src/config/villagerSprites.ts";
 
 test("all supplied villager appearances resolve to normalized 3-by-4 runtime sheets", () => {
   const entries = Object.entries(VILLAGER_SPRITES);
-  assert.equal(entries.length, 16);
+  assert.equal(entries.length, 24);
   for (const [id, sprite] of entries) {
     assert.match(id, /^villager_\d{2}$/);
     assert.equal(sprite.frameWidth, 70);

@@ -41,6 +41,15 @@ export const ENCOUNTER_TABLES = {
       { enemies: ["daija"], weight: 1 },
     ],
   },
+  // No.11みずうみの古城。正式ロスターNo.10〜12の通常敵を均等に出現させる。
+  lake_castle: {
+    id: "encounter_lake_castle",
+    entries: [
+      { enemies: ["yaki_purin"], weight: 1 },
+      { enemies: ["kamaitachi"], weight: 1 },
+      { enemies: ["kirimaneki"], weight: 1 },
+    ],
+  },
 } as const satisfies Record<string, EncounterTable>;
 
 export type EncounterTableId = keyof typeof ENCOUNTER_TABLES;

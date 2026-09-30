@@ -7,6 +7,8 @@ export interface DaidainSequenceCallbacks {
   readonly reflected: boolean;
   readonly weak: boolean;
   readonly onPartyImpact: () => void;
+  /** Optional renderer-only hook for floating damage at the reflected impact. */
+  readonly onEnemyImpact?: () => void;
   readonly onComplete: () => void;
 }
 
@@ -146,7 +148,10 @@ export class DemasBossController {
     this.defer(fireAt + beamMs + mirrorHoldMs, () => {
       this.createDaidainBeam(target.x, target.y, this.baseX, this.baseY - this.sprite.displayHeight * 0.07, true, returnMs);
     });
-    this.defer(fireAt + beamMs + mirrorHoldMs + returnMs, () => this.playReflectedImpact(callbacks.weak));
+    this.defer(fireAt + beamMs + mirrorHoldMs + returnMs, () => {
+      callbacks.onEnemyImpact?.();
+      this.playReflectedImpact(callbacks.weak);
+    });
     this.defer(fireAt + beamMs + mirrorHoldMs + returnMs + reflectedImpactMs + recoverMs, () => this.finishDaidain(callbacks.weak, callbacks.onComplete));
   }
 
@@ -184,7 +189,8 @@ export class DemasBossController {
     this.clearTransient();
     this.aura.destroy();
     this.sigil.destroy();
-    this.scene.cameras.main.setZoom(this.baseCameraZoom);
+    // Scene終了時はCameraManagerが先にmainを破棄しているため、残っているときだけ戻す。
+    this.scene.cameras?.main?.setZoom(this.baseCameraZoom);
   }
 
   private createAnimations(textureKey: string): void {

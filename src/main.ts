@@ -8,6 +8,7 @@ import { BattleScene } from "./scenes/BattleScene.ts";
 import { FieldScene } from "./scenes/FieldScene.ts";
 import { InteriorScene } from "./scenes/InteriorScene.ts";
 import { JumpCardEncyclopediaScene } from "./scenes/JumpCardEncyclopediaScene.ts";
+import { JumpCardBattleScene } from "./scenes/JumpCardBattleScene.ts";
 import { JumpCardGachaScene } from "./scenes/JumpCardGachaScene.ts";
 import { ImageMapTestNo01Scene } from "./scenes/ImageMapTestNo01Scene.ts";
 import { MapTestNo01Scene } from "./scenes/MapTestNo01Scene.ts";
@@ -47,10 +48,11 @@ import "./style.css";
 const battleTestRequested = new URLSearchParams(window.location.search).has("battleTest");
 const gachaTestRequested = new URLSearchParams(window.location.search).has("gachaTest");
 const cardBookTestRequested = new URLSearchParams(window.location.search).has("cardBookTest");
+const cardBattleTestRequested = new URLSearchParams(window.location.search).has("cardBattleTest");
 const worldMapTestRequested = new URLSearchParams(window.location.search).has("worldMapTest");
 // DEV_MAP_TEST (?mapTest=no01|no02|image-no01): 通常起動に接続せず、対象マップだけを確認する。
 const mapTestRequested = readDevMapTest(window.location.search);
-const normalScenes = [BootScene, OpeningIntroScene, TitleScene, OpeningGlitchScene, StartingPlaceScene, WorldMapScene, FieldScene, StartingTownScene, StartingForestScene, BieVillageScene, RainlandForest1Scene, RainlandForest2Scene, RainlandCastleTownScene, RainlandCastleScene, RainlandCastle3DScene, RainlandThroneRoomScene, RainlandThroneRoom3DScene, MajinCaveScene, ZabonVillageScene, DakohaPortScene, PosaroCastleScene, RevivalShrineScene, HiddenVillageScene, IwayamaCave1Scene, IwayamaCave2Scene, IwayamaShootingScene, KotankaimCave1Scene, KotankaimCave2Scene, KotankaimCave3Scene, DemasTower1Scene, DemasTower2Scene, DemasTower3Scene, SwampCaveActionScene, MysteriousTowerExteriorScene, MysteriousTower1FScene, LakeCastle3DScene, BatorasuFortressScene, StoneTownScene, MapSplashScene, InteriorScene, BattleScene, JumpCardGachaScene, JumpCardEncyclopediaScene];
+const normalScenes = [BootScene, OpeningIntroScene, TitleScene, OpeningGlitchScene, StartingPlaceScene, WorldMapScene, FieldScene, StartingTownScene, StartingForestScene, BieVillageScene, RainlandForest1Scene, RainlandForest2Scene, RainlandCastleTownScene, RainlandCastleScene, RainlandCastle3DScene, RainlandThroneRoomScene, RainlandThroneRoom3DScene, MajinCaveScene, ZabonVillageScene, DakohaPortScene, PosaroCastleScene, RevivalShrineScene, HiddenVillageScene, IwayamaCave1Scene, IwayamaCave2Scene, IwayamaShootingScene, KotankaimCave1Scene, KotankaimCave2Scene, KotankaimCave3Scene, DemasTower1Scene, DemasTower2Scene, DemasTower3Scene, SwampCaveActionScene, MysteriousTowerExteriorScene, MysteriousTower1FScene, LakeCastle3DScene, BatorasuFortressScene, StoneTownScene, MapSplashScene, InteriorScene, BattleScene, JumpCardGachaScene, JumpCardEncyclopediaScene, JumpCardBattleScene];
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -73,6 +75,8 @@ const game = new Phaser.Game({
     ? [BattleScene]
     : gachaTestRequested
       ? [JumpCardGachaScene]
+      : cardBattleTestRequested
+        ? [JumpCardBattleScene]
       : cardBookTestRequested
         ? [JumpCardEncyclopediaScene]
         : worldMapTestRequested
@@ -98,16 +102,16 @@ const game = new Phaser.Game({
                     ? [RainlandForest1Scene, RainlandForest2Scene, WorldMapScene, BattleScene]
                     : mapTestRequested === "rainland-castle-town"
                       // レインランドじょうかまち単体確認: 南門でWorldMapSceneへ(世界地図から再入場すると入場演出を挟む)、北の城門でレインランドじょうへ。
-                      ? [RainlandCastleTownScene, RainlandCastleScene, RainlandCastle3DScene, RainlandThroneRoomScene, RainlandThroneRoom3DScene, WorldMapScene, MapSplashScene]
+                      ? [RainlandCastleTownScene, RainlandCastleScene, RainlandCastle3DScene, RainlandThroneRoomScene, RainlandThroneRoom3DScene, WorldMapScene, MapSplashScene, JumpCardBattleScene]
                       : mapTestRequested === "rainland-castle"
                         // レインランドじょう単体確認: 出口Eventでレインランドじょうかまちの北の城門前へ戻り、北の城門から再入場できる。
-                        ? [RainlandCastleScene, RainlandCastle3DScene, RainlandCastleTownScene, RainlandThroneRoomScene, RainlandThroneRoom3DScene, WorldMapScene, MapSplashScene]
+                        ? [RainlandCastleScene, RainlandCastle3DScene, RainlandCastleTownScene, RainlandThroneRoomScene, RainlandThroneRoom3DScene, WorldMapScene, MapSplashScene, JumpCardBattleScene]
                       : mapTestRequested === "rainland-castle-3d"
                         // レインランドじょう3D(ブロック城)単体確認: V/「2D」で同じ場所の2Dへ、2DからV/「3D」で戻る。
-                        ? [RainlandCastle3DScene, RainlandCastleScene, RainlandCastleTownScene, RainlandThroneRoomScene, RainlandThroneRoom3DScene, WorldMapScene, MapSplashScene]
+                          ? [RainlandCastle3DScene, RainlandCastleScene, RainlandCastleTownScene, RainlandThroneRoomScene, RainlandThroneRoom3DScene, WorldMapScene, MapSplashScene, JumpCardBattleScene]
                       : mapTestRequested === "rainland-throne-room"
                         // 王の間単体確認: 南の出口で城の王の間の扉の前へ、V/「3D」で3Dの王の間へ。
-                        ? [RainlandThroneRoomScene, RainlandThroneRoom3DScene, RainlandCastleScene, RainlandCastle3DScene, RainlandCastleTownScene, WorldMapScene, MapSplashScene]
+                            ? [RainlandThroneRoomScene, RainlandThroneRoom3DScene, RainlandCastleScene, RainlandCastle3DScene, RainlandCastleTownScene, WorldMapScene, MapSplashScene, JumpCardBattleScene]
                       : mapTestRequested === "zabon-village"
                         // No.08ザボンのむら単体確認: 北口でWorldMapSceneへ(世界地図から再入場すると入場演出を挟む)。
                         ? [ZabonVillageScene, WorldMapScene, MapSplashScene]

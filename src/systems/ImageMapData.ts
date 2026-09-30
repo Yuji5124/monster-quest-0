@@ -24,6 +24,8 @@ export interface ImageMapEvent {
   readonly id: string;
   readonly trigger: "enter";
   readonly once: boolean;
+  /** Optional save-backed once guard. Scene-local `once` resets on re-entry; this one does not. */
+  readonly consumedFlag?: string;
   readonly bounds: ImageMapBounds;
   readonly commands: readonly [ImageMapEventCommand];
 }
@@ -32,7 +34,12 @@ export type ImageMapEventCommand = ImageMapMessageCommand | ImageMapTransferComm
 
 export interface ImageMapMessageCommand {
   readonly type: "message";
+  /** Brief HUD text for legacy events. */
   readonly text: string;
+  /** Full dialogue pages for a story beat entered from the map. */
+  readonly pages?: readonly string[];
+  /** Saved only after `pages` have been read, or immediately for a HUD-only message. */
+  readonly setFlags?: readonly string[];
 }
 
 export interface ImageMapTransferCommand {
@@ -67,7 +74,9 @@ export interface ImageMapNpcObject extends ImageMapObjectBase {
 /** A persistent, interactable normal chest. The opened flag is the authoritative state. */
 export interface ImageMapChestObject extends ImageMapObjectBase {
   readonly type: "chest";
-  readonly itemId: string;
+  /** Exactly one chest reward is present: an inventory item or Jump Coins. */
+  readonly itemId?: string;
+  readonly jumpCoinCount?: number;
   readonly openedFlag: string;
 }
 
@@ -214,18 +223,19 @@ export function readImageMapEvents(value: unknown): ImageMapEvent[] {
     if (!Array.isArray(commands) || commands.length !== 1) throw new Error("image-map event needs exactly one command");
     const command = requireRecord(commands[0], `events data events[${index}] command`);
     const commandType = requireString(command, "type", `events data events[${index}] command`);
+    const commandLabel = `events data events[${index}] command`;
     const parsedCommand: ImageMapEventCommand = commandType === "message"
-      ? { type: "message", text: requireString(command, "text", `events data events[${index}] command`) }
+      ? readMessageCommand(command, commandLabel)
       : commandType === "transfer"
         ? {
             type: "transfer",
-            targetMapId: requireString(command, "targetMapId", `events data events[${index}] command`),
-            targetSpawnId: requireString(command, "targetSpawnId", `events data events[${index}] command`),
+            targetMapId: requireString(command, "targetMapId", commandLabel),
+            targetSpawnId: requireString(command, "targetSpawnId", commandLabel),
           }
         : commandType === "world-map"
           ? {
               type: "world-map",
-              worldMapEntryId: requireString(command, "worldMapEntryId", `events data events[${index}] command`),
+              worldMapEntryId: requireString(command, "worldMapEntryId", commandLabel),
             }
         : (() => {
             throw new Error("image-map event command must be message, transfer, or world-map");
@@ -234,10 +244,17 @@ export function readImageMapEvents(value: unknown): ImageMapEvent[] {
       id: requireString(event, "id", `events data events[${index}]`),
       trigger,
       once: requireBoolean(event, "once", `events data events[${index}]`),
+      consumedFlag: readOptionalSaveFlag(event, "consumedFlag", `events data events[${index}]`),
       bounds: readBounds(event.bounds, `events data events[${index}] bounds`),
       commands: [parsedCommand],
     };
   });
+}
+
+function readMessageCommand(command: Record<string, unknown>, label: string): ImageMapMessageCommand {
+  const text = requireString(command, "text", label);
+  const pages = readOptionalPages(command, "pages", label);
+  return { type: "message", text, pages, setFlags: readOptionalSaveFlags(command, "setFlags", label) };
 }
 
 export function readImageMapObjects(value: unknown): ImageMapObject[] {
@@ -259,10 +276,16 @@ export function readImageMapObjects(value: unknown): ImageMapObject[] {
     };
     if (type === "npc") return { ...common, type, message: requireString(object, "message", label) };
     if (type === "chest") {
+      const itemId = object.itemId === undefined ? undefined : requireString(object, "itemId", label);
+      const jumpCoinCount = object.jumpCoinCount === undefined ? undefined : requirePositiveInteger(object, "jumpCoinCount", label);
+      if ((itemId === undefined) === (jumpCoinCount === undefined)) {
+        throw new Error(`${label} chest must declare exactly one of itemId or jumpCoinCount`);
+      }
       return {
         ...common,
         type,
-        itemId: requireString(object, "itemId", label),
+        itemId,
+        jumpCoinCount,
         openedFlag: requireSaveFlag(object, "openedFlag", label),
       };
     }
@@ -345,6 +368,13 @@ function requirePages(record: Record<string, unknown>, key: string, label: strin
   const value = readOptionalPages(record, key, label);
   if (value === undefined) throw new Error(`${label}.${key} must be a non-empty array of non-empty strings`);
   return value;
+}
+
+function readOptionalSaveFlags(record: Record<string, unknown>, key: string, label: string): readonly string[] | undefined {
+  const value = record[key];
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value) || value.length === 0) throw new Error(`${label}.${key} must be a non-empty array of save flags`);
+  return value.map((flag, index) => requireSaveFlagValue(flag, `${label}.${key}[${index}]`));
 }
 
 function readOptionalPages(record: Record<string, unknown>, key: string, label: string): readonly string[] | undefined {

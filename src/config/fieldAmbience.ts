@@ -139,6 +139,21 @@ const TOWN_PETALS: MoteConfig = {
   parallax: 1.12,
 };
 
+/** 港の潮風に光る塩の粒。花びらを飛ばさず、水面の反射と競合しない弱さにとどめる。 */
+const HARBOR_SPRAY: MoteConfig = {
+  kind: "glow",
+  count: 8,
+  size: { min: 3, max: 6 },
+  alpha: { min: 0.14, max: 0.32 },
+  colors: [0xd9f6ff, 0xffffff, 0xbdeaff],
+  velocityX: { min: 8, max: 18 },
+  velocityY: { min: -3, max: 5 },
+  swayAmplitude: { min: 12, max: 28 },
+  swayPeriodMs: { min: 2600, max: 4400 },
+  twinklePeriodMs: { min: 1800, max: 3600 },
+  parallax: 1.08,
+};
+
 const FIREFLIES: MoteConfig = {
   kind: "glow",
   count: 10,
@@ -195,11 +210,26 @@ export const FIELD_AMBIENCE_PROFILES = {
     sunRays: { count: 3, color: 0xfff2c4, alpha: { min: 0.06, max: 0.12 }, pulsePeriodMs: { min: 5200, max: 8200 } },
     gusts: GUSTS_GENTLE,
   },
+  /**
+   * No.05's base layer intentionally stays empty. RainlandWeatherLayer owns its changing
+   * rain/fog/wind/god-rays, so the ordinary forest sunbeams never shine through a storm.
+   */
+  rainlandForest: {
+    id: "rainlandForest",
+    motes: [],
+  },
   /** 町・村(屋外)。雲の影と花びらを少しだけ。人の多い画面を邪魔しない密度にとどめる。 */
   town: {
     id: "town",
     cloudShadows: { ...CLOUDS_OPEN, count: 2, alpha: { min: 0.1, max: 0.14 } },
     motes: [{ ...POLLEN, count: 8 }, TOWN_PETALS],
+    gusts: GUSTS_GENTLE,
+  },
+  /** 港町ダコハ。花びらの代わりに、海から来る薄い塩の粒だけを重ねる。 */
+  harbor: {
+    id: "harbor",
+    cloudShadows: { ...CLOUDS_OPEN, count: 2, alpha: { min: 0.07, max: 0.11 } },
+    motes: [HARBOR_SPRAY],
     gusts: GUSTS_GENTLE,
   },
   /** ビーエのむら。既存の異変表示を読みやすく保つため、雲の影と少しの花粉だけ。 */
@@ -225,12 +255,12 @@ export const FIELD_AMBIENCE_BY_MAP: Partial<Record<MapId, FieldAmbienceProfile>>
   map_02_starting_town: FIELD_AMBIENCE_PROFILES.town,
   map_starting_forest: FIELD_AMBIENCE_PROFILES.forest,
   map_03_bie_village: FIELD_AMBIENCE_PROFILES.quietVillage,
-  map_rainland_forest_1: FIELD_AMBIENCE_PROFILES.forest,
-  map_rainland_forest_2: FIELD_AMBIENCE_PROFILES.forest,
+  map_rainland_forest_1: FIELD_AMBIENCE_PROFILES.rainlandForest,
+  map_rainland_forest_2: FIELD_AMBIENCE_PROFILES.rainlandForest,
   map_rainland_castle_town: FIELD_AMBIENCE_PROFILES.town,
   map_05_rainland_castle: FIELD_AMBIENCE_PROFILES.indoor,
   map_zabon_village: FIELD_AMBIENCE_PROFILES.town,
-  map_dakoha_port: FIELD_AMBIENCE_PROFILES.town,
+  map_dakoha_port: FIELD_AMBIENCE_PROFILES.harbor,
   map_hidden_village: FIELD_AMBIENCE_PROFILES.town,
   // 石になった静かな町。風・雲・花びらは動かさず、石の粉のようなほこらだけをただよわせる(時間が止まった印象)。
   map_stone_town: FIELD_AMBIENCE_PROFILES.indoor,

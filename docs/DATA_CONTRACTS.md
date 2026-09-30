@@ -185,7 +185,7 @@ Claude Code / Codex / Phaser Game Agentが同じJSON構造を前提に実装で�
   "spoiler": false
 }
 ```
-全45枚。固定順、ダブりなし、1回20円。購入額は所持金から支払う。現行の`cards.jumpCoinCount`は旧実装であり、正本の保存契約には追加しない。
+全45枚。固定順、ダブりなし、1回ジャンコイン1枚。購入は`cards.jumpCoinCount`（専用通貨、戦闘報酬G=`player.money`とは別枠）から支払う。`cards.jumpCoinCount`は正本の保存契約に含める（2026-09-27、`CARD_SPEC.md`参照）。
 
 ## 11. save
 セーブデータは最低限以下を分離する。
@@ -212,6 +212,8 @@ Claude Code / Codex / Phaser Game Agentが同じJSON構造を前提に実装で�
 - 旧セーブで不足する`characterProgress`/`inventory`は、Lv1・EXP0／空の所持品へ安全に補完する。未加入の後続メンバーだけを含める不正な加入順は正規化して除外する。
 - 正式SaveSystemはこの順序と成長・所持品を引き継ぎ、HP・装備・控え編成を別途拡張する。
 - `tower: { "towerLevel": 1 }` は不思議なとうの最小保存領域。旧v1セーブに`tower`が無い場合もlevel 1へ補完する。`towerResidents` / `towerFacilities` / `towerMaterials` / `towerAIState`は設計確定まで追加しない（`TOWER_EXPANSION_BOUNDARY.md`参照）。
+- `map.adventureRecord` は手動の「ぼうけんのきろく」。有効な記録だけがタイトルの「つづきから」を有効化する。2Dマップでは`{ mapId, sceneKey, resume: { kind: "2d", x, y, facing } }`を保存し、`x`/`y`は`worldScale`適用済みのランタイム座標である。3Dマップは同じ外枠のまま`resume.kind`を`castle3d`または`lake3d`とし、必要な`yaw`と（古城は）`floor`を持つ。ロード時は`mapId`・`sceneKey`・位置の有限値を検証し、旧セーブに`map`が無い場合は空として安全に補完する。
+- `map.rainlandForestWeather` はNo.05だけが使う天候状態。`{ phase: "overcast" | "drizzle" | "fog" | "heavyRain" | "thunderstorm" | "clearing", phaseDistance: number }`を保存し、未知フェーズ・負数・非有限値は読み込み時に破棄する。手動の`map.adventureRecord`とは独立して保持する。
 
 ## 12. 禁止
 - 同じ意味のIDを複数方式で作る

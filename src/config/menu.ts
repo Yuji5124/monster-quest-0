@@ -6,7 +6,7 @@ export interface TitleMenuItem {
   readonly enabled: boolean;
 }
 
-// SaveSystem未実装のため「つづきから」は常時disabled。実装後にenabledをセーブ有無で切り替える。
+// 「つづきから」は、カードやフラグだけではなく手動の「ぼうけんのきろく」がある場合だけ有効にする。
 export const TITLE_MENU_ITEMS: readonly TitleMenuItem[] = [
   { id: "newGame", label: "はじめから", action: "START_GAME", enabled: true },
   { id: "continueGame", label: "つづきから", action: "CONTINUE", enabled: false },
@@ -15,3 +15,8 @@ export const TITLE_MENU_ITEMS: readonly TitleMenuItem[] = [
   { id: "travelPassword", label: "たびのあいことば", action: "TRAVEL_PASSWORD", enabled: true },
   { id: "settings", label: "設定", action: "SETTINGS", enabled: true },
 ] as const;
+
+/** Returns a fresh menu so TitleScene can reflect the current manual-save availability. */
+export function getTitleMenuItems(canContinue: boolean): readonly TitleMenuItem[] {
+  return TITLE_MENU_ITEMS.map((item) => item.id === "continueGame" ? { ...item, enabled: canContinue } : item);
+}

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { MONSTER_ROSTER, MONSTER_ROSTER_BY_ID, DEV_BATTLE_MONSTERS } from "../src/data/monsters.ts";
+import { BIE_FOREST_EXPERIENCE_MULTIPLIER, MONSTER_ROSTER, MONSTER_ROSTER_BY_ID, DEV_BATTLE_MONSTERS } from "../src/data/monsters.ts";
 import { BATORASU, OROCHI_MAOU, MAJIN } from "../src/data/bosses.ts";
 
 // モンスター25体のHP/攻撃/防御/素早さ/EXP/ゴールドの正本テスト(2026-09-23ユーザー確定)。
@@ -77,12 +77,12 @@ test("BattleSceneが正式モンスターデータを利用できる(DEV_BATTLE_
   assert.equal(DEV_BATTLE_MONSTERS["001"].maxHp, MONSTER_ROSTER_BY_ID.tamago_ghost.hp);
   assert.equal(DEV_BATTLE_MONSTERS["001"].attack, MONSTER_ROSTER_BY_ID.tamago_ghost.attack);
   assert.equal(DEV_BATTLE_MONSTERS["001"].defense, MONSTER_ROSTER_BY_ID.tamago_ghost.defense);
-  assert.equal(DEV_BATTLE_MONSTERS["001"].reward.experience, MONSTER_ROSTER_BY_ID.tamago_ghost.exp);
+  assert.equal(DEV_BATTLE_MONSTERS["001"].reward.experience, Math.floor(MONSTER_ROSTER_BY_ID.tamago_ghost.exp * BIE_FOREST_EXPERIENCE_MULTIPLIER));
   assert.equal(DEV_BATTLE_MONSTERS["001"].reward.money, MONSTER_ROSTER_BY_ID.tamago_ghost.gold);
   assert.equal(DEV_BATTLE_MONSTERS["003"].maxHp, MONSTER_ROSTER_BY_ID.purin.hp);
   assert.equal(DEV_BATTLE_MONSTERS["003"].attack, MONSTER_ROSTER_BY_ID.purin.attack);
   assert.equal(DEV_BATTLE_MONSTERS["003"].defense, MONSTER_ROSTER_BY_ID.purin.defense);
-  assert.equal(DEV_BATTLE_MONSTERS["003"].reward.experience, MONSTER_ROSTER_BY_ID.purin.exp);
+  assert.equal(DEV_BATTLE_MONSTERS["003"].reward.experience, Math.floor(MONSTER_ROSTER_BY_ID.purin.exp * BIE_FOREST_EXPERIENCE_MULTIPLIER));
   assert.equal(DEV_BATTLE_MONSTERS["003"].reward.money, MONSTER_ROSTER_BY_ID.purin.gold);
   // headlessでBattleSystemへ直接渡される終盤ボス(bosses.ts)
   for (const [combatant, rosterId] of [[BATORASU, "batorasu"], [OROCHI_MAOU, "orochi_maou"], [MAJIN, "majin"]]) {
@@ -100,8 +100,9 @@ test("EXP/Gの勝利報酬は、実際に接続済みのモンスターについ
   // 未接続の23体は、敵の出現場所・配置という別仕様(今回のスコープ外)が決まってから
   // BattleCombatantDefinition化する。ここでは既にBattleScene/BattleSystemへ接続済みの
   // 6体(たまゴースト・プリン・デーマスDEV・バトラス・オロチまおう・まじん正本)だけを確認する。
-  assert.deepEqual({ exp: DEV_BATTLE_MONSTERS["001"].reward.experience, gold: DEV_BATTLE_MONSTERS["001"].reward.money }, { exp: 10, gold: 4 });
-  assert.deepEqual({ exp: DEV_BATTLE_MONSTERS["003"].reward.experience, gold: DEV_BATTLE_MONSTERS["003"].reward.money }, { exp: 8, gold: 3 });
+  assert.equal(BIE_FOREST_EXPERIENCE_MULTIPLIER, 0.8, "ビーエのもりの経験値は20%カット");
+  assert.deepEqual({ exp: DEV_BATTLE_MONSTERS["001"].reward.experience, gold: DEV_BATTLE_MONSTERS["001"].reward.money }, { exp: 8, gold: 4 });
+  assert.deepEqual({ exp: DEV_BATTLE_MONSTERS["003"].reward.experience, gold: DEV_BATTLE_MONSTERS["003"].reward.money }, { exp: 6, gold: 3 });
   assert.deepEqual({ exp: DEV_BATTLE_MONSTERS.demas.reward.experience, gold: DEV_BATTLE_MONSTERS.demas.reward.money }, { exp: 650, gold: 400 });
   assert.deepEqual({ exp: BATORASU.reward.experience, gold: BATORASU.reward.money }, { exp: 1100, gold: 650 });
   assert.deepEqual({ exp: OROCHI_MAOU.reward.experience, gold: OROCHI_MAOU.reward.money }, { exp: 3000, gold: 0 });

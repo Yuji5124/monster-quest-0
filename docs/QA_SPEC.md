@@ -76,7 +76,7 @@ Claude Code / Codex / Phaser Game Agentが同じ品質基準で確認する。
 - 勝利
 - EXP / レベルアップ
 - だいヒット
-- DEV（`npm run dev`）は既定でDEBUG_MODE（3人Lv30で戦闘開始、EXP・HP/MPはセーブへ書かない）。EXP・レベルアップ・持ち越しHP/MP・通常のボス難度を確認するときは`?debug=0`を付ける（`BATTLE_SPEC.md` §12）
+- DEV（`npm run dev`）は既定でDEBUG_MODE（主人公一人Lv30で戦闘開始、EXP・HP/MPはセーブへ書かない）。EXP・レベルアップ・持ち越しHP/MP・通常のボス難度を確認するときは`?debug=0`を付ける（`BATTLE_SPEC.md` §12）
 
 ## 7. オロチゾンビ / 「もういちど」
 - オロチゾンビは裏ボスとして扱われる

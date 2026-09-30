@@ -1,5 +1,7 @@
 import { RainlandImageMapScene } from "./RainlandForestScene.ts";
 import type { RainlandMapPackage } from "./RainlandForestScene.ts";
+import { startDakohaPortAmbience } from "../systems/DakohaPortAmbience.ts";
+import { DAKOHA_PORT_AMBIENCE } from "../config/dakohaPortAmbience.ts";
 
 // 背景はユーザー提供の「港町ダコハ.png」(CURRENT)、collision.pngはtools/build_dakoha_port_collision.pyが生成する。
 const DAKOHA_PORT: RainlandMapPackage = {
@@ -22,5 +24,12 @@ const DAKOHA_PORT: RainlandMapPackage = {
 export class DakohaPortScene extends RainlandImageMapScene {
   constructor() {
     super("DakohaPortScene", DAKOHA_PORT);
+  }
+
+  create(data?: Parameters<RainlandImageMapScene["create"]>[0]): void {
+    super.create(data);
+    // CURRENT背景を差し替えず、水面だけへ少数の加算光と灯台の回転灯を重ねる。
+    // 港のNPC・店・船移動・物語イベントは未確定のため、ここでは追加しない。
+    startDakohaPortAmbience(this, 1.5, DAKOHA_PORT_AMBIENCE);
   }
 }

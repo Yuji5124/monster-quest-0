@@ -1,0 +1,160 @@
+ M assets/asset_catalog.json
+ D assets/maps/reference/dungeons/mq0_dungeon_map_010_f835688d35.png
+ M assets/maps/world_map/destinations.json
+ M assets/maps/world_map/map.json
+ M docs/ASSET_INDEX.md
+ M docs/BATTLE_SPEC.md
+ M docs/CONTENT_MATRIX.md
+ M docs/DATA_CONTRACTS.md
+ M docs/DEFINITION_OF_DONE.md
+ M docs/GAME_SPEC.md
+ M docs/GLITCH_SPEC.md
+ M docs/INDEX.md
+ M docs/ITEM_EQUIPMENT_SPEC.md
+ M docs/MAP_FLOW_SPEC.md
+ M docs/NPC/01_hajimari_no_machi.md
+ M docs/NPC/02_bie_no_mura.md
+ M docs/NPC_SPEC.md
+ M docs/OPENING_SPEC.md
+ M docs/PLAY_ORDER_SPEC.md
+ M docs/PROJECT_STATUS.md
+ M docs/QA_SPEC.md
+ M docs/SAVE_FLAG_SPEC.md
+ M docs/STORY_FLOW.md
+ M docs/TBD_REGISTRY.md
+ M src/battle/BattleSystem.ts
+ M src/battle/PartyCombatants.ts
+ M src/config/battle.ts
+ M src/config/bieVillageAnomaly.ts
+ M src/config/devMapTest.ts
+ M src/config/encounter.ts
+ M src/config/input.ts
+ M src/config/mapSplash.ts
+ M src/config/maps.ts
+ M src/config/mireiSprite.ts
+ M src/config/openingCampfire.ts
+ M src/config/tarosaSprite.ts
+ M src/config/villagerSprites.ts
+ M src/config/worldMapPresentation.ts
+ M src/data/dialogues.ts
+ M src/data/items.ts
+ M src/data/monsters.ts
+ M src/data/weapons.ts
+ M src/events/BattleEventData.ts
+ M src/main.ts
+ M src/scenes/BattleScene.ts
+ M src/scenes/BieVillageScene.ts
+ M src/scenes/MajinCaveScene.ts
+ M src/scenes/RainlandCastleScene.ts
+ M src/scenes/RainlandCastleTownScene.ts
+ M src/scenes/RainlandForestScene.ts
+ M src/scenes/StartingForestScene.ts
+ M src/scenes/StartingPlaceScene.ts
+ M src/scenes/StartingTownScene.ts
+ M src/scenes/WorldMapScene.ts
+ M src/scenes/ZabonVillageScene.ts
+ M src/systems/CharacterProgression.ts
+ M src/systems/GameStateRepository.ts
+ M src/systems/ImageMapData.ts
+ M src/systems/InputSystem.ts
+ M src/systems/MajinCaveRunState.ts
+ M src/systems/MajinCaveTurnSystem.ts
+ M src/systems/MapAnomalyPlan.ts
+ M src/systems/WorldMapData.ts
+ M tests/bieVillage.test.mjs
+ M tests/bieVillageAnomaly.test.mjs
+ M tests/bodyPassability.test.mjs
+ M tests/browser/battleRuntime.mjs
+ M tests/characterWalkAnimation.test.mjs
+ M tests/devMapTest.test.mjs
+ M tests/hitTier.test.mjs
+ M tests/majinCave.test.mjs
+ M tests/mapSplash.test.mjs
+ M tests/openingCampfire.test.mjs
+ M tests/rainlandCastle3D.test.mjs
+ M tests/startingPlace.test.mjs
+ M tests/startingTown.test.mjs
+ M tests/villagerSprites.test.mjs
+ M tests/worldMapData.test.mjs
+ M tests/zabonVillage.test.mjs
+ M tools/build_villager_sheets.py
+?? "Claude outputs/"
+?? assets/battle/backgrounds/reference/mq0_dungeon_map_009_18b0af6e5e.png
+?? assets/characters/npc/villager_11_walk.png
+?? assets/characters/npc/villager_12_walk.png
+?? assets/characters/npc/villager_13_walk.png
+?? assets/characters/npc/villager_14_walk.png
+?? assets/characters/npc/villager_15_walk.png
+?? assets/characters/npc/villager_16_walk.png
+?? assets/characters/npc/villager_17_walk.png
+?? assets/characters/portraits/
+?? "assets/characters/reference/reference/\343\202\277\343\203\255\343\202\265/\343\202\277\343\203\255\343\202\265\347\253\213\343\201\241\345\247\277.png"
+?? "assets/characters/reference/reference/\343\203\237\343\203\254\343\202\244/\351\234\247\346\267\261\343\201\215\345\261\261\351\207\214\343\201\256\347\264\253\351\253\252\351\255\224\345\260\216\345\243\253.png"
+?? assets/maps/dakoha_port/
+?? assets/maps/demas_tower_1/
+?? assets/maps/demas_tower_2/
+?? assets/maps/demas_tower_3/
+?? assets/maps/kotankaim_cave_1/
+?? assets/maps/kotankaim_cave_2/
+?? assets/maps/kotankaim_cave_3/
+?? assets/maps/mysterious_tower_1f/
+?? assets/maps/mysterious_tower_exterior/
+?? "assets/maps/reference/reference/\343\201\265\343\201\227\343\201\216\343\201\252\343\201\250\343\201\206.png"
+?? "assets/maps/reference/reference/\343\201\265\343\201\227\343\201\216\343\201\252\343\201\250\343\201\206_\343\202\244\343\203\241\343\203\274\343\202\270.png"
+?? "assets/maps/reference/reference/\343\201\277\343\201\232\343\201\206\343\201\277\343\201\256\345\217\244\345\237\216_1\345\261\244.png"
+?? "assets/maps/reference/reference/\343\201\277\343\201\232\343\201\206\343\201\277\343\201\256\345\217\244\345\237\216_2\345\261\244.png"
+?? "assets/maps/reference/reference/\343\201\277\343\201\232\343\201\206\343\201\277\343\201\256\345\217\244\345\237\216_3\345\261\244.png"
+?? "assets/maps/reference/reference/\343\201\277\343\201\232\343\201\206\343\201\277\343\201\256\345\217\244\345\237\216_\343\202\244\343\203\241\343\203\274\343\202\270.png"
+?? "assets/maps/reference/reference/\343\202\263\343\202\277\343\203\263\343\202\253\343\202\244\343\203\240\343\201\256\343\201\251\343\201\206\343\201\217\343\201\2441.png"
+?? "assets/maps/reference/reference/\343\202\263\343\202\277\343\203\263\343\202\253\343\202\244\343\203\240\343\201\256\343\201\251\343\201\206\343\201\217\343\201\2442.png"
+?? "assets/maps/reference/reference/\343\202\263\343\202\277\343\203\263\343\202\253\343\202\244\343\203\240\343\201\256\343\201\251\343\201\206\343\201\217\343\201\2443.png"
+?? "assets/maps/reference/reference/\343\202\263\343\202\277\343\203\263\343\202\253\343\202\244\343\203\240\343\201\256\343\201\251\343\201\206\343\201\217\343\201\244_\343\202\244\343\203\241\343\203\274\343\202\270.png"
+?? "assets/maps/reference/reference/\346\226\260\343\201\227\343\201\204\343\203\225\343\202\251\343\203\253\343\203\200\343\203\274/"
+?? "assets/maps/reference/reference/\346\270\257\347\224\272\343\203\200\343\202\263\343\203\217.png"
+?? "assets/maps/reference/reference/\346\270\257\347\224\272\343\203\200\343\202\263\343\203\217_\343\202\244\343\203\241\343\203\274\343\202\270.png"
+?? assets/maps/revival_shrine/
+?? "assets/monsters/battle/\343\203\207\343\203\236\343\202\271\343\201\256\343\203\242\343\203\263\343\202\271\343\202\277\343\203\274\343\202\242\343\203\213\343\203\241\343\203\274\343\202\267\343\203\247\343\203\263\343\202\271\343\203\227\343\203\251\343\202\244\343\203\210\343\202\267\343\203\274\343\203\210 (1).png"
+?? docs/TOWER_EXPANSION_BOUNDARY.md
+?? promo/
+?? src/battle/DemasBossController.ts
+?? src/config/fieldAmbience.ts
+?? src/config/lakeCastle3D.ts
+?? src/config/shops.ts
+?? src/data/demasBattlePresentation.ts
+?? src/scenes/BatorasuFortressScene.ts
+?? src/scenes/DakohaPortScene.ts
+?? src/scenes/DemasTowerScene.ts
+?? src/scenes/KotankaimCaveScene.ts
+?? src/scenes/LakeCastle3DScene.ts
+?? src/scenes/MysteriousTowerScene.ts
+?? src/scenes/RevivalShrineScene.ts
+?? src/systems/BattleFortressGenerator.ts
+?? src/systems/ChestTexture.ts
+?? src/systems/FieldAmbience.ts
+?? src/systems/FieldAmbiencePlan.ts
+?? src/systems/ShopSystem.ts
+?? src/systems/TowerState.ts
+?? src/systems/VillagerGlitch.ts
+?? src/systems/WorldMapClouds.ts
+?? src/ui/MajinCaveActionMenu.ts
+?? src/ui/ShopWindow.ts
+?? tests/battleFortressGenerator.test.mjs
+?? tests/battleSlashEffect.test.mjs
+?? tests/dakohaPort.test.mjs
+?? tests/demasPresentation.test.mjs
+?? tests/demasTower.test.mjs
+?? tests/fieldAmbience.test.mjs
+?? tests/kotankaimCave.test.mjs
+?? tests/lakeCastle3D.test.mjs
+?? tests/mysteriousTower.test.mjs
+?? tests/rainlandCastleTownNpcs.test.mjs
+?? tests/revivalShrine.test.mjs
+?? tests/shops.test.mjs
+?? tests/towerState.test.mjs
+?? tests/worldMapClouds.test.mjs
+?? tools/build_dakoha_port_collision.py
+?? tools/build_demas_tower_collision.py
+?? tools/build_kotankaim_cave_collision.py
+?? tools/build_mysterious_tower_land_collision.py
+?? tools/build_mysterious_tower_placeholders.py
+?? tools/build_revival_shrine_collision.py

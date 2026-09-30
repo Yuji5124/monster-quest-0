@@ -211,7 +211,7 @@ test("castle: the Scene is registered for normal play, the world-map test and ?m
   const main = readFileSync(path.join(REPO_ROOT, "src/main.ts"), "utf-8");
   assert.match(main, /normalScenes = \[[^\]]*RainlandCastleScene[^\]]*\]/);
   assert.match(main, /\? \[WorldMapTestScene[^\]]*RainlandCastleScene[^\]]*\]/);
-  assert.match(main, /mapTestRequested === "rainland-castle"\s*\n?[^\n]*\n?\s*\? \[RainlandCastleScene, RainlandCastle3DScene, RainlandCastleTownScene, RainlandThroneRoomScene, RainlandThroneRoom3DScene, WorldMapScene, MapSplashScene\]/);
+  assert.match(main, /mapTestRequested === "rainland-castle"\s*\n?[^\n]*\n?\s*\? \[RainlandCastleScene, RainlandCastle3DScene, RainlandCastleTownScene, RainlandThroneRoomScene, RainlandThroneRoom3DScene, WorldMapScene, MapSplashScene, JumpCardBattleScene\]/);
   assert.match(main, /mapTestRequested === "rainland-castle-town"\s*\n?[^\n]*\n?\s*\? \[RainlandCastleTownScene, RainlandCastleScene, /);
   const scene = readFileSync(path.join(REPO_ROOT, "src/scenes/RainlandCastleScene.ts"), "utf-8");
   assert.match(scene, /super\("RainlandCastleScene"/);

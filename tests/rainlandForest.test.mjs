@@ -169,6 +169,20 @@ test("rainland forest 1: south gate returns to the world map, north stairs lead 
   assert.ok(MAPS.map_rainland_forest_1.spawns.fromForest2);
 });
 
+test("rainland forest 2: the user-marked north, west, and east trail ends return to the world map", () => {
+  const events = loadEvents(2);
+  const expectedBounds = {
+    event_rainland_forest_2_north_exit: { x: 720, y: 0, width: 96, height: 32 },
+    event_rainland_forest_2_west_exit: { x: 0, y: 640, width: 32, height: 96 },
+    event_rainland_forest_2_east_exit: { x: 1416, y: 488, width: 32, height: 96 },
+  };
+  for (const [id, bounds] of Object.entries(expectedBounds)) {
+    const event = events.find((candidate) => candidate.id === id);
+    assert.deepEqual(event?.bounds, bounds, `${id} covers its trail end`);
+    assert.deepEqual(event?.commands, [{ type: "world-map", worldMapEntryId: "from_rainland_forest" }]);
+  }
+});
+
 test("rainland forest is a point on the world map that lands at forest 1's world-map spawn", () => {
   const worldDir = path.join(REPO_ROOT, "assets/maps/world_map");
   const manifest = readWorldMapManifest(readJson(path.join(worldDir, "map.json")));
@@ -238,10 +252,10 @@ test("rainland forests: only their trail ends touch the map border, with no walk
   }
 });
 
-// 2026-09-27 ユーザー指示: 注釈画像(レインランドのもり その2)のオレンジ = 木こり、赤 = 宝箱。
+// 2026-10-01 ユーザー指示: 注釈画像(レインランドのもり その2)の青丸 = かいふくやくの宝箱。
 // 注釈画像をbackground.pngへ重ねて位置合わせし、印の中心を測ったネイティブ背景ピクセル。
 const ORANGE_MARKER = { x: 651, y: 298.7 };
-const RED_MARKER = { x: 133.5, y: 195.1 };
+const BLUE_MARKER = { x: 133.5, y: 195.1 };
 const WOODCUTTER = "npc_rainland_forest_woodcutter";
 const CHEST_ID = "chest_rainland_forest_2_ruin";
 
@@ -311,14 +325,14 @@ test("rainland forest 2: the woodcutter's first talk unlocks Rainland castle tow
   assert.equal(castleTown([STORY_FLAGS.rainlandCastleTownUnlocked]).displayName, "レインランドじょうかまち");
 });
 
-test("rainland forest 2: the ruin chest sits on the red marker and can be opened from the stone floor right below it", () => {
+test("rainland forest 2: the ruin chest sits on the blue marker and can be opened from the stone floor right below it", () => {
   const chest = forest2Chest();
   assert.equal(chest.type, "chest");
   assert.equal(chest.blocking, true);
   assert.ok(Object.hasOwn(ITEM_DEFINITIONS, chest.itemId), `${chest.itemId} is a real item`);
   assert.match(chest.openedFlag, /^chest\./, "chest flags live under chest.*(SAVE_FLAG_SPEC.md)");
   const center = centerOf(chest);
-  assert.ok(Math.hypot(center.x - RED_MARKER.x, center.y - RED_MARKER.y) <= 3, `the chest is centred on the red marker (got ${center.x},${center.y})`);
+  assert.ok(Math.hypot(center.x - BLUE_MARKER.x, center.y - BLUE_MARKER.y) <= 3, `the chest is centred on the blue marker (got ${center.x},${center.y})`);
 
   const scale = loadManifest(2).worldScale;
   const standing = { x: center.x - PLAYER.width / scale / 2, y: chest.y + chest.height, width: PLAYER.width / scale, height: PLAYER.height / scale };

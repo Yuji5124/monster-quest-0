@@ -23,7 +23,7 @@
       "width": 44,
       "height": 36,
       "blocking": true,
-      "itemId": "kaifukuyaku",
+      "jumpCoinCount": 1,
       "openedFlag": "chest.starting_forest_kaifukuyaku_opened"
     },
     {

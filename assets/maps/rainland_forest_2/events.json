@@ -18,6 +18,57 @@
           "targetSpawnId": "fromForest2"
         }
       ]
+    },
+    {
+      "id": "event_rainland_forest_2_north_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": {
+        "x": 720,
+        "y": 0,
+        "width": 96,
+        "height": 32
+      },
+      "commands": [
+        {
+          "type": "world-map",
+          "worldMapEntryId": "from_rainland_forest"
+        }
+      ]
+    },
+    {
+      "id": "event_rainland_forest_2_west_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": {
+        "x": 0,
+        "y": 640,
+        "width": 32,
+        "height": 96
+      },
+      "commands": [
+        {
+          "type": "world-map",
+          "worldMapEntryId": "from_rainland_forest"
+        }
+      ]
+    },
+    {
+      "id": "event_rainland_forest_2_east_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": {
+        "x": 1416,
+        "y": 488,
+        "width": 32,
+        "height": 96
+      },
+      "commands": [
+        {
+          "type": "world-map",
+          "worldMapEntryId": "from_rainland_forest"
+        }
+      ]
     }
   ]
 }

@@ -1,0 +1,2 @@
+● cap_bie  /?mapTest=bie-village
+  → {"ok":true,"url":"/?mapTest=bie-village","seconds":28.23,"tearEvents":[{"t":4.972599999999628,"bandTop":1110,"bandH":10.5,"camTop":208,"camH":720,"onScreen":false},{"t":10.084900000000372,"bandTop":967.5,"bandH":34.5,"camTop":196,"camH":720,"onScreen":false},{"t":15.853,"bandTop":787.5,"bandH":37.5,"camTop":196,"camH":720,"onScreen":true},{"t":24.632400000000374,"bandTop":118.5,"bandH":34.5,"camTop":196,"camH":720,"onScreen":false}],"errors":[]}

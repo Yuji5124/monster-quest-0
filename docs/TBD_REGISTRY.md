@@ -116,23 +116,23 @@ TBD:
 - No.01〜No.20の各目的地のアイコン / 解放条件（座標は2026-09-22にCURRENT world map背景上の`FINAL_POSITION`として確定）
 - No.01北門から世界地図へ入る際の出口アイコン・短い出発演出の最終調整
 - No.15ふっかつのほこら（`map_revival_shrine`、2026-09-26）のゆうしゃのかんむりの入手演出・条件（北の台座は現在DEVメッセージのみ）、反射の薄いヒントの出し方、NPC（目安2人）、BGM、西の島の光る紋の意味、`destination_revival_shrine`の最終解放条件（現在は`unlockFlag: null`の常時解放）
-- No.12港町ダコハ（`map_dakoha_port`、2026-09-26）のNPC人数・配置・台詞（目安7人）、店・宿、船での移動の扱い、デーマスの噂の出し方、BGM、北東の教会・上段の家並み・南の貨物桟橋へ歩けるようにするか、`destination_dakoha_port`の最終解放条件（現在は`unlockFlag: null`の常時解放）、陸側の北門を唯一の出入口とした配置の最終確認
+- No.12港町ダコハ（`map_dakoha_port`、2026-09-29）: 村人7人・宿屋・武器屋を配置したが台詞は`DIALOGUE_DRAFT`。道具屋（ユーザー指示は宿屋・武器屋のみ）、船での移動の扱い、デーマスの噂の深掘り（現在はとうだい近くの老婆が名前だけをささやく1段のみ）、BGM、北東の教会・上段の家並み・南の貨物桟橋へ歩けるようにするか、`destination_dakoha_port`の最終解放条件（現在は`unlockFlag: null`の常時解放）、陸側の北門を唯一の出入口とした配置の最終確認
 - No.08ザボンのむら（`map_zabon_village`、2026-09-23）のNPC人数・配置・台詞、建物内部・店・宿、BGM、北東のどうくつの入口の接続先（No.09いわやまのどうくつか等）、西の吊り橋・南東の道・南の道・桟橋の先の接続先、`destination_zabon_village`の最終解放条件（現在は`unlockFlag: null`の常時解放）、世界地図からの入口を北東の山道とした配置の最終確認
 - No.09いわやまのどうくつ（`map_iwayama_cave_1`・`map_iwayama_cave_2`、2026-09-23）: タロサ一時参加・共闘・正式同行のイベント、ボス、2F最奥（`event_iwayama_cave_2_inner_point`、現在DEVメッセージ）の内容、出現モンスターの構成・出現率（現在こあくま・エリマキヘビ・ダイジャ均等のTEMP_TEST_VALUE）、固有ドロップ、宝箱、BGM、`destination_iwayama_cave`の最終解放条件（現在は`unlockFlag: null`の常時解放）、`いわやまのどうくつ_2.png`（`_1.png`と同一）の扱い
-- No.10かくれざと（`map_hidden_village`、2026-09-24）: ミレイ初登場イベント、住民5人 + ミレイへ再選抜した正式配置、会話本文、建物内部、店、BGM、No.11への導線、`destination_hidden_village`の最終解放条件。現在の仮住民8人と`src/data/dialogues.ts`の生活会話は、`NPC_DIALOGUE_MASTER.md`未提供のため正式会話ではない。
-- No.10かくれざと（`map_hidden_village`、2026-09-24）: ミレイが身分を隠して主人公・タロサと出会う本編イベント、正式な住民会話・NPC人数、建物内部・店・BGM、洞窟の接続先、`destination_hidden_village`の最終解放条件（現在は`unlockFlag: null`の常時解放）。背景・Collision・北西の世界地図出口、固定6人とランダム移動2人の生活NPC初稿は実装済み。
+- No.10かくれざと（`map_hidden_village`、2026-09-24）: ミレイ初登場イベント、住民5人 + ミレイへ再選抜した正式配置、会話本文、建物内部、BGM、No.11への導線、`destination_hidden_village`の最終解放条件。現在の仮住民8人と`src/data/dialogues.ts`の生活会話は、`NPC_DIALOGUE_MASTER.md`未提供のため正式会話ではない。~~店~~ **2026-09-27ユーザー指示で実装**: 固定住民3人（水車小屋=ぶきや、まんなかの家=やどや、西の家=どうぐや）が生業と兼業(`config/shops.ts`)。専用の店番NPC・建物内部は追加していない。
+- No.10かくれざと（`map_hidden_village`、2026-09-24）: ミレイが身分を隠して主人公・タロサと出会う本編イベント、正式な住民会話・NPC人数、建物内部・BGM、洞窟の接続先、`destination_hidden_village`の最終解放条件（現在は`unlockFlag: null`の常時解放）。背景・Collision・北西の世界地図出口、固定6人とランダム移動2人の生活NPC初稿（2026-09-27に各3〜5ページへ増量、3人は店を兼業）は実装済み。
 - No.04ビーエのむらの小さな異変（`src/config/bieVillageAnomaly.ts`、2026-09-23）の発生間隔・大きさ・色（TEMP_TEST_VALUE）と、木こり救出後に弱める／止めるか（止める場合の進行フラグ名）
 - No.04ビーエのむら（内部`destination_bie_village`／旧No.03）の`unlockFlag: "story.bie_village_unlocked"`が実際に立つ本編上のタイミング（No.03クリア時か、特定イベント後か）。共有`GameStateRepository.flags`と本番`WorldMapScene`の接続は2026-09-23に実装済みだが、現在は既存`developmentUnlockedFlags`も初期解放として残る。
 - ビーエのむら背景に描かれた北門以外の道（東・南東方向、画像端で行き止まり）の正式接続先（次の地域か、単なる背景装飾か）
 - ~~No.03ビーエのもり(`destination_starting_forest`)の解放条件~~ **2026-09-27ユーザー指示で実装**: No.02ぶきやの店主の「はなす」を初めて最後まで読むと`story.bie_forest_unlocked`が保存され、世界地図で選べる。ぶきやの台詞本文（場所を教える1ページと解放通知1ページを追加）は`DIALOGUE_DRAFT`。
 - ~~不思議なとうの`story.mysterious_tower_revealed`を立てる本編側の解放イベント~~ **2026-09-27ユーザー指示で実装**: No.02のおじいさん（`npc_start_town_tower_elder`）との一度きりの会話→暗転で退場。台詞本文、おじいさんの立ち位置（ぶきやの東の道）、暗転の長さ（約0.5秒/0.7秒/0.5秒）は`DIALOGUE_DRAFT`/TEMP_TEST_VALUE。塔の外でおじいさんが待っている演出（初回到達時に「先に来ていた」ことを台詞で受ける等）は未実装でTBD。
 - ~~レインランドじょうかまち(`destination_rainland_castle_town`)の最終解放条件~~ **2026-09-24実装**: No.03ビーエのもりのえりまきとかげを倒すと`story.rainland_castle_town_unlocked`が保存され、世界地図から出入りできる。No.05レインランドのもりは、当初は`unlockFlag: null`の常時選択地点だったが、2026-09-27に`story.rainland_forest_unlocked`（No.04ビーエのむらの干し物の人との一度きりの会話で保存）へ変更した。会話本文は`DIALOGUE_DRAFT`。両地点の世界地図位置は`FINAL_POSITION`。同日、No.05レインランドのもり（その2）の奥の木こりの会話でも同じ`story.rainland_castle_town_unlocked`が保存されるようにした（下の木こり項目参照）。
-- レインランドのもり その2の北・西・東へ続く道、およびその1の途切れた小道の先の正式な接続先（No.06レインランドじょうかまち／じょう方面か、行き止まりの背景装飾か）。現在は接続先未定の行き止まり
+- レインランドのもり その1の途切れた小道の先の正式な接続先（No.06レインランドじょうかまち／じょう方面か、行き止まりの背景装飾か）。その2の北・西・東の道端は、2026-10-01ユーザー指定によりワールドマップへ戻る出口として実装済み
 - 正式No.05レインランドのもりのエンカウント間隔・木こり以外のNPC・BGM（おばけつむり／ファンシーダック／スノーボムの均等出現は実装済みだが、出現率・間隔はTEMP_TEST_VALUE）
-- **2026-09-27ユーザー指示で実装** No.05レインランドのもり（その2）の木こり（`npc_rainland_forest_woodcutter`）と遺跡の宝箱（`chest_rainland_forest_2_ruin`）。未確定: (a) 木こりが唯一のじょうかまち解放条件か（現在はNo.03えりまきとかげ撃破も同じ`story.rainland_castle_town_unlocked`を保存するため、どちらでも解放される。唯一にするならボス側の`unlockFlag`を外す）、(b) 木こりの台詞本文（`DIALOGUE_DRAFT`）と、ビーエのむらの戻らない木こりとの関係・救出イベント、(c) 宝箱の中身（現在は`かいふくやく`1個のTEMP_TEST_VALUE）、(d) 木こり・宝箱の位置（注釈画像から測った座標。人間の見た目調整は未了）
+- **2026-09-27／2026-10-01ユーザー指示で実装** No.05レインランドのもり（その2）の木こり（`npc_rainland_forest_woodcutter`）と、青丸位置のかいふくやく宝箱（`chest_rainland_forest_2_ruin`）。未確定: (a) 木こりが唯一のじょうかまち解放条件か（現在はNo.03えりまきとかげ撃破も同じ`story.rainland_castle_town_unlocked`を保存するため、どちらでも解放される。唯一にするならボス側の`unlockFlag`を外す）、(b) 木こりの台詞本文（`DIALOGUE_DRAFT`）と、ビーエのむらの戻らない木こりとの関係・救出イベント、(c) 木こりの位置（注釈画像から測った座標。人間の見た目調整は未了）
 - レインランドじょうかまちの店・建物内部・BGM、正式会話本文（NPC8人の配置は2026-09-26、会話第2稿＝1人4〜6ページは2026-09-27実装。`DIALOGUE_DRAFT`）、西・東の堀の橋の先の正式な接続先。現在は接続先未定の行き止まり（北の城門の先は同じ正式No.06のレインランドじょうへ接続済み、2026-09-20）
 - 正式No.06レインランドじょう（内部`map_05_rainland_castle`、2026-09-19追加）の正式な入場条件（現在は町の北の城門から常に入れる。世界地図には直接載せない）
-- レインランドじょうの正式なNPC人数・役割・台詞（`docs/NPC/04_rainland_castle.md`が`NEXT_TO_DESIGN`。現在の5人と台詞はDEV_PLACEHOLDER）、王の間の正式な人物・台詞・王への報告/依頼イベント（王の間のマップは2026-09-23に`レインランドじょう_城内2.png`で実装済み。王と近衛兵2人は仮）、上階・階段先の構成、将来のストーリーイベントの内容と場所（東の小部屋`event_rainland_castle_east_room`を予約地点として確保しただけで、内容・名称はTBD）、BGM
+- レインランドじょうの正式なNPC人数・役割・台詞（`docs/NPC/04_rainland_castle.md`が`NEXT_TO_DESIGN`。城内5人はDEV_PLACEHOLDERのまま）。王の間の**王への依頼・討伐後の報告会話は2026-09-27に実装**（`boss.majin_cave_boss_defeated` / `event.rainland_throne_majin_reported`、`SAVE_FLAG_SPEC.md`）が、台詞本文は`DIALOGUE_DRAFT`、近衛兵2人はDEV_PLACEHOLDERのまま。上階・階段先の構成、将来のストーリーイベントの内容と場所（東の小部屋`event_rainland_castle_east_room`を予約地点として確保しただけで、内容・名称はTBD）、BGM
 - ~~城内をブロック構成の特殊な城（Voxel）へ切り替えるか~~ **2026-09-23実装**: 2D/3Dを切り替えられるブロック城（`RainlandCastle3DScene`）。未確定: 3Dの移動・旋回速度・目の高さ・霧・色（`src/config/rainlandCastle3D.ts`のTEMP_TEST_VALUE）、城に入ったときの既定を2Dのままにするか、切替状態を覚えるか（仲間を3Dで見せないこと・天井を張ることは2026-09-23に確定）、他の地域にも3D表示を広げるか
 - 入場演出の細部（5秒の尺、地名の位置・書式、退場時の演出の有無、スキップ可否、BGM/SE）。現在は入場時のみ5秒(1秒/3秒/1秒)、地名は中央下、スキップ不可
 - No.07まじんのどうくつ（内部`destination_majin_cave`／`map_08_majin_cave`は旧番号由来）の正式解放条件・出現モンスター・まじん戦の条件／数値・宝箱・NPC・BGM。通常`WorldMapScene`へ`unlockFlag: null`で接続済み、世界地図位置は`FINAL_POSITION`、`?mapTest=majin-cave`も単体確認用に残す
@@ -218,11 +218,12 @@ No.02内部設計データにある価格・商品・会話・既存実装用タ
 ### ジャンカード
 - 45枚の未確定番号 / 表示内容
 - 公開用のネタバレ表示方法の最終調整
-- 旧ジャンコイン実装から、所持金20円を消費する正本へ移す際のセーブ移行・UI・画像内表記の扱い
+- ジャンコインのモンスター討伐ドロップ（2026-09-27方針確定、`MONSTER_SPEC.md`§1.1）: 対象敵・確率・`BattleCombatantDefinition.reward.drops`への実装は未着手
+- 画像内（`assets/title/reference/I.png`等）のジャンコイン表記と現行仕様の整合の最終確認
 
 固定事項:
 - 全45枚
-- 1回20円
+- 1回ジャンコイン1枚（`cards.jumpCoinCount`、Gとは別枠）
 - No.01→45固定順
 - ランダムではない
 - ダブりなし

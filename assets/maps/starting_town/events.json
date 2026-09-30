@@ -12,6 +12,18 @@
           "worldMapEntryId": "from_starting_town"
         }
       ]
+    },
+    {
+      "id": "event_starting_town_south_exit",
+      "trigger": "enter",
+      "once": true,
+      "bounds": { "x": 640, "y": 1056, "width": 176, "height": 30 },
+      "commands": [
+        {
+          "type": "world-map",
+          "worldMapEntryId": "from_starting_town"
+        }
+      ]
     }
   ]
 }

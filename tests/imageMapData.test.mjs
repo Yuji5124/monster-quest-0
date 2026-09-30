@@ -23,12 +23,41 @@ test("image-map manifest points to the four required map layers", () => {
   }
 });
 
-test("image-map package routes its north-gate event to the point-selection world map", () => {
+test("image-map package routes both No.01 trail exits to the point-selection world map", () => {
   const events = readImageMapEvents(JSON.parse(readFileSync(path.join(MAP_DIR, "events.json"), "utf-8")));
   const objects = readImageMapObjects(JSON.parse(readFileSync(path.join(MAP_DIR, "objects.json"), "utf-8")));
-  assert.equal(events.length, 1);
-  assert.equal(events[0].trigger, "enter");
-  assert.equal(events[0].commands[0].type, "world-map");
-  assert.equal(events[0].commands[0].worldMapEntryId, "from_starting_place");
+  assert.equal(events.length, 2);
+  for (const event of events) {
+    assert.equal(event.trigger, "enter");
+    assert.equal(event.commands[0].type, "world-map");
+    assert.equal(event.commands[0].worldMapEntryId, "from_starting_place");
+  }
   assert.deepEqual(objects, []);
+});
+
+test("image-map chests accept exactly one reward type", () => {
+  const baseChest = {
+    id: "chest_test",
+    type: "chest",
+    label: "たからばこ",
+    x: 16,
+    y: 24,
+    width: 44,
+    height: 36,
+    blocking: true,
+    openedFlag: "chest.test_opened",
+  };
+  const [coinChest] = readImageMapObjects({ objects: [{ ...baseChest, jumpCoinCount: 1 }] });
+  assert.equal(coinChest.type, "chest");
+  assert.equal(coinChest.jumpCoinCount, 1);
+  assert.equal(coinChest.itemId, undefined);
+
+  assert.throws(
+    () => readImageMapObjects({ objects: [{ ...baseChest }] }),
+    /exactly one of itemId or jumpCoinCount/,
+  );
+  assert.throws(
+    () => readImageMapObjects({ objects: [{ ...baseChest, itemId: "kaifukuyaku", jumpCoinCount: 1 }] }),
+    /exactly one of itemId or jumpCoinCount/,
+  );
 });

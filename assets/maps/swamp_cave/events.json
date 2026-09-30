@@ -6,7 +6,7 @@
       "trigger": "interact",
       "once": false,
       "bounds": { "x": 771, "y": 54, "width": 128, "height": 128 },
-      "conditions": ["chest.swamp_cave_inner_kaifukuyaku_opened"],
+      "conditions": ["chest.swamp_cave_inner_stone_town_item_opened"],
       "commands": [{ "type": "world-map", "worldMapEntryId": "from_swamp_cave" }]
     }
   ]

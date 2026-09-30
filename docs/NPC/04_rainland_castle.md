@@ -64,3 +64,6 @@
 7. 確定後 `DIALOGUE_READY` に変更する。
 
 AIは、王・王妃・大臣・兵士等の未確定人物設定を「城にいそうだから」という理由だけで勝手に正式追加しない。
+
+## 8. 王の会話（2026-09-27実装、DIALOGUE_DRAFT）
+王(`rainland_throne_king`)だけ、STORY_FLOW.md確定内容（§1の「主人公はえらばれたゆうしゃだからではなく異常地域を越えた旅人だから信頼される」「No.07まじんのどうくつを依頼し、主人公が自分の意思で引き受ける」）に沿って会話を書いた。討伐前(依頼)・討伐後未報告(報告)・報告済み(短い後日談)の3状態を`src/data/dialogues.ts`の`getDialogue`が`boss.majin_cave_boss_defeated` / `event.rainland_throne_majin_reported`で分岐する（`SAVE_FLAG_SPEC.md`）。タロサはこの時点で正式加入前(§3参照)のため「ザボンの狩人」とだけ言及し、全過去・ミレイの正体・王家の事情には触れていない(§4・§6)。会話の区切りにタロサの参考画像を額縁つきで挟む(`PortraitInterludeDialogueEvent`)。近衛兵2人・王の正式な人数と衣装、他5〜6人の役割はまだ`NEXT_TO_DESIGN`のまま。

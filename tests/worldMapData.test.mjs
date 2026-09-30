@@ -73,6 +73,7 @@ test("implementation status separates real destinations from blue planned geogra
   const resolved = resolveWorldMapDestinations(definitions, readInterimUnlockedFlags(manifest));
   const rainlandForest = resolved.find((destination) => destination.id === "destination_rainland_forest");
   const rainlandCastleTown = resolved.find((destination) => destination.id === "destination_rainland_castle_town");
+  const stoneTown = resolved.find((destination) => destination.id === "destination_stone_town");
   assert.equal(rainlandForest?.unlockFlag, "story.rainland_forest_unlocked");
   assert.equal(rainlandForest?.unlocked, false, "the forest opens only after Bie Village tells the player the castle road goes through it");
   assert.equal(rainlandForest?.displayName, "？？？");
@@ -81,6 +82,10 @@ test("implementation status separates real destinations from blue planned geogra
   assert.equal(rainlandCastleTown?.unlocked, false, "the forest boss is the first real unlock source for Rainland's castle town");
   assert.equal(rainlandCastleTown?.displayName, "？？？");
   assert.equal(isWorldMapDestinationTravelReady(rainlandCastleTown), false);
+  assert.equal(stoneTown?.unlockFlag, "story.stone_town_unlocked");
+  assert.equal(stoneTown?.unlocked, false, "ぬまちのどうくつ最奥の宝箱を開けるまで、いしのまちは移動できない");
+  assert.equal(stoneTown?.displayName, "？？？");
+  assert.equal(isWorldMapDestinationTravelReady(stoneTown), false);
   // 2026-09-27: ビーエのもりはぶきやの店主から場所を聞くまで？？？、不思議なとうはおじいさんと話すまで世界地図に現れない。
   const bieForest = resolved.find((destination) => destination.id === "destination_starting_forest");
   assert.equal(bieForest?.unlockFlag, "story.bie_forest_unlocked");
@@ -97,7 +102,7 @@ test("implementation status separates real destinations from blue planned geogra
   assert.equal(revealedTower?.visibilityState, "UNKNOWN", "the elder event shows the special field without revealing its name");
   assert.equal(revealedTower?.displayName, "？？？");
   assert.equal(revealedTower && isWorldMapDestinationTravelReady(revealedTower), true);
-  const storyGated = new Set(["destination_rainland_castle_town", "destination_starting_forest", "destination_rainland_forest"]);
+  const storyGated = new Set(["destination_rainland_castle_town", "destination_starting_forest", "destination_rainland_forest", "destination_stone_town", "destination_zabon_village", "destination_iwayama_cave", "destination_hidden_village", "destination_lake_old_castle"]);
   assert.ok(resolved.filter((destination) => destination.implementationStatus === "implemented" && !storyGated.has(destination.id)).every(isWorldMapDestinationTravelReady));
   const afterBieVillageTalk = resolveWorldMapDestinations(definitions, new Set([...readInterimUnlockedFlags(manifest), "story.rainland_forest_unlocked"]));
   const unlockedRainlandForest = afterBieVillageTalk.find((destination) => destination.id === "destination_rainland_forest");
@@ -106,6 +111,10 @@ test("implementation status separates real destinations from blue planned geogra
   assert.equal(afterBieVillageTalk.find((destination) => destination.id === "destination_rainland_castle_town")?.unlocked, false, "the forest flag must not unlock the castle town");
   const afterBoss = resolveWorldMapDestinations(definitions, new Set([...readInterimUnlockedFlags(manifest), "story.rainland_castle_town_unlocked"]));
   assert.equal(afterBoss.find((destination) => destination.id === "destination_rainland_castle_town")?.unlocked, true);
+  const afterSwampCave = resolveWorldMapDestinations(definitions, new Set([...readInterimUnlockedFlags(manifest), "story.stone_town_unlocked"]));
+  const unlockedStoneTown = afterSwampCave.find((destination) => destination.id === "destination_stone_town");
+  assert.equal(unlockedStoneTown?.displayName, "いしのまち");
+  assert.equal(unlockedStoneTown && isWorldMapDestinationTravelReady(unlockedStoneTown), true);
   assert.ok(resolved.filter((destination) => destination.implementationStatus === "planned").every((destination) => !isWorldMapDestinationTravelReady(destination)));
 
   const plannedStyle = getWorldMapMarkerStyle("planned", true, false);
@@ -119,6 +128,20 @@ test("implementation status separates real destinations from blue planned geogra
   assert.notEqual(plannedStyle.coreFill, implementedStyle.coreFill);
   assert.notEqual(plannedStyle.coreFill, lockedStyle.coreFill);
   assert.equal(getWorldMapMarkerStyle("implemented", true, true).coreFill, 0xffc34d);
+});
+
+test("the Majin-report route unlocks Zabon, Iwayama, Hidden Village, and Lake Castle in story order", () => {
+  const { manifest, definitions } = loadWorldMap();
+  const visibleAt = (flags, id) => resolveWorldMapDestinations(definitions, new Set([...readInterimUnlockedFlags(manifest), ...flags])).find((destination) => destination.id === id);
+  const ids = ["destination_zabon_village", "destination_iwayama_cave", "destination_hidden_village", "destination_lake_old_castle"];
+  for (const id of ids) assert.equal(isWorldMapDestinationTravelReady(visibleAt([], id)), false, `${id} begins locked`);
+  assert.equal(isWorldMapDestinationTravelReady(visibleAt(["event.rainland_throne_majin_reported"], "destination_zabon_village")), true);
+  assert.equal(isWorldMapDestinationTravelReady(visibleAt(["event.rainland_throne_majin_reported"], "destination_iwayama_cave")), false);
+  assert.equal(isWorldMapDestinationTravelReady(visibleAt(["event.rainland_throne_majin_reported", "event.zabon_tarosa_refused"], "destination_iwayama_cave")), true);
+  assert.equal(isWorldMapDestinationTravelReady(visibleAt(["event.rainland_throne_majin_reported", "event.zabon_tarosa_refused"], "destination_hidden_village")), false);
+  assert.equal(isWorldMapDestinationTravelReady(visibleAt(["story.iwayama_cave_cleared"], "destination_hidden_village")), true);
+  assert.equal(isWorldMapDestinationTravelReady(visibleAt(["story.iwayama_cave_cleared"], "destination_lake_old_castle")), false);
+  assert.equal(isWorldMapDestinationTravelReady(visibleAt(["story.iwayama_cave_cleared", "event.hidden_village_visited"], "destination_lake_old_castle")), true);
 });
 
 test("implemented destinations resolve to registered scenes and spawns, while planned destinations cannot transition", () => {

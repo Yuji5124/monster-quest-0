@@ -1,0 +1,114 @@
+{
+  "cap_castle3d": {
+    "ok": true,
+    "url": "/?mapTest=rainland-castle-3d",
+    "seconds": 12.23,
+    "errors": []
+  },
+  "cap_opening": {
+    "ok": true,
+    "url": "/",
+    "seconds": 22.85,
+    "errors": []
+  },
+  "cap_worldmap": {
+    "ok": true,
+    "url": "/?worldMapTest=1",
+    "seconds": 9.77,
+    "errors": []
+  },
+  "cap_no02": {
+    "ok": true,
+    "url": "/?mapTest=no02",
+    "seconds": 7.61,
+    "errors": []
+  },
+  "cap_bie": {
+    "ok": true,
+    "url": "/?mapTest=bie-village",
+    "seconds": 28.23,
+    "tearEvents": [
+      {
+        "t": 4.972599999999628,
+        "bandTop": 1110,
+        "bandH": 10.5,
+        "camTop": 208,
+        "camH": 720,
+        "onScreen": false
+      },
+      {
+        "t": 10.084900000000372,
+        "bandTop": 967.5,
+        "bandH": 34.5,
+        "camTop": 196,
+        "camH": 720,
+        "onScreen": false
+      },
+      {
+        "t": 15.853,
+        "bandTop": 787.5,
+        "bandH": 37.5,
+        "camTop": 196,
+        "camH": 720,
+        "onScreen": true
+      },
+      {
+        "t": 24.632400000000374,
+        "bandTop": 118.5,
+        "bandH": 34.5,
+        "camTop": 196,
+        "camH": 720,
+        "onScreen": false
+      }
+    ],
+    "errors": []
+  },
+  "cap_majin_explore": {
+    "ok": true,
+    "url": "/?mapTest=majin-cave&seed=8008",
+    "seconds": 8.01,
+    "errors": []
+  },
+  "cap_majin_house": {
+    "ok": true,
+    "url": "/?mapTest=majin-cave&seed=8008",
+    "seconds": 11.26,
+    "errors": []
+  },
+  "cap_majin_boss": {
+    "ok": true,
+    "url": "/?mapTest=majin-cave&seed=8008&majinCaveFloor=10",
+    "seconds": 16.83,
+    "errors": []
+  },
+  "cap_forest_battle": {
+    "ok": true,
+    "url": "/?mapTest=starting-forest",
+    "seconds": 14.25,
+    "errors": []
+  },
+  "cap_shoot_chain": {
+    "ok": true,
+    "url": "/?mapTest=iwayama-shooting&shootingSection=chain",
+    "seconds": 15.37,
+    "errors": []
+  },
+  "cap_shoot_wall": {
+    "ok": true,
+    "url": "/?mapTest=iwayama-shooting&shootingSection=wall",
+    "seconds": 19.63,
+    "errors": []
+  },
+  "cap_hidden": {
+    "ok": true,
+    "url": "/?mapTest=hidden-village",
+    "seconds": 7.06,
+    "errors": []
+  },
+  "cap_lake3d": {
+    "ok": true,
+    "url": "/?mapTest=lake-castle-3d&floor=1",
+    "seconds": 9.87,
+    "errors": []
+  }
+}

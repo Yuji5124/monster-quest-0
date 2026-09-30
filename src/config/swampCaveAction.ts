@@ -1,3 +1,5 @@
+import { STORY_FLAGS } from "./storyFlags.ts";
+
 /**
  * No.17「ぬまちのどうくつ」最初の短いアクション区画。
  *
@@ -19,6 +21,13 @@ export interface SwampCaveRect {
   readonly height: number;
 }
 
+/** 主区画の高所同士をつなぐ、幅を持った根道／橋。 */
+export interface SwampCaveRootPath {
+  readonly from: SwampCavePoint;
+  readonly to: SwampCavePoint;
+  readonly width: number;
+}
+
 export interface SwampCaveEnemySpawn extends SwampCavePoint {
   readonly id: string;
 }
@@ -26,8 +35,9 @@ export interface SwampCaveEnemySpawn extends SwampCavePoint {
 export const SWAMP_CAVE_ACTION = {
   mapId: "map_swamp_cave",
   sceneKey: "SwampCaveActionScene",
-  backgroundKey: "map.swamp-cave.background",
-  backgroundPath: new URL("../../assets/maps/reference/reference/新しいフォルダー/ぬまちのどうくつ.png", import.meta.url).toString(),
+  /** 最奥の短い宝箱区画だけに表示する背景データ。主区画の地形には使わない。 */
+  finalBackgroundKey: "map.swamp-cave.final-background",
+  finalBackgroundPath: new URL("../../assets/maps/reference/reference/新しいフォルダー/ぬまちのどうくつ.png", import.meta.url).toString(),
   world: { width: 1672, height: 941 },
   playerStart: { x: 800, y: 790 } satisfies SwampCavePoint,
   exit: { x: 835, y: 118, radius: 64 } satisfies SwampCavePoint & { readonly radius: number },
@@ -38,6 +48,25 @@ export const SWAMP_CAVE_ACTION = {
     hurtInvulnerableMs: 850,
   },
   terrain: {
+    /**
+     * 人物が乗れる足場。暗い洞窟の奥へ直進して近道できないよう、移動の正本もここに置く。
+     * 見た目は Scene が同じデータを描画するため、人間の経路調整はこの配列だけで行える。
+     */
+    platforms: [
+      { x: 620, y: 734, width: 390, height: 142 },
+      { x: 676, y: 570, width: 260, height: 140 },
+      { x: 656, y: 300, width: 350, height: 238 },
+      { x: 1040, y: 278, width: 260, height: 144 },
+      { x: 388, y: 272, width: 240, height: 168 },
+      { x: 748, y: 112, width: 184, height: 170 },
+    ] satisfies readonly SwampCaveRect[],
+    /** 根道は足場のあいだをつなぐ安全で速い導線。 */
+    roots: [
+      { from: { x: 800, y: 746 }, to: { x: 800, y: 520 }, width: 32 },
+      { from: { x: 906, y: 520 }, to: { x: 1050, y: 386 }, width: 32 },
+      { from: { x: 680, y: 430 }, to: { x: 540, y: 398 }, width: 32 },
+      { from: { x: 840, y: 320 }, to: { x: 840, y: 248 }, width: 32 },
+    ] satisfies readonly SwampCaveRootPath[],
     /** 水面に足を取られる浅瀬。必ず抜けられる速度に留める。 */
     swamp: [
       { x: 606, y: 610, width: 244, height: 174 },
@@ -76,12 +105,32 @@ export const SWAMP_CAVE_ACTION = {
   },
   flags: {
     cleared: "event.swamp_cave_action_cleared",
-    chestOpened: "chest.swamp_cave_inner_kaifukuyaku_opened",
+    chestOpened: "chest.swamp_cave_inner_stone_town_item_opened",
   },
-  reward: { itemId: "kaifukuyaku", quantity: 1 },
+  /** 正式名称・ItemIdは未確定。取得だけでNo.18の解放フラグを立てる進行アイテム。 */
+  reward: {
+    displayName: "いしのまちへ進むためのアイテム",
+    unlockFlag: STORY_FLAGS.stoneTownUnlocked,
+  },
 } as const;
 
 export function isPointInSwampCaveRect(point: SwampCavePoint, bounds: SwampCaveRect): boolean {
   return point.x >= bounds.x && point.x <= bounds.x + bounds.width && point.y >= bounds.y && point.y <= bounds.y + bounds.height;
 }
 
+/** True when a point is on the wide root/bridge segment rather than in the impassable cave dark. */
+export function isPointOnSwampCaveRoot(point: SwampCavePoint, root: SwampCaveRootPath): boolean {
+  const dx = root.to.x - root.from.x;
+  const dy = root.to.y - root.from.y;
+  const lengthSquared = dx * dx + dy * dy;
+  if (lengthSquared === 0) return Math.hypot(point.x - root.from.x, point.y - root.from.y) <= root.width / 2;
+  const projection = ((point.x - root.from.x) * dx + (point.y - root.from.y) * dy) / lengthSquared;
+  const t = Math.max(0, Math.min(1, projection));
+  return Math.hypot(point.x - (root.from.x + dx * t), point.y - (root.from.y + dy * t)) <= root.width / 2;
+}
+
+/** The block-built combat course is passable only on its platforms and connecting roots. */
+export function isPointOnSwampCaveActionRoute(point: SwampCavePoint): boolean {
+  return SWAMP_CAVE_ACTION.terrain.platforms.some((platform) => isPointInSwampCaveRect(point, platform))
+    || SWAMP_CAVE_ACTION.terrain.roots.some((root) => isPointOnSwampCaveRoot(point, root));
+}

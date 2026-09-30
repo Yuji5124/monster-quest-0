@@ -20,6 +20,15 @@ export interface MapEntrySplash {
 }
 
 export const MAP_ENTRY_SPLASHES: Readonly<Partial<Record<MapId, MapEntrySplash>>> = {
+  // No.02はじまりのまち。画像ははじまりのまち_イメージ.pngの無加工コピー。世界地図からの到着時だけ5秒表示する。
+  map_02_starting_town: {
+    imageUrl: new URL("../../assets/maps/starting_town/entry_splash.png", import.meta.url).toString(),
+    fadeInMs: 1000,
+    holdMs: 3000,
+    fadeOutMs: 1000,
+    spawnIds: ["fromWorldMap"],
+    caption: "はじまりのまち",
+  },
   map_rainland_castle_town: {
     imageUrl: new URL("../../assets/maps/rainland_castle_town/entry_splash.png", import.meta.url).toString(),
     fadeInMs: 1000,

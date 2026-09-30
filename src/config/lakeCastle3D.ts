@@ -35,13 +35,28 @@ export interface LakeCastleTransition extends LakeCastleZone {
   readonly targetFloor: LakeCastleFloorId;
   readonly targetSpawnId: string;
   readonly requiresAncientInscription?: boolean;
+  /** 1F→2Fだけはミレイの魔法で水流を鎮める一度きりのイベントを通す。 */
+  readonly requiresMoveMagic?: boolean;
 }
 
 export interface LakeCastleFeature {
-  readonly kind: "statue" | "chapel" | "library" | "inscription" | "sanctuary" | "tower" | "waterfall" | "ruin" | "candelabra";
+  readonly kind: "statue" | "chapel" | "library" | "inscription" | "reader_mark" | "sanctuary" | "tower" | "waterfall" | "water_gate" | "ruin" | "candelabra" | "stairway" | "navigation_beacon";
   readonly x: number;
   readonly z: number;
   readonly rotation?: number;
+  /** Stair markers are a render cue only; floor movement remains in transitions. */
+  readonly destinationFloor?: LakeCastleFloorId;
+}
+
+/** TEMP_VISUAL_VALUE: each compact floor needs a distinct readable atmosphere without adding new story text. */
+export interface LakeCastleVisualPalette {
+  readonly backgroundColor: number;
+  readonly fogColor: number;
+  readonly fogDensity: number;
+  readonly skyLightColor: number;
+  readonly groundLightColor: number;
+  readonly vaultLightColor: number;
+  readonly accentLightColor: number;
 }
 
 export interface LakeCastleFloorPlan {
@@ -54,6 +69,7 @@ export interface LakeCastleFloorPlan {
   readonly spawns: Readonly<Record<string, LakeCastlePoint>>;
   readonly transitions: readonly LakeCastleTransition[];
   readonly features: readonly LakeCastleFeature[];
+  readonly visualPalette: LakeCastleVisualPalette;
   /** 2F only: an optional Z interaction point. */
   readonly ancientInscription?: LakeCastleZone;
   /** 3F only: the clear-event interaction area. */
@@ -125,9 +141,13 @@ function buildFloor1(): LakeCastleFloorPlan {
       fromWorldMap: { x: 21.5, z: 32.5, yaw: NORTH },
       fromFloor2: { x: 21.5, z: 5.5, yaw: SOUTH },
     },
-    transitions: [{ x: 19, z: 2, width: 5, height: 3, targetFloor: 2, targetSpawnId: "fromFloor1" }],
+    transitions: [{ x: 19, z: 2, width: 5, height: 3, targetFloor: 2, targetSpawnId: "fromFloor1", requiresMoveMagic: true }],
     worldMapExit: { x: 19, z: 34, width: 5, height: 1 },
     features: [
+      { kind: "water_gate", x: 21.5, z: 2.2 },
+      { kind: "stairway", x: 21.5, z: 3.5, destinationFloor: 2 },
+      // TEMP_VISUAL_VALUE: a mid-corridor beacon makes the next floor readable in first person.
+      { kind: "navigation_beacon", x: 21.5, z: 10.5, destinationFloor: 2 },
       { kind: "statue", x: 21.5, z: 17.5 },
       { kind: "chapel", x: 7, z: 10 },
       { kind: "library", x: 36, z: 10, rotation: Math.PI },
@@ -138,6 +158,10 @@ function buildFloor1(): LakeCastleFloorPlan {
       { kind: "ruin", x: 8, z: 25 }, { kind: "ruin", x: 35, z: 26 },
       { kind: "candelabra", x: 19, z: 15 }, { kind: "candelabra", x: 24, z: 15 },
     ],
+    visualPalette: {
+      backgroundColor: 0x071a24, fogColor: 0x0d2734, fogDensity: 0.03,
+      skyLightColor: 0xa3cce0, groundLightColor: 0x0d1b25, vaultLightColor: 0xc0d7e5, accentLightColor: 0x36d7ff,
+    },
   };
 }
 
@@ -181,8 +205,14 @@ function buildFloor2(): LakeCastleFloorPlan {
     ],
     ancientInscription: { x: 33, z: 9, width: 4, height: 4 },
     features: [
+      { kind: "stairway", x: 21.5, z: 34, destinationFloor: 1, rotation: Math.PI },
+      { kind: "stairway", x: 21.5, z: 2.5, destinationFloor: 3 },
+      { kind: "navigation_beacon", x: 21.5, z: 27.5, destinationFloor: 1, rotation: Math.PI },
+      { kind: "navigation_beacon", x: 21.5, z: 10.5, destinationFloor: 3 },
       { kind: "statue", x: 21.5, z: 18.5 },
       { kind: "library", x: 7.5, z: 10 },
+      // Text-free visual preview: an open-book glyph says that this stone needs a reader.
+      { kind: "reader_mark", x: 31.7, z: 10 },
       { kind: "inscription", x: 34.5, z: 10 },
       { kind: "chapel", x: 21.5, z: 8 },
       { kind: "tower", x: 12, z: 14 }, { kind: "tower", x: 31, z: 14 },
@@ -191,6 +221,10 @@ function buildFloor2(): LakeCastleFloorPlan {
       { kind: "ruin", x: 4, z: 26 }, { kind: "ruin", x: 38, z: 27 },
       { kind: "candelabra", x: 18, z: 16 }, { kind: "candelabra", x: 25, z: 16 },
     ],
+    visualPalette: {
+      backgroundColor: 0x0b1829, fogColor: 0x0d2436, fogDensity: 0.035,
+      skyLightColor: 0x7fafd2, groundLightColor: 0x0d1525, vaultLightColor: 0xb9d0e5, accentLightColor: 0x5cb5ff,
+    },
   };
 }
 
@@ -225,6 +259,8 @@ function buildFloor3(): LakeCastleFloorPlan {
     transitions: [{ x: 19, z: 34, width: 5, height: 1, targetFloor: 2, targetSpawnId: "fromFloor3" }],
     sanctuary: { x: 18, z: 3, width: 8, height: 5 },
     features: [
+      { kind: "stairway", x: 21.5, z: 34, destinationFloor: 2, rotation: Math.PI },
+      { kind: "navigation_beacon", x: 21.5, z: 27.5, destinationFloor: 2, rotation: Math.PI },
       { kind: "statue", x: 21.5, z: 17.5 },
       { kind: "sanctuary", x: 21.5, z: 5 },
       { kind: "library", x: 6, z: 19 }, { kind: "chapel", x: 36, z: 19 },
@@ -235,6 +271,10 @@ function buildFloor3(): LakeCastleFloorPlan {
       { kind: "ruin", x: 6, z: 27 }, { kind: "ruin", x: 36, z: 28 },
       { kind: "candelabra", x: 17, z: 9 }, { kind: "candelabra", x: 26, z: 9 },
     ],
+    visualPalette: {
+      backgroundColor: 0x130d24, fogColor: 0x1b1632, fogDensity: 0.04,
+      skyLightColor: 0xb7a3de, groundLightColor: 0x170f2b, vaultLightColor: 0xd0c0ed, accentLightColor: 0xb58dff,
+    },
   };
 }
 

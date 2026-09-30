@@ -7,7 +7,9 @@ import { MAPS } from "../src/config/maps.ts";
 import { NPC_VISUAL } from "../src/config/npc.ts";
 import { PLAYER } from "../src/config/player.ts";
 import { RAINLAND_THRONE_ROOM_3D } from "../src/config/rainlandCastle3D.ts";
-import { getDialogue } from "../src/data/dialogues.ts";
+import { STORY_FLAGS } from "../src/config/storyFlags.ts";
+import { DIALOGUES, getDialogue } from "../src/data/dialogues.ts";
+import { isPortraitInterludeDialogueEvent } from "../src/events/BattleEventData.ts";
 import {
   buildBlockedCellGrid, buildVoxelLayout, findWallFace, floorHeightAt, isCellBlocked, VOXEL_WALL,
 } from "../src/systems/Castle3DLayout.ts";
@@ -92,4 +94,70 @@ test("throne room 3D: raised dais with stairs, a low front wall with balustrades
   for (const npc of MAPS[MAP_ID].npcs) assert.ok(cfg.npcModels[npc.id], `${npc.id} has no 3D character model`);
   assert.equal(cfg.npcModels.rainland_throne_king.gear.pose, "seated");
   assert.equal(cfg.npcModels.rainland_throne_king.look.outfit, "king");
+});
+
+const noFlags = { hasFlag: () => false };
+const KING = "rainland_throne_king";
+
+test("throne room: before the Majin is defeated, the king asks the player to investigate the cave and mentions the Zabon hunter with a portrait interlude", () => {
+  const base = DIALOGUES[KING];
+  const first = getDialogue(KING, undefined, noFlags);
+  assert.ok(first);
+  assert.deepEqual(first.pages, base.pages);
+  assert.equal(isPortraitInterludeDialogueEvent(first.afterDialogue), true);
+  assert.equal(first.afterDialogue.thenFlags, undefined, "the first audience does not unlock anything by itself");
+  assert.ok(first.afterDialogue.continuationPages.length >= 3);
+  assert.match(first.afterDialogue.continuationPages.join(""), /まじんの　どうくつ/);
+  assert.match(base.pages.join("") + first.afterDialogue.continuationPages.join(""), /ゆみ|かりゅうど/, "the king brings up the bow-using hunter from Zabon");
+  for (const page of [...first.pages, ...first.afterDialogue.continuationPages]) {
+    assert.ok(page.split("\n").length <= 3, "each page fits the dialogue box");
+  }
+});
+
+test("throne room: after the Majin is defeated but not yet reported, the king hears of the victory and thanks the hunter too, then marks the report read", () => {
+  const defeated = { hasFlag: (flag) => flag === STORY_FLAGS.majinCaveBossDefeated };
+  const report = getDialogue(KING, undefined, defeated);
+  assert.ok(report);
+  assert.notDeepEqual(report.pages, DIALOGUES[KING].pages, "the report audience is not the same as the first audience");
+  assert.equal(isPortraitInterludeDialogueEvent(report.afterDialogue), true);
+  assert.deepEqual(report.afterDialogue.thenFlags, [STORY_FLAGS.majinCaveReportedToKing]);
+  assert.match(report.pages.join(""), /もどったか|やりとげた/);
+  assert.match(report.pages.join("") + report.afterDialogue.continuationPages.join(""), /ゆみ|かりゅうど/, "the king credits the hunter again while thanking the player");
+  for (const page of [...report.pages, ...report.afterDialogue.continuationPages]) {
+    assert.ok(page.split("\n").length <= 3, "each page fits the dialogue box");
+  }
+});
+
+test("throne room: once the report has been read, the king only gives a short follow-up with no further portrait or flag", () => {
+  const reported = { hasFlag: (flag) => flag === STORY_FLAGS.majinCaveReportedToKing || flag === STORY_FLAGS.majinCaveBossDefeated };
+  const after = getDialogue(KING, undefined, reported);
+  assert.ok(after);
+  assert.equal(after.afterDialogue, undefined);
+  assert.ok(after.pages.length >= 1);
+  for (const page of after.pages) assert.ok(page.split("\n").length <= 3, "each page fits the dialogue box");
+});
+
+test("throne room: king's portrait interlude uses the Tarosa archery reference image as an unmodified copy, cropped within bounds", () => {
+  const { afterDialogue } = getDialogue(KING, undefined, noFlags);
+  const reference = path.join(REPO_ROOT, "assets/characters/reference/profiles/mq0_character_profile_041_80d2fb07b9.png");
+  const portraitPath = path.join(REPO_ROOT, "assets/characters/portraits/tarosa_archery_report.png");
+  assert.ok(existsSync(portraitPath));
+  assert.ok(readFileSync(reference).equals(readFileSync(portraitPath)), "the portrait must be a byte-identical copy of the REFERENCE image");
+  const { crop } = afterDialogue.portrait;
+  assert.ok(crop.x >= 0 && crop.y >= 0 && crop.x + crop.width <= 1448 && crop.y + crop.height <= 1086, "crop must stay within the 1448x1086 source image");
+  assert.ok(afterDialogue.portrait.displayHeight > 0);
+});
+
+test("throne room: king's dialogue never leaks Mirei's identity, the royal family's affairs, or Tarosa's full past", () => {
+  const noFlagsResult = getDialogue(KING, undefined, noFlags);
+  const defeated = getDialogue(KING, undefined, { hasFlag: (flag) => flag === STORY_FLAGS.majinCaveBossDefeated });
+  const reported = getDialogue(KING, undefined, { hasFlag: () => true });
+  const allPages = [
+    ...noFlagsResult.pages, ...noFlagsResult.afterDialogue.continuationPages,
+    ...defeated.pages, ...defeated.afterDialogue.continuationPages,
+    ...reported.pages,
+  ];
+  for (const forbidden of [/ミレイ/, /ひめ/, /おうじょ/, /ジャンカード/, /あいことば/]) {
+    assert.equal(allPages.some((page) => forbidden.test(page)), false, `must not mention ${forbidden}`);
+  }
 });

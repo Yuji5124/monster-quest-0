@@ -1,5 +1,6 @@
 import { RainlandImageMapScene } from "./RainlandForestScene.ts";
 import type { RainlandMapPackage } from "./RainlandForestScene.ts";
+import { STORY_FLAGS } from "../config/storyFlags.ts";
 
 const HIDDEN_VILLAGE: RainlandMapPackage = {
   mapId: "map_hidden_village",
@@ -11,6 +12,15 @@ const HIDDEN_VILLAGE: RainlandMapPackage = {
   collisionPath: new URL("../../assets/maps/hidden_village/collision.png", import.meta.url).toString(),
   eventsPath: new URL("../../assets/maps/hidden_village/events.json", import.meta.url).toString(),
   objectsPath: new URL("../../assets/maps/hidden_village/objects.json", import.meta.url).toString(),
+  entryNarration: {
+    flag: STORY_FLAGS.hiddenVillageVisited,
+    requiredFlag: STORY_FLAGS.iwayamaCaveCleared,
+    delayMs: 240,
+    pages: [
+      "山あいに　ひっそりと　ある\\nかくれざとへ　たどりついた。",
+      "水の音だけが　谷に\\nやわらかく　ひびいている。",
+    ],
+  },
 };
 
 /**

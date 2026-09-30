@@ -1,10 +1,10 @@
 import Phaser from "phaser";
-import { BATTLE_BIG_HIT_EFFECT, BATTLE_COMMAND_LABELS, BATTLE_SLASH_EFFECT_TIMING, DEV_BATTLE_COMMANDS, DEV_BATTLE_EVENT_FADE_MS, DEV_BATTLE_PLAYER, DEV_BATTLE_UI_LAYOUT, getBattleSlashAngles, getBattleStatusWindows, readDevBattleMonsterId } from "../config/battle.ts";
+import { BATTLE_COMMAND_LABELS, DEV_BATTLE_COMMANDS, DEV_BATTLE_EVENT_FADE_MS, DEV_BATTLE_PLAYER, DEV_BATTLE_UI_LAYOUT, getBattleStatusWindows, readDevBattleMonsterId } from "../config/battle.ts";
 import { DISPLAY } from "../config/display.ts";
 import { getDevBattleMonster } from "../data/monsters.ts";
 import type { BattleSceneStartData } from "../events/BattleEventData.ts";
 import { BattleSystem } from "../battle/BattleSystem.ts";
-import type { BattleCombatant, BattleCombatantDefinition, BattleHitTier, BattleSnapshot } from "../battle/BattleSystem.ts";
+import type { BattleCombatant, BattleCombatantDefinition, BattleSnapshot } from "../battle/BattleSystem.ts";
 import { buildDebugParty, buildPartyCombatant } from "../battle/PartyCombatants.ts";
 import { DEBUG_PARTY_LEVEL, isDebugMode } from "../config/debugMode.ts";
 import { ITEM_DEFINITIONS } from "../data/items.ts";
@@ -17,6 +17,11 @@ import { inventory } from "../systems/Inventory.ts";
 import { partySystem } from "../systems/PartySystem.ts";
 import { DemasBossController } from "../battle/DemasBossController.ts";
 import { DEMAS_BATTLE_PARTY_IDS, DEMAS_BATTLE_PRESENTATION } from "../data/demasBattlePresentation.ts";
+import { BattleEffectManager } from "../battle/presentation/BattleEffectManager.ts";
+import { BattlePhaseController } from "../battle/presentation/BattlePhaseController.ts";
+import { getEnemyTelegraph, getBattlePresentationProfile } from "../battle/presentation/BattlePresentationProfile.ts";
+import { resolveBattleEffectQuality } from "../battle/presentation/EffectQuality.ts";
+import { RainlandBattleWeatherPresentation } from "../systems/RainlandWeatherPresentation.ts";
 
 const WINDOW_COLOR = 0x090c18;
 const TEXT_COLOR = "#eeeeee";
@@ -86,6 +91,13 @@ export class BattleScene extends Phaser.Scene {
   private demasController: DemasBossController | undefined;
   /** Daidain owns the camera briefly so confirm input cannot skip its telegraph or reflection. */
   private presentationLocked = false;
+  /** Shared effects lock only their short presentation window, never BattleSystem state. */
+  private effectLocked = false;
+  private effectManager: BattleEffectManager | undefined;
+  private weatherPresentation: RainlandBattleWeatherPresentation | undefined;
+  private readonly phaseController = new BattlePhaseController();
+  /** Stops an authored telegraph replaying when it automatically resolves the pending enemy action. */
+  private telegraphedActionId: string | undefined;
 
   constructor() { super("BattleScene"); }
 
@@ -102,13 +114,21 @@ export class BattleScene extends Phaser.Scene {
         frameHeight: enemy.battleSpriteSheet.frameHeight,
       });
     }
-    if (enemy.background && !this.textures.exists(enemy.background.key)) this.load.image(enemy.background.key, enemy.background.url);
+    const background = data.mode === "event" ? data.battleBackground ?? enemy.background : enemy.background;
+    if (background && !this.textures.exists(background.key)) this.load.image(background.key, background.url);
   }
 
   create(data?: BattleSceneStartData): void {
+    this.effectManager?.dispose();
+    this.effectManager = undefined;
+    this.weatherPresentation?.dispose();
+    this.weatherPresentation = undefined;
     this.demasController?.dispose();
     this.demasController = undefined;
     this.presentationLocked = false;
+    this.effectLocked = false;
+    this.phaseController.reset();
+    this.telegraphedActionId = undefined;
     this.battle = undefined;
     this.transitioning = false;
     this.rewardGranted = false;
@@ -141,7 +161,7 @@ export class BattleScene extends Phaser.Scene {
     // デーマス本戦は主人公・タロサ・ミレイの3人固定。開発クエリだけは、実セーブを
     // 汚さずMirrorを確認できるTEMP_TEST_VALUEの同じ3人編成を使う。
     const directDemasTest = !this.eventData && enemy.id === "demas";
-    // DEBUG_MODEは敵・入口を問わず、加入状況もセーブも見ずに3人Lv30の編成で始める(戦闘のみ参加)。
+    // DEBUG_MODEは敵・入口を問わず、加入状況もセーブも見ずに主人公一人Lv30で始める。
     const party = isDebugMode()
       ? buildDebugParty()
       : directDemasTest
@@ -151,7 +171,7 @@ export class BattleScene extends Phaser.Scene {
           : enemy.devPlayer ?? this.buildLivePartyCombatants();
     this.battle = new BattleSystem(party, enemy);
     this.cameras.main.setBackgroundColor(0x101526);
-    this.battleBackground = this.createBackground(enemy.background, enemy.backgroundTheme);
+    this.battleBackground = this.createBackground(this.eventData?.battleBackground ?? enemy.background, enemy.backgroundTheme);
     const key = `battle.monster.${enemy.id}`;
     this.textures.get(key).setFilter(Phaser.Textures.FilterMode.LINEAR);
     const layout = DEV_BATTLE_UI_LAYOUT;
@@ -167,6 +187,10 @@ export class BattleScene extends Phaser.Scene {
     this.groundShadow = this.createGroundShadow(this.portrait);
     this.portraitOriginX = this.portrait.x;
     if (animatedDemas && animatedSheet) this.demasController = new DemasBossController(this, animatedDemas, this.groundShadow, animatedSheet.key, this.battleBackground);
+    if (this.eventData?.weather?.biome === "rainland-forest") {
+      this.weatherPresentation = new RainlandBattleWeatherPresentation(this, this.eventData.weather);
+      this.weatherPresentation.attachEnemy(this.portrait);
+    }
 
     const style: Phaser.Types.GameObjects.Text.TextStyle = { fontFamily: "monospace", fontSize: `${layout.fontSize}px`, color: TEXT_COLOR, lineSpacing: 5 };
     for (const bounds of getBattleStatusWindows(this.battle.getSnapshot().party.length)) {
@@ -178,7 +202,7 @@ export class BattleScene extends Phaser.Scene {
     // 状態窓にはレベルが出ないため、DEBUG_MODE中だけ編成が固定であることを小さく示す(本番ビルドには出ない)。
     if (isDebugMode()) {
       const bounds = layout.statusWindow;
-      this.add.text(bounds.x, bounds.y + bounds.height + 2, `DEBUG　ぜんいんLv${DEBUG_PARTY_LEVEL}`, {
+      this.add.text(bounds.x, bounds.y + bounds.height + 2, `DEBUG　Lv${DEBUG_PARTY_LEVEL}`, {
         ...style, fontSize: `${layout.fontSize * 0.85}px`, color: "#ffd75e", stroke: "#05070b", strokeThickness: 4,
       }).setDepth(11);
     }
@@ -192,12 +216,38 @@ export class BattleScene extends Phaser.Scene {
       ...style, fontSize: `${layout.fontSize * 0.8}px`, color: "#b7bfd3",
     }).setOrigin(0, 1).setDepth(11);
 
+    const profile = getBattlePresentationProfile(enemy.id);
+    this.effectManager = new BattleEffectManager({
+      scene: this,
+      portrait: this.portrait,
+      portraitOriginX: this.portraitOriginX,
+      statusWindows: this.statusWindows,
+      statusTexts: this.statusTexts,
+      commandObjects: [this.commandText],
+      profile,
+      quality: resolveBattleEffectQuality({
+        touch: this.sys.game.device.input.touch,
+        reducedMotion: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false,
+      }),
+      onBusyChanged: (busy) => this.setEffectLocked(busy),
+    });
+    if (this.eventData?.weather) {
+      this.weatherPresentation = new RainlandBattleWeatherPresentation(this, this.eventData.weather);
+      this.weatherPresentation.attachEnemy(this.portrait);
+    }
+
     this.actions = new InputSystem(window, document);
     // Pointer input is queued through the same InputSystem as keyboard input.
     this.input.on("pointerdown", this.handlePointer, this);
     const cleanup = (): void => {
+      this.effectManager?.dispose();
+      this.effectManager = undefined;
+      this.weatherPresentation?.dispose();
+      this.weatherPresentation = undefined;
       this.demasController?.dispose();
       this.demasController = undefined;
+      this.weatherPresentation?.dispose();
+      this.weatherPresentation = undefined;
       this.presentationLocked = false;
       this.actions.destroy();
       this.input.off("pointerdown", this.handlePointer, this);
@@ -241,7 +291,7 @@ export class BattleScene extends Phaser.Scene {
 
   update(): void {
     if (!this.battle || this.transitioning) return;
-    if (this.presentationLocked) {
+    if (this.isPresentationLocked()) {
       this.actions.consumePressed("confirm");
       this.actions.consumePressed("cancel");
       this.actions.consumePressed("moveUp");
@@ -276,7 +326,7 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private handlePointer(pointer: Phaser.Input.Pointer): void {
-    if (!this.battle || this.transitioning || this.presentationLocked) return;
+    if (!this.battle || this.transitioning || this.isPresentationLocked()) return;
     const snapshot = this.battle.getSnapshot();
     const state = snapshot.state;
     const bounds = DEV_BATTLE_UI_LAYOUT.commandWindow;
@@ -300,6 +350,16 @@ export class BattleScene extends Phaser.Scene {
   private handleConfirm(): void {
     if (!this.battle) return;
     const before = this.battle.getSnapshot();
+    // Render the data-owned warning immediately before the existing enemy turn.
+    // The callback resolves that exact pending action without changing turn order.
+    const pendingEnemyAction = this.battle.getPendingEnemyAction();
+    const telegraph = pendingEnemyAction ? getEnemyTelegraph(getBattlePresentationProfile(before.enemy.id), pendingEnemyAction.id) : undefined;
+    if (telegraph && this.telegraphedActionId !== pendingEnemyAction?.id) {
+      this.telegraphedActionId = pendingEnemyAction!.id;
+      this.effectManager?.playEnemyTelegraph(telegraph, () => this.handleConfirm());
+      return;
+    }
+    if (telegraph && this.telegraphedActionId === pendingEnemyAction?.id) this.telegraphedActionId = undefined;
     if (before.state === "VICTORY" && this.victoryPageIndex < this.victoryPages.length - 1) {
       this.victoryPageIndex += 1;
       this.clearLevelUpEffect();
@@ -341,11 +401,7 @@ export class BattleScene extends Phaser.Scene {
     this.magicMenu = false;
     this.itemMenu = false;
     const after = this.battle.getSnapshot();
-    // 通常攻撃(コマンド「こうげき」/ まほう一覧の「こうげき」)が実行されたら斬撃を重ねる。
-    const isPhysicalAttack = command === "fight" && !magic && !item || magic?.kind === "attack";
-    if (before.state === "COMMAND" && after.state !== "COMMAND" && isPhysicalAttack) {
-      this.playSlashEffect(actor.id, actor.weaponAction?.hitCount ?? 1, after.lastHitTier);
-    }
+    if (before.state === "COMMAND" && after.lastAction !== before.lastAction) this.weatherPresentation?.onActionResolved();
     this.grantVictoryReward(after);
     this.savePartyVitals(after);
     const deferRenderUntilDaidainEnds = this.applyVisualFeedback(before, after);
@@ -432,124 +488,56 @@ export class BattleScene extends Phaser.Scene {
     }
   }
 
-  /**
-   * 味方の攻撃時の斬撃: 敵ポートレートの中心を横切る細い刃の光が一瞬で伸び、白い閃光と
-   * 火花を残して消える。多段攻撃はhitCountぶん時間差で交差させる。
-   * だいヒット/とくだいヒットでは刃を大きく金色に光らせ、交差斬撃・画面の揺れ・閃光・
-   * ヒットストップ・「だいヒット！」の文字を足して大げさにする。
-   */
-  private playSlashEffect(memberId: string, hitCount: number, hitTier: BattleHitTier = "normal"): void {
-    const { style, anglesDeg } = getBattleSlashAngles(memberId, hitCount);
-    const big = hitTier !== "normal";
-    const bigHit = BATTLE_BIG_HIT_EFFECT;
-    const durationScale = big ? bigHit.durationScale : 1;
-    const drawMs = BATTLE_SLASH_EFFECT_TIMING.drawMs * durationScale;
-    const fadeMs = BATTLE_SLASH_EFFECT_TIMING.fadeMs * durationScale;
-    const centerX = this.portraitOriginX;
-    const centerY = this.portrait.y;
-    const baseLength = Math.max(this.portrait.displayWidth, this.portrait.displayHeight) * 1.1;
-    const length = baseLength * (big ? bigHit.lengthScale : 1);
-    const thickness = Math.max(6, baseLength * 0.07) * (big ? bigHit.thicknessScale : 1);
-    const sparkCount = big ? bigHit.sparkCount : 6;
-    // だいヒットは各撃に交差斬撃を足す(2本目以降は少し遅らせてX字に重ねる)。
-    const slashes = anglesDeg.flatMap((angleDeg, index) => [
-      { angleDeg, delay: index * BATTLE_SLASH_EFFECT_TIMING.hitIntervalMs },
-      ...(big ? Array.from({ length: bigHit.extraSlashes }, (_, extra) => ({
-        angleDeg: -angleDeg + (extra % 2 === 0 ? 8 : -8),
-        delay: index * BATTLE_SLASH_EFFECT_TIMING.hitIntervalMs + drawMs * 0.6 * (extra + 1),
-      })) : []),
-    ]);
-    if (big) this.playBigHitImpact(hitTier, drawMs);
-    for (const { angleDeg, delay } of slashes) {
-      this.time.delayedCall(delay, () => {
-        const blade = this.add.graphics({ x: centerX, y: centerY }).setDepth(5).setAngle(angleDeg);
-        // 両端が尖ったレンズ形。外側の光と芯を重ねる。
-        const drawLens = (width: number, color: number, alpha: number): void => {
-          blade.fillStyle(color, alpha);
-          blade.fillPoints([
-            new Phaser.Math.Vector2(-length / 2, 0),
-            new Phaser.Math.Vector2(-length / 6, -width / 2),
-            new Phaser.Math.Vector2(length / 6, -width / 2),
-            new Phaser.Math.Vector2(length / 2, 0),
-            new Phaser.Math.Vector2(length / 6, width / 2),
-            new Phaser.Math.Vector2(-length / 6, width / 2),
-          ], true);
-        };
-        if (big) drawLens(thickness * 3.2, bigHit.auraColor, 0.35);
-        drawLens(thickness * 2.2, style.glowColor, 0.45);
-        drawLens(thickness, style.coreColor, 1);
-        blade.setScale(0.05, 1);
-        this.tweens.add({
-          targets: blade,
-          scaleX: 1,
-          duration: drawMs,
-          ease: "Cubic.easeOut",
-          onComplete: () => this.tweens.add({
-            targets: blade, alpha: 0, scaleY: 0.2, duration: fadeMs, ease: "Quad.easeIn", delay: big ? bigHit.hitStopMs : 0, onComplete: () => blade.destroy(),
-          }),
-        });
-        const flash = this.add.circle(centerX, centerY, thickness * 1.2, 0xffffff, 0.6).setDepth(5).setBlendMode(Phaser.BlendModes.ADD);
-        this.tweens.add({ targets: flash, scale: big ? 2.6 : 1.8, alpha: 0, duration: drawMs + fadeMs * 0.6, onComplete: () => flash.destroy() });
-        const radians = Phaser.Math.DegToRad(angleDeg);
-        for (let spark = 0; spark < sparkCount; spark += 1) {
-          const along = (spark / (sparkCount - 1) - 0.5) * length * 0.8;
-          const sparkX = centerX + Math.cos(radians) * along;
-          const sparkY = centerY + Math.sin(radians) * along;
-          const side = spark % 2 === 0 ? 1 : -1;
-          const reach = thickness * (big ? 2 + (spark % 3) : 3);
-          const color = big && spark % 3 === 0 ? bigHit.auraColor : style.glowColor;
-          const dot = this.add.rectangle(sparkX, sparkY, thickness * 0.5, thickness * 0.5, color).setDepth(5).setAngle(45);
-          this.tweens.add({
-            targets: dot,
-            x: sparkX - Math.sin(radians) * reach * side,
-            y: sparkY + Math.cos(radians) * reach * side,
-            alpha: 0,
-            scale: 0.2,
-            duration: fadeMs + 80,
-            delay: drawMs * 0.5,
-            onComplete: () => dot.destroy(),
-          });
-        }
-      });
-    }
-  }
-
-  /** だいヒットの画面全体の演出: 白い閃光・画面の揺れ・中央に弾んで出る「だいヒット！」。 */
-  private playBigHitImpact(hitTier: BattleHitTier, drawMs: number): void {
-    const bigHit = BATTLE_BIG_HIT_EFFECT;
-    this.time.delayedCall(drawMs, () => {
-      this.cameras.main.flash(bigHit.flashMs, 255, 250, 225);
-      this.cameras.main.shake(bigHit.shakeMs, bigHit.shakeIntensity);
-    });
-    const layout = DEV_BATTLE_UI_LAYOUT;
-    const bannerY = layout.enemy.y - layout.enemy.maxHeight * 0.55;
-    const banner = this.add.text(DISPLAY.width / 2, bannerY, hitTier === "tokudai" ? "とくだいヒット！！" : "だいヒット！", {
-      fontFamily: "monospace", fontSize: `${Math.round(layout.fontSize * 2.2)}px`, fontStyle: "bold",
-      color: "#fff3b0", stroke: "#8a2a00", strokeThickness: 8,
-    }).setOrigin(0.5).setDepth(20).setScale(2.2).setAlpha(0).setAngle(-6);
-    this.tweens.add({ targets: banner, scale: 1, alpha: 1, angle: 0, duration: 180, delay: drawMs, ease: "Back.easeOut" });
-    this.tweens.add({
-      targets: banner, alpha: 0, y: bannerY - 10, duration: 260, delay: drawMs + bigHit.bannerMs, onComplete: () => banner.destroy(),
-    });
-  }
-
   private createBackground(background?: { readonly key: string; readonly url: string }, theme?: "fortress"): Phaser.GameObjects.Image | undefined {
     if (theme === "fortress") {
       const stone = this.add.graphics().setDepth(0);
-      stone.fillStyle(0x17141a, 1);
+      // No.19: black-stone audience hall. It mirrors the field fortress's red banners,
+      // portcullis silhouette and poisoned floor without adding a second image asset.
+      stone.fillStyle(0x111218, 1);
       stone.fillRect(0, 0, DISPLAY.width, DISPLAY.height);
-      stone.fillStyle(0x2a252c, 1);
+      stone.fillStyle(0x24242d, 1);
+      stone.fillRect(0, 0, DISPLAY.width, DISPLAY.height * 0.62);
+      for (let row = 0; row < 5; row += 1) for (let column = 0; column < 10; column += 1) {
+        const width = DISPLAY.width / 9;
+        const x = column * width - (row % 2) * (width / 2);
+        const y = row * 34 + 10;
+        stone.fillStyle(row % 2 === 0 ? 0x32323b : 0x2d2d35, 1);
+        stone.fillRect(x + 2, y + 2, width - 4, 30);
+        stone.lineStyle(2, 0x111118, 0.88);
+        stone.strokeRect(x + 1, y + 1, width - 2, 32);
+      }
+      // A recessed iron gate behind the portrait makes the chamber feel deep without obscuring combat UI.
+      stone.fillStyle(0x0b0c11, 0.92);
+      stone.fillRoundedRect(DISPLAY.width * 0.5 - 122, 74, 244, 252, 22);
+      for (let bar = -5; bar <= 5; bar += 1) {
+        stone.fillStyle(0x69666d, 0.75);
+        stone.fillRect(DISPLAY.width * 0.5 + bar * 20 - 2, 82, 4, 210);
+      }
+      for (const side of [-1, 1] as const) {
+        const x = DISPLAY.width * 0.5 + side * 294;
+        stone.fillStyle(0x4b4a53, 1);
+        stone.fillRect(x - 22, 48, 44, 290);
+        stone.fillStyle(0x23232b, 1);
+        stone.fillRect(x - 13, 58, 26, 270);
+        stone.fillStyle(0x922b35, 0.92);
+        stone.fillRect(x - 16, 64, 32, 100);
+        stone.fillStyle(0x201016, 1);
+        stone.fillCircle(x, 112, 9);
+      }
+      stone.fillStyle(0x2c2028, 1);
       stone.fillRect(0, DISPLAY.height * 0.56, DISPLAY.width, DISPLAY.height * 0.44);
       for (let row = 0; row < 5; row += 1) for (let column = 0; column < 11; column += 1) {
         const x = column * (DISPLAY.width / 10) - (row % 2) * 18;
         const y = DISPLAY.height * 0.56 + row * 32;
-        stone.lineStyle(2, 0x494049, 0.75);
-        stone.strokeRect(x, y, DISPLAY.width / 10 - 2, 30);
+        stone.fillStyle((row + column) % 2 === 0 ? 0x382a32 : 0x33262e, 1);
+        stone.fillRect(x + 2, y + 2, DISPLAY.width / 10 - 4, 28);
+        stone.lineStyle(2, 0x151319, 0.9);
+        stone.strokeRect(x + 1, y + 1, DISPLAY.width / 10 - 2, 30);
       }
-      stone.fillStyle(0x5b1f2a, 0.72);
-      stone.fillRect(0, 0, DISPLAY.width, 9);
-      stone.fillStyle(0x54c86b, 0.16);
+      stone.fillStyle(0x6cdb7b, 0.18);
       stone.fillEllipse(DISPLAY.width * 0.5, DISPLAY.height * 0.7, DISPLAY.width * 0.72, DISPLAY.height * 0.24);
+      stone.fillStyle(0xb13a43, 0.8);
+      stone.fillRect(0, 0, DISPLAY.width, 10);
       return undefined;
     }
     if (background && this.textures.exists(background.key)) {
@@ -587,40 +575,83 @@ export class BattleScene extends Phaser.Scene {
     const action = after.lastAction;
     const enemyAction = action?.casterId === after.enemy.id ? action : undefined;
     const isDaidain = enemyAction?.actionId === "magic_daidain";
+    const enemyDamage = Math.max(0, before.enemy.hp - after.enemy.hp);
+    const partyDamage = after.party.map((member, index) => Math.max(0, (before.party[index]?.hp ?? member.hp) - member.hp));
     if (isDaidain && this.demasController) {
       this.presentationLocked = true;
+      this.phaseController.enterCinematic();
       this.demasController.playDaidain({
         reflected: enemyAction.reflected,
         weak: this.isDemasWeak(after),
-        onPartyImpact: () => this.flashPartyDamage(),
+        onPartyImpact: () => {
+          this.flashPartyDamage();
+          partyDamage.forEach((amount, index) => {
+            if (amount > 0) this.effectManager?.showDamageNumber({
+              amount,
+              x: this.statusWindows[index]?.x ?? DISPLAY.width * 0.2,
+              y: (this.statusWindows[index]?.y ?? DISPLAY.height * 0.16) - 18,
+            });
+          });
+        },
+        onEnemyImpact: () => {
+          if (enemyDamage > 0) this.effectManager?.showDamageNumber({
+            amount: enemyDamage,
+            x: this.portraitOriginX,
+            y: this.portrait.y - this.portrait.displayHeight * 0.33,
+          });
+        },
         onComplete: () => {
           this.presentationLocked = false;
+          if (!this.effectLocked) this.phaseController.completeCinematic();
           if (!this.transitioning) this.render();
         },
       });
       return true;
     }
 
-    if (after.enemy.hp < before.enemy.hp) {
-      if (this.demasController) this.demasController.playDamage(this.isDemasWeak(after));
-      else {
-        this.tweens.killTweensOf(this.portrait);
-        this.portrait.setX(this.portraitOriginX).setAlpha(1);
-        this.tweens.add({ targets: this.portrait, x: this.portraitOriginX + 8, alpha: 0.35, duration: 55, yoyo: true, repeat: 2 });
+    if (action?.kind === "attack") {
+      if (action.casterId !== after.enemy.id && enemyDamage > 0) {
+        const actor = before.party.find((member) => member.id === action.casterId);
+        this.effectManager?.playAttack({
+          memberId: action.casterId,
+          hitCount: actor?.weaponAction?.hitCount ?? 1,
+          hitTier: after.lastHitTier,
+          damage: enemyDamage,
+          reactTarget: !this.demasController,
+        });
+        this.demasController?.playDamage(this.isDemasWeak(after));
+      } else if (action.casterId === after.enemy.id) {
+        partyDamage.forEach((amount, index) => {
+          if (amount > 0) this.effectManager?.playDamage({ amount, partyIndex: index, heavy: false });
+        });
       }
+    } else if (action?.kind === "magic_damage") {
+      if (enemyDamage > 0) {
+        this.effectManager?.playMagic({ actionId: action.actionId, amount: enemyDamage, target: this.portrait, targetOriginX: this.portraitOriginX, reflected: action.reflected });
+      } else {
+        partyDamage.forEach((amount, index) => {
+          if (amount > 0) this.effectManager?.playMagic({ actionId: action.actionId, amount, partyIndex: index, reflected: action.reflected });
+        });
+      }
+    } else if (action?.kind === "heal") {
+      const partyIndex = after.party.findIndex((member) => member.id === action.targetId);
+      const amount = Math.max(0, (after.party[partyIndex]?.hp ?? 0) - (before.party[partyIndex]?.hp ?? 0));
+      if (partyIndex >= 0 && amount > 0) this.effectManager?.playHeal(amount, partyIndex);
+    } else if (action?.kind === "mirror" && action.casterId !== after.enemy.id) {
+      const partyIndex = after.party.findIndex((member) => member.id === action.casterId);
+      if (partyIndex >= 0) this.effectManager?.playMirror(partyIndex);
+    } else if (!action && /MPが　たりない/.test(after.message)) {
+      this.effectManager?.playMpInsufficient();
     }
     if (!before.enemy.status.poisoned && after.enemy.status.poisoned) {
-      this.cameras.main.flash(180, 88, 220, 116);
-      this.cameras.main.shake(190, 0.008);
-      this.portrait.setTint(0x82df8e);
-      this.time.delayedCall(520, () => this.portrait.clearTint());
+      this.effectManager?.playPoison(this.portrait);
     }
-    if (after.party.some((member, i) => member.hp < (before.party[i]?.hp ?? member.hp))) this.flashPartyDamage();
 
     if (this.demasController && enemyAction?.kind === "attack") this.demasController.playNormalAttack(this.isDemasWeak(after));
     if (this.demasController && enemyAction?.kind === "mirror") this.demasController.playMirrorCast(this.isDemasWeak(after));
 
     if (after.state === "VICTORY") {
+      this.phaseController.enterResult();
       this.demasController?.dispose();
       this.demasController = undefined;
       this.tweens.killTweensOf([this.portrait, this.groundShadow]);
@@ -641,6 +672,18 @@ export class BattleScene extends Phaser.Scene {
       }
     }
     return false;
+  }
+
+  private isPresentationLocked(): boolean {
+    return this.presentationLocked || this.effectLocked || !this.phaseController.acceptsInput;
+  }
+
+  /** EffectManager owns the exact lock duration; BattleScene only gates shared input. */
+  private setEffectLocked(locked: boolean): void {
+    this.effectLocked = locked;
+    if (locked) this.phaseController.enterCinematic();
+    else if (!this.presentationLocked) this.phaseController.completeCinematic();
+    if (!locked && !this.transitioning) this.render();
   }
 
   private flashPartyDamage(): void {

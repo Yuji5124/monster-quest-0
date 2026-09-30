@@ -18,11 +18,18 @@ const BODY_FONT_SIZE = 20;
 const FOOTER_FONT_SIZE = 16;
 const BODY_LINE_SPACING = 10;
 
-type FieldMenuView = "closed" | "main" | "status" | "items";
+type FieldMenuView = "closed" | "main" | "status" | "items" | "record";
+
+export interface FieldMenuOptions {
+  /** Scene supplies its current map/position; the shared UI never invents a save location. */
+  readonly onRecord?: () => void;
+  /** Stops any already-applied field velocity before the menu takes over input. */
+  readonly onOpen?: () => void;
+}
 
 /**
  * 移動中に開くフィールドメニュー(既存の`menu`action=Cキー)。UI_INPUT_SPEC.md §6の最低項目のうち
- * 今回はステータス・どうぐのみを持つ。DialogueBox.tsと同じくSceneに1つ生成し、Scene側は
+ * ステータス・どうぐ・ぼうけんのきろくを持つ。DialogueBox.tsと同じくSceneに1つ生成し、Scene側は
  * `isOpen`を見て開いている間だけ`handleInput`へ入力を渡し、Player移動を止める(§11 Input lock)。
  */
 export class FieldMenu {
@@ -33,8 +40,12 @@ export class FieldMenu {
   private view: FieldMenuView = "closed";
   private mainCursor = 0;
   private itemsCursor = 0;
+  private readonly onRecord: (() => void) | undefined;
+  private readonly onOpen: (() => void) | undefined;
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, options: FieldMenuOptions = {}) {
+    this.onRecord = options.onRecord;
+    this.onOpen = options.onOpen;
     this.background = scene.add
       .rectangle(PANEL.x + PANEL.width / 2, PANEL.y + PANEL.height / 2, PANEL.width, PANEL.height, BOX_COLOR, 1)
       .setStrokeStyle(BORDER_WIDTH, BORDER_COLOR)
@@ -79,6 +90,7 @@ export class FieldMenu {
   }
 
   open(): void {
+    this.onOpen?.();
     this.view = "main";
     this.mainCursor = 0;
     this.setVisible(true);
@@ -111,7 +123,7 @@ export class FieldMenu {
     if (this.view === "items") {
       this.handleItemsInput(actions);
     }
-    // "status"は一覧表示のみで、cancel以外の入力を消費しない。
+    // "status" / "record"は一覧・完了表示のみで、cancel以外の入力を消費しない。
   }
 
   private handleMainInput(actions: InputSystem): void {
@@ -123,7 +135,9 @@ export class FieldMenu {
       this.mainCursor = (this.mainCursor + 1) % count;
       this.render();
     } else if (actions.consumePressed("confirm")) {
-      this.view = FIELD_MENU_ITEMS[this.mainCursor].id;
+      const selected = FIELD_MENU_ITEMS[this.mainCursor].id;
+      if (selected === "record") this.onRecord?.();
+      this.view = selected;
       this.itemsCursor = 0;
       this.render();
     }
@@ -152,6 +166,7 @@ export class FieldMenu {
     if (this.view === "main") this.renderMain();
     else if (this.view === "status") this.renderStatus();
     else if (this.view === "items") this.renderItems();
+    else if (this.view === "record") this.renderRecord();
   }
 
   private renderMain(): void {
@@ -205,6 +220,18 @@ export class FieldMenu {
     const selected = ITEM_DEFINITIONS[slots[this.itemsCursor].itemId];
     const usable = `フィールド：${selected.usableOnField ? "○" : "－"}　せんとう：${selected.usableInBattle ? "○" : "－"}`;
     this.body.setText(`${rows.join("\n")}\n\n${selected.description}\n${usable}`);
+    this.footer.setText("X：もどる");
+  }
+
+  private renderRecord(): void {
+    this.title.setText("ぼうけんのきろく");
+    if (this.onRecord) {
+      this.body.setText("ぼうけんの　きろくを\nつけた！");
+      this.footer.setText("X：もどる");
+      return;
+    }
+    // FieldMenu is also used by specialized scenes. They remain playable even until they opt into a location serializer.
+    this.body.setText("このばしょでは\nきろくを　つけられない。");
     this.footer.setText("X：もどる");
   }
 }

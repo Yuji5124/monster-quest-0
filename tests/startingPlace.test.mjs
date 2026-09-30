@@ -73,21 +73,26 @@ test("starting-place background and collision share the same pixel dimensions as
   assert.deepEqual(collisionSize, { width: manifest.width, height: manifest.height });
 });
 
-test("starting-place package routes its north-trail event to the point-selection world map", () => {
+test("starting-place package routes both trail exits to the point-selection world map", () => {
   const events = readImageMapEvents(JSON.parse(readFileSync(path.join(MAP_DIR, "events.json"), "utf-8")));
   const objects = readImageMapObjects(JSON.parse(readFileSync(path.join(MAP_DIR, "objects.json"), "utf-8")));
-  assert.equal(events.length, 1);
-  assert.equal(events[0].id, "event_no01_north_gate");
-  assert.equal(events[0].trigger, "enter");
-  assert.equal(events[0].commands[0].type, "world-map");
-  assert.equal(events[0].commands[0].worldMapEntryId, "from_starting_place");
+  assert.equal(events.length, 2);
+  const northGate = events.find((event) => event.id === "event_no01_north_gate");
+  const southGate = events.find((event) => event.id === "event_no01_south_gate");
+  for (const gate of [northGate, southGate]) {
+    assert.ok(gate, "both trail exits must be defined");
+    assert.equal(gate.trigger, "enter");
+    assert.equal(gate.commands[0].type, "world-map");
+    assert.equal(gate.commands[0].worldMapEntryId, "from_starting_place");
+  }
   assert.deepEqual(objects, []);
 });
 
 test("starting-place collision keeps the trails, spawns and exit zone walkable while blocking the campfire, water, forest and cliff", () => {
   const { isBlocked } = loadCollision();
   const events = readImageMapEvents(JSON.parse(readFileSync(path.join(MAP_DIR, "events.json"), "utf-8")));
-  const gate = events[0].bounds;
+  const northGate = events.find((event) => event.id === "event_no01_north_gate").bounds;
+  const southGate = events.find((event) => event.id === "event_no01_south_gate").bounds;
 
   const opening = MAPS.map_01_starting_place.spawns.opening;
   const fromWorldMap = MAPS.map_01_starting_place.spawns.fromWorldMap;
@@ -96,7 +101,8 @@ test("starting-place collision keeps the trails, spawns and exit zone walkable w
   assert.equal(isBlocked(opening.x, opening.y), false, "the opening spawn right of the campfire must be walkable");
   assert.equal(isBlocked(fromWorldMap.x, fromWorldMap.y), false, "the fromWorldMap spawn at the top of the stone steps must be walkable");
   assert.equal(isBlocked(fromField.x, fromField.y), false, "the legacy fromField spawn must be walkable");
-  assert.equal(isBlocked(gate.x + gate.width / 2, gate.y + gate.height / 2), false, "the north exit zone must sit on the walkable trail");
+  assert.equal(isBlocked(northGate.x + northGate.width / 2, northGate.y + northGate.height / 2), false, "the north exit zone must sit on the walkable trail");
+  assert.equal(isBlocked(southGate.x + southGate.width / 2, southGate.y + southGate.height / 2), false, "the south exit zone must sit on the walkable trail");
   assert.equal(isBlocked(700, 1070), false, "the south trail (continues off-screen) must be walkable");
 
   assert.equal(isBlocked(725, 515), true, "the campfire stone ring must be blocked");
@@ -164,9 +170,11 @@ test("every walkable collision cell is reachable from the opening spawn, includi
   assert.equal(reached.size, walkable.size, `${walkable.size - reached.size} walkable cells are unreachable from the opening spawn`);
 
   const events = readImageMapEvents(JSON.parse(readFileSync(path.join(MAP_DIR, "events.json"), "utf-8")));
-  const gate = events[0].bounds;
-  const gateCell = Math.floor((gate.y + gate.height / 2) / size) * columns + Math.floor((gate.x + gate.width / 2) / size);
-  assert.ok(reached.has(gateCell), "the north exit zone must be reachable on foot from the opening spawn");
+  for (const event of events) {
+    const gate = event.bounds;
+    const gateCell = Math.floor((gate.y + gate.height / 2) / size) * columns + Math.floor((gate.x + gate.width / 2) / size);
+    assert.ok(reached.has(gateCell), `${event.id} must be reachable on foot from the opening spawn`);
+  }
 });
 
 test("the fromWorldMap spawn's full Player body clears the north-trail event zone (no instant re-trigger)", () => {

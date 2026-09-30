@@ -40,8 +40,8 @@ test("a defeated enemy does not counterattack and reaches VICTORY after acknowle
   battle.confirm();
   assert.equal(battle.getSnapshot().state, "VICTORY");
   assert.equal(battle.getSnapshot().player.hp, playerHp);
-  assert.deepEqual(battle.getSnapshot().reward, { experience: 8, money: 3, itemId: "dokukeshi" });
-  assert.match(battle.getSnapshot().message, /8 EXPと　3G/);
+  assert.deepEqual(battle.getSnapshot().reward, { experience: 6, money: 3, itemId: "dokukeshi" });
+  assert.match(battle.getSnapshot().message, /6 EXPと　3G/);
 });
 
 test("battle rewards sanitize values and make an item drop probabilistic through an injected roll", () => {

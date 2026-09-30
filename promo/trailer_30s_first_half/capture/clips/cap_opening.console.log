@@ -1,0 +1,5 @@
+[debug] [vite] connecting...
+[log] %c %c %c %c %c Phaser v3.90.0 (WebGL | Web Audio) %c https://phaser.io/v390 background: #ff0000 background: #ffff00 background: #00ff00 background: #00ffff color: #ffffff; background: #000000 background: transparent
+[debug] [vite] connected.
+[log] [TitleScene] action: START_GAME
+[log] [IMAGE_MAP] map_01_starting_place loaded: 1448x1086, collisionRects=197

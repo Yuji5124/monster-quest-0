@@ -34,8 +34,8 @@
 
 | 正式パス | 内容 | 状態 |
 |---|---|---|
-| `assets/title/reference/I.png` | コインでレバーを回す既存演出画。1093×1439。ジャンカード排出前演出の後半（H.pngのコイン投入に続くハンドル操作）で直接ロードする。画像内のジャンコイン表記は旧実装由来で、現行の料金ルール（1回20円）を決めない | CURRENT |
-| `assets/title/reference/H.png` | コイン投入の既存演出画。1024×1536。ジャンカード排出前演出の最初に直接ロードする。画像内表記の更新は、20円仕様へのコード移行と合わせてTBD | CURRENT |
+| `assets/title/reference/I.png` | コインでレバーを回す既存演出画。1093×1439。ジャンカード排出前演出の後半（H.pngのコイン投入に続くハンドル操作）で直接ロードする。画像内のジャンコイン表記は現行の料金ルール（1回ジャンコイン1枚）と一致する（2026-09-27） | CURRENT |
+| `assets/title/reference/H.png` | コイン投入の既存演出画。1024×1536。ジャンカード排出前演出の最初に直接ロードする | CURRENT |
 
 ※「誰も知らないゲーム、やってみる？」はサブタイトルではなく広告・紹介用コピーとして扱う。
 
@@ -87,6 +87,8 @@ Phaser側は `src/config/protagonistSprite.ts`(グリッド・フレーム番号
 | `assets/characters/playable/tarosa_walk.png` | 上記から生成したCURRENT歩行スプライトシート(132×280、44×70セル) | CURRENT |
 | `assets/characters/reference/reference/タロサ/タロサ立ち姿.png` | 2026-09-26 ユーザー提供の立ち姿(1448×1086、背景つきRGB)。削除・上書きしない | REFERENCE |
 | `assets/characters/portraits/tarosa_standing.png` | 上記の無加工バイト一致コピー。ビーエのもりのタロサ会話中に、中央の縦長範囲(x380〜1200)を額縁つきで表示する(`StartingForestScene`) | CURRENT |
+| `assets/characters/reference/profiles/mq0_character_profile_041_80d2fb07b9.png` | ユーザー提供のタロサ弓術REFERENCE(1448×1086、奥にしろが見える)。削除・上書きしない | REFERENCE |
+| `assets/characters/portraits/tarosa_archery_report.png` | 2026-09-27 上記の無加工バイト一致コピー。レインランドじょう王の間で王がタロサの話をする場面(討伐依頼時・討伐報告時)に、範囲(x0〜1300, y0〜1086)を額縁つきで挟む(`RainlandImageMapScene`の`PortraitInterludeDialogueEvent`、`src/data/dialogues.ts`) | CURRENT |
 
 タロサの正式キャラクターデザイン(青い髪・エルフ耳・弓と矢筒・緑のスカーフ)は`CHARACTER_GROWTH.md`確定事項の「弓を使用」と整合する。
 
@@ -196,6 +198,12 @@ CURRENTのNo.01夜背景は `assets/maps/starting_place/background.png` とし�
 
 Collisionの作り方: 背景をHSV変換し、道の色域（H≈33〜52°, S≈0.28〜0.62, V≥0.45）で二値化→最大連結成分だけを採用（柵・丸太・岩の同系色ノイズを除去）→プレイヤー幅（30px）に対して十分な余裕を持たせるため半径20pxで膨張→形状を滑らかにする軽いクロージング→南端・北端の画像外周まで到達させる、という手順で生成した。最終的な白黒はPNGとして保存されており、以後は人間が直接ピクセルを描画・削除して修正できる（実行時にAI画像解析は行わない、`MAP_SYSTEM.md` §5準拠）。
 
+### ビーエのもりの戦闘背景
+
+| パス | 用途 | 状態 |
+|---|---|---|
+| `assets/battle/backgrounds/reference/mq0_battle_bg_013_5ecb71635c.png` | 2026-10-01にユーザー指示で差し替えた1448×1086の森の戦闘背景。`StartingForestScene`がえりまきとかげ戦へイベント限定で渡し、No.03の通常敵（たまゴースト／プリン）およびNo.05の通常敵も同じ背景を使う。人間による最終視覚調整は未了 | CURRENT / DERIVED |
+
 ### レインランドのもり
 
 2026-09-19追加。正式No.05。同一エリアの2画面で、No.01と同じ画像マップ方式を流用する。既存`rainland_forest_1/2`は内部互換ID（`MAP_FLOW_SPEC.md` §4.10）。
@@ -276,6 +284,7 @@ Collisionの作り方: 背景をHSV変換し、道の色域（H≈33〜52°, S�
 | `assets/maps/reference/reference/港町ダコハ.png` | No.12港町ダコハのユーザー提供SOURCE原画（1448×1086、2026-09-26）。削除・上書き・再描画はしない | REFERENCE |
 | `assets/maps/dakoha_port/background.png` | 前者の無加工コピー。`DakohaPortScene`がLINEARフィルタで表示するCURRENT背景 | CURRENT |
 | `assets/maps/dakoha_port/collision.png` | `tools/build_dakoha_port_collision.py`で背景から生成したCURRENT二値Collision Mask（石畳の広場・通り・石段・岸壁・木の桟橋・灯台への道が歩行可能、建物・露店・噴水・木箱・海・崖・森は歩行不可） | CURRENT |
+| `assets/characters/npc/villager_{18..24}_walk.png` | No.12港町ダコハ専用の村人歩行シート（2026-09-29ユーザー指示「今まで使った村人の画像は使わない」）。`村人たち/`フォルダのうちvillager_01〜17がまだ選んでいない生成回を`tools/build_villager_sheets.py`で新たに正規化した。18やどやの主人／19ぶきやの店主／20とうだい近くの老婆／21広場の屋台の女性／22波止場の漁師／23桟橋を歩く少年／24広場を歩く船乗り | CURRENT |
 | `assets/maps/zabon_village/collision.png` | `tools/build_zabon_village_collision.py`で背景から生成したCURRENT二値Collision Mask（土の道・広場・吊り橋・桟橋・石段が歩行可能、建物・トーテム・井戸・畑・川・海・森・山は歩行不可） | CURRENT |
 | `assets/maps/reference/reference/いわやまのどうくつ_1.png` | No.09いわやまのどうくつ1Fのユーザー提供SOURCE原画（1024×1536、2026-09-23）。削除・上書き・再描画はしない | REFERENCE |
 | `assets/maps/reference/reference/いわやまのどうくつ_2.png` | `_1.png`とバイト一致の重複ファイル。ユーザー判断で2フロア構成とし、使用しない（2026-09-23） | REFERENCE |
@@ -294,6 +303,18 @@ Collisionの作り方: 背景をHSV変換し、道の色域（H≈33〜52°, S�
 | `assets/maps/reference/reference/かくれざと.png` | ユーザー提供のSOURCE原画（1536×1024）。削除・上書き・再描画はしない | REFERENCE |
 | `assets/maps/hidden_village/background.png` | 原画の無加工コピー。`HiddenVillageScene`がLINEARフィルタで表示するCURRENT背景 | CURRENT |
 | `assets/maps/hidden_village/collision.png` | `tools/build_hidden_village_collision.py`で生成したCURRENT二値Collision Mask。北西の門・石段・神社前・広場・家前・橋・水車前・洞窟前を歩行可能とし、建物・水・滝・崖・森を歩行不可にする | CURRENT |
+
+### みずうみの古城
+
+2026-09-29更新。No.11は既存のコンパクトなThree.js一人称3Dを維持し、静止画のマップへ置き換えない。ユーザー提供の3層原画は建築・配色のREFERENCEとして保持する。石・水面・ステンドグラスのCURRENT反復素材は`LakeCastle3DScene`がVite URLで直接読み込み、床・壁・橋・水面・窓へ使う。高精細素材を重複ロードしないため、石はGPUテクスチャを複製してUV倍率だけを変える。iPhone Safari向けに異方性フィルタは最大2に制限する。
+
+| パス | 用途 | 状態 |
+|---|---|---|
+| `assets/maps/reference/reference/みずうみの古城_1層.png` / `_2層.png` / `_3層.png` | ユーザー提供のNo.11各層建築REFERENCE。削除・上書き・再描画しない | REFERENCE |
+| `assets/maps/reference/reference/みずうみの古城_イメージ.png` | No.11の入場演出およびNo.11通常戦闘背景の原本。`MapSplashScene`と`src/data/monsters.ts`が直接読む | CURRENT / REFERENCE原本 |
+| `assets/maps/lake_castle/materials/castle_stone.png` | 2026-09-29に作成した白い古石・青金の象嵌の反復テクスチャ。3Dの床・橋・壁・天井に使用 | CURRENT / DERIVED |
+| `assets/maps/lake_castle/materials/lake_water.png` | 2026-09-29に作成した深い青緑の水面反復テクスチャ。3Dの水面に使用 | CURRENT / DERIVED |
+| `assets/maps/lake_castle/materials/stained_glass.png` | 2026-09-29に作成した青いステンドグラス反復テクスチャ。3Dの礼拝所・祭壇の窓に使用 | CURRENT / DERIVED |
 
 ### コタンカイムの洞窟
 
@@ -334,11 +355,11 @@ Collisionの作り方: 背景をHSV変換し、道の色域（H≈33〜52°, S�
 
 ### ぬまちのどうくつ
 
-2026-09-27追加。正式No.17の最初の短い三人アクション区画。ユーザー提供の見下ろし原画を無加工で直接読み込み、主人公・タロサ・ミレイの攻撃、浅い沼の減速、高い足場・根道の加速、最奥の宝箱を検証する。全域用の人間確認済みCURRENT背景・Collision・敵編成はTBDであり、この原画を上書き・再描画しない。
+2026-09-27追加。正式No.17の短い三人アクション区画。主区画はブロックで組み、主人公・タロサ・ミレイの攻撃、浅い沼の減速、高い足場・根道の加速を検証する。ユーザー提供の見下ろし原画は無加工のまま最奥の短い宝箱区画だけに表示する。全域用の人間確認済みCURRENT背景・Collision・敵編成はTBDであり、この原画を上書き・再描画しない。
 
 | パス | 用途 | 状態 |
 |---|---|---|
-| `assets/maps/reference/reference/新しいフォルダー/ぬまちのどうくつ.png` | ユーザー提供の見下ろし地形原画（1672×941）。`SwampCaveActionScene`が直接ロードする最初のアクション区画の背景 | REFERENCE（暫定直接使用） |
+| `assets/maps/reference/reference/新しいフォルダー/ぬまちのどうくつ.png` | ユーザー提供の見下ろし地形原画（1672×941）。`SwampCaveActionScene`が最奥の短い宝箱区画だけに直接ロードする背景 | REFERENCE（最奥のみ暫定直接使用） |
 | `assets/maps/reference/reference/新しいフォルダー/ぬまちのどうくつ_イメージ.png` | 洞窟の根・滝・水辺の雰囲気と構図の参考原画（1672×941）。ゲーム内では読み込まない | REFERENCE |
 | `assets/maps/swamp_cave/{map.json,collision.json,events.json,objects.json}` | No.17短区画のBACKGROUND / COLLISION / EVENT / OBJECTメタデータ。Collisionはコード設定の浅瀬・高所ゾーンを指す最小JSONで、人間調整済みPNGは全域化時に追加する | CURRENT（PARTIAL） |
 
@@ -396,13 +417,14 @@ Collisionの作り方: 背景をHSV変換し、広場の石畳＋土の道の色
 | パス | 用途 | 状態 |
 |---|---|---|
 | `assets/maps/reference/reference/はじまりのまち.png` | ユーザー提供のSOURCE原画（1448×1086、噴水広場を中心にした十字型の町並み）。削除・上書き・再描画はしない | REFERENCE |
-| `assets/maps/reference/reference/はじまりのまち_イメージ.png` | 同寸法の別案/参考画像。ローカルマップ背景としては採用しない | REFERENCE |
+| `assets/maps/reference/reference/はじまりのまち_イメージ.png` | 同寸法の別案/参考画像。ローカルマップ背景としては採用せず、入場演出の原本として保持する | REFERENCE |
 | `assets/maps/starting_town/background.png` | 前者の無加工コピー。StartingTownSceneがLINEARフィルタで表示するCURRENT背景 | CURRENT |
+| `assets/maps/starting_town/entry_splash.png` | `はじまりのまち_イメージ.png`の無加工コピー。`MapSplashScene`が世界地図からの入場時に5秒投影し、地名「はじまりのまち」を出す（2026-09-27） | CURRENT |
 | `assets/maps/starting_town/collision.png` | 背景から自動生成したCURRENT二値Collision Mask（噴水広場・石畳・土の道が歩行可能、建物5棟・噴水・花壇・川・森は歩行不可） | CURRENT |
 | `assets/maps/hidden_village/background.png` | No.10かくれざと用CURRENTの1536×1024高解像度BACKGROUND。`assets/maps/reference/reference/かくれざと.png`の無加工コピー（原本は削除・上書きしない） | CURRENT |
 | `assets/maps/hidden_village/collision.png` | 上記用CURRENT二値Collision Mask（北西の門・石段・神社前・広場・家前・橋・水車前・洞窟前が歩行可能、建物・神社・水・滝・崖・森は歩行不可）。`tools/build_hidden_village_collision.py`で再生成できる | CURRENT |
 | `assets/characters/reference/reference/村人たち/` | ユーザー提供の村人・城の人物のSOURCE歩行シート。原本は上書きせず、各系統の最新透過3列×4行シートを選ぶ | REFERENCE |
-| `assets/characters/npc/villager_{01..16}_walk.png` | `tools/build_villager_sheets.py`が上記から生成するCURRENTのPhaser用村人シート。各70×70セル、3列×4行（下／左／右／上）、足元基準67px。選択IDは`src/config/villagerSprites.ts`で一元管理する。11〜16（2026-09-26）はNo.06レインランドじょうの住人（11槍の近衛兵／12盾の兵士／13メイド／14王／15青マントの騎士／16学者）で、隣のコマの断片を除去して生成する。姫のシートはミレイの正体に触れうるため未割り当て | CURRENT |
+| `assets/characters/npc/villager_{01..24}_walk.png` | `tools/build_villager_sheets.py`が上記から生成するCURRENTのPhaser用村人シート。各70×70セル、3列×4行（下／左／右／上）、足元基準67px。選択IDは`src/config/villagerSprites.ts`で一元管理する。11〜16（2026-09-26）はNo.06レインランドじょうの住人（11槍の近衛兵／12盾の兵士／13メイド／14王／15青マントの騎士／16学者）で、隣のコマの断片を除去して生成する。17（不思議なとうのおじいさん）・18〜24（No.12港町ダコハ）は上の専用行を参照。姫のシートはミレイの正体に触れうるため未割り当て | CURRENT |
 
 **建物6→5への変更**: reference画像には教会(きょうかい)と、その手前に4棟の家（屋台風の日よけがある店＝どうぐや、井戸と薪のある家＝ぶきや、普通の家＝民家A、干し草のある家＝やどや）＝合計5棟しか描かれていない。旧DEV_PLACEHOLDER時代のデータは6棟（民家Bを含む）だったが、実在しない6棟目を維持しないとユーザーが判断し、民家B（`map_02_house_b`）と対応する内部データ・spawnを正式に削除した。`assets/maps/data/no02_start_town_interiors.json`・`src/config/interiors.ts`・`src/config/maps.ts`を同時に更新済み。
 

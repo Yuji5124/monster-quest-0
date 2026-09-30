@@ -193,6 +193,19 @@ export class BattleSystem {
     };
   }
 
+  /**
+   * Read-only enemy intent for renderer-only telegraphs. It is deliberately
+   * available only after every living party member has acted, immediately
+   * before the existing enemy-resolution acknowledgement. This changes no
+   * action order, MP, damage, or random roll.
+   */
+  getPendingEnemyAction(): Readonly<BattleAction> | undefined {
+    if (this.state !== "PLAYER_ACTION" || this.enemy.hp <= 0 || this.findNextLivingUnactedIndex() !== -1) return undefined;
+    const actions = this.enemy.enemyActions ?? [NORMAL_ATTACK];
+    const candidate = actions[this.enemyActionIndex % actions.length] ?? NORMAL_ATTACK;
+    return candidate.kind !== "attack" && this.enemy.mp < candidate.mpCost ? NORMAL_ATTACK : candidate;
+  }
+
   confirm(command: BattleCommandId = "fight", magicId?: string, itemId?: string): BattleSnapshot {
     this.lastHitTier = "normal";
     this.lastAction = undefined;

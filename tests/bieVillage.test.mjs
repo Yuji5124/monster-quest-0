@@ -10,6 +10,7 @@ import { INTERACTION_REACH } from "../src/config/interaction.ts";
 import { VILLAGER_SPRITES } from "../src/config/villagerSprites.ts";
 import { bodyOffset } from "../src/config/characterWalkSprite.ts";
 import { getDialogue } from "../src/data/dialogues.ts";
+import { getShop } from "../src/config/shops.ts";
 import { buildCollisionRects } from "../src/systems/ImageMapCollisionData.ts";
 import { readImageMapEvents, readImageMapManifest, readImageMapObjects } from "../src/systems/ImageMapData.ts";
 
@@ -111,6 +112,23 @@ test("bie-village has six data-driven villagers: four fixed at doors and two loc
     assert.ok(dialogue && dialogue.pages.length > 0, `${npc.id} has dialogue`);
     for (const page of dialogue.pages) assert.ok(page.split("\n").length <= 3, `${npc.id} page fits the dialogue box`);
   }
+});
+
+test("2026-09-27: three fixed villagers double as the weapon shop, inn and item shop; the neighbour stays a plain resident", () => {
+  const npcs = MAPS.map_03_bie_village.npcs;
+  const shopkeepers = npcs.filter((npc) => npc.role === "shopkeeper");
+  const residents = npcs.filter((npc) => npc.role === "resident");
+  assert.equal(shopkeepers.length, 3);
+  assert.equal(residents.length, 3, "the neighbour plus the two walkers stay plain residents");
+  assert.deepEqual(shopkeepers.map((npc) => npc.id).sort(), ["npc_bie_village_farmer", "npc_bie_village_herb_drier", "npc_bie_village_miller"]);
+  assert.equal(shopkeepers.every((npc) => !npc.movement), true, "shopkeepers must stay at their storefronts");
+  assert.equal(getShop("npc_bie_village_miller")?.kind, "weapon");
+  assert.equal(getShop("npc_bie_village_farmer")?.kind, "inn");
+  assert.equal(getShop("npc_bie_village_herb_drier")?.kind, "item");
+  assert.equal(getShop("npc_bie_village_neighbor"), undefined, "the woodcutter clue stays a plain conversation");
+  // FIRST_TALK_UNLOCKS keys on the herb drier's dialogueId, unaffected by her new shopkeeper role.
+  const first = getDialogue("npc_bie_village_herb_drier", { hasMember: () => false }, { hasFlag: () => false });
+  assert.match(first.pages.at(-1), /レインランドのもり/);
 });
 
 test("bie-village fixed villagers can be talked to from the walkable path right below them", () => {

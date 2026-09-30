@@ -1,6 +1,6 @@
 {
   "formatVersion": 1,
   "kind": "action-terrain-zones",
-  "note": "No.17 first action slice. The Scene clamps the party to the background bounds; slow swamp and fast high-ground/root zones are sourced from src/config/swampCaveAction.ts for human tuning.",
+  "note": "No.17 block-built action course. The Scene clamps the party to the stage bounds; slow swamp and fast high-ground/root zones are sourced from src/config/swampCaveAction.ts for human tuning. The supplied background is reserved for the final treasure room.",
   "bounds": { "x": 0, "y": 0, "width": 1672, "height": 941 }
 }

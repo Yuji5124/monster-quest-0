@@ -34,9 +34,20 @@ test("entering the castle town from the world map plays the splash; other ways i
 
   assert.equal(findEntrySplash("RainlandCastleTownScene", "someFutureBuildingFront"), undefined, "coming back from a building must not replay it");
   assert.equal(findEntrySplash("RainlandCastleTownScene", undefined), undefined);
-  for (const other of ["StartingPlaceScene", "StartingTownScene", "StartingForestScene", "RainlandForest1Scene", "RainlandForest2Scene", "WorldMapScene", "InteriorScene", "NoSuchScene"]) {
+  for (const other of ["StartingPlaceScene", "StartingForestScene", "RainlandForest1Scene", "RainlandForest2Scene", "WorldMapScene", "InteriorScene", "NoSuchScene"]) {
     assert.equal(findEntrySplash(other, "fromWorldMap"), undefined, `${other} must not have an entry splash`);
   }
+});
+
+test("entering はじまりのまち from the world map plays its own 5-second splash with the user-supplied image", () => {
+  const splash = MAP_ENTRY_SPLASHES.map_02_starting_town;
+  assert.ok(splash);
+  assert.equal(getEntrySplashDurationMs(splash), 5000);
+  assert.equal(splash.caption, "はじまりのまち");
+  assert.equal(findEntrySplash("StartingTownScene", "fromWorldMap")?.mapId, "map_02_starting_town");
+  assert.equal(findEntrySplash("StartingTownScene", "fromField"), undefined);
+  const reference = readFileSync(path.join(REPO_ROOT, "assets/maps/reference/reference/はじまりのまち_イメージ.png"));
+  assert.ok(readFileSync(new URL(splash.imageUrl)).equals(reference), "the splash must be an unmodified copy of the reference image");
 });
 
 test("entering ビーエのむら from the world map plays its own 5-second splash with the user-supplied image", () => {

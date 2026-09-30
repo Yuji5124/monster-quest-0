@@ -1,10 +1,126 @@
 # Monster Quest 0 Project Status
 
-最終更新: 2026-09-27 JST
+最終更新: 2026-10-01 JST
 
 > **正本表示注記（2026-09-24）:** 現行の物語順・名称・仲間時期は `STORY_FLOW.md`、`MAP_FLOW_SPEC.md`、`PLAY_ORDER_SPEC.md` を優先する。本書の過去実装記録に残る旧番号・旧名称・旧仮仕様は履歴であり、現行本線の仕様として読まない。
 
+## No.06レインランドじょうかまち ジャンカードバトル = PARTIAL（2026-10-01 JST）
+
+ユーザー指定のプリン・ジャンカード1回勝負を、噴水西の固定NPC`npc_rainland_town_purin_card_battler`へ追加した。プレイヤーがNo.01「プリン」を持つ時だけ、相手も同じプリンを右側へ出す専用画面に入る。左のプレイヤーカード／右の相手カード、グー・チョキ・パーの選択、ランダムな相手の手、「じゃんけん、しょっ！」、あいこの選び直し、勝者の先攻攻撃で決着する流れを実装した。カード、ジャンコイン、所持金、RPG戦闘のHP・EXP・進行フラグは変更しない。
+
+対戦設定は`src/config/jumpCardBattles.ts`、共通のじゃんけん判定は`src/systems/JumpCardBattle.ts`、画面は`src/scenes/JumpCardBattleScene.ts`へ分離し、今後の対戦NPCは設定IDを追加して接続できる。`?cardBattleTest`はセーブを書き換えずに画面だけ確認するDEV入口。
+
+検証: `npm test` 584件中582 PASS・TODO 2件・FAIL 0。新規`tests/jumpCardBattle.test.mjs`はプリン鏡合わせ、所持判定、グー／チョキ／パーの全勝敗を確認し、`tests/rainlandCastleTownNpcs.test.mjs`は配置・会話距離・出入口からの安全距離を確認する。`npm run typecheck`は本変更分のエラーなし。`src/scenes/BattleScene.ts`の`DemasBossController.dispose()`に関する既存エラー1件で全体型検査は終了しない。ブラウザ画面の自動キャプチャとiPhone Safari実機は未確認のためPARTIAL。
+
+## No.12港町ダコハ 村人7人・宿屋・武器屋の追加 = PARTIAL（2026-09-29 JST）
+
+ユーザー指示「港町ダコハの村人を追加してください。他の村と同じように宿屋、武器屋を追加してください。」に続く「ダコハの村人実装してください。今まで使った村人の画像は使わないでください。」を反映した。画像マップ自体（背景・Collision・北門イベント・入場演出）は2026-09-26に実装済みで、今回はNPC_SPEC.md §2が示す目安7人・宿屋・武器屋・NPC_SPEC.md §5「港・交易・人・物・噂、デーマスの存在を少しずつ匂わせる」の追加分。
+
+- **村人7人**: 固定5人＋歩く2人（`config/maps.ts`の`map_dakoha_port.npcs`）。やどやの主人（北西の家並みのテラス）・ぶきやの店主（東の波止場の倉庫の前）・とうだい近くの老婆（灯台への小道）・広場の屋台の女性（噴水広場西の屋台列）・波止場の漁師（噴水広場から港へ下る通りぞい）の5人は`facing: "down"`で固定、東の埠頭を歩く少年・広場西を歩く船乗りの2人は`movement: {kind: "wander"}`。座標はすべて`assets/maps/dakoha_port/collision.png`に対し、実プレイヤー体格(`PLAYER.width/height`)・`INTERACTION_REACH`・徘徊半径で歩行可能性を検証してから確定した（zabon-village/hidden-villageと同じ判定式）。
+- **宿屋・武器屋**: ユーザー指示が宿屋・武器屋の2つだけだったため道具屋は追加していない。ビーエのむら・かくれざとと同じく専用の店番は増やさず、やどやの主人（`npc_dakoha_port_innkeeper`、`kind: "inn"`, 8G）・ぶきやの店主（`npc_dakoha_port_armory_keeper`、`kind: "weapon"`, こんぼう50G／てつのけん300G）が生業と兼業する（`config/shops.ts`）。品揃え・価格は他の町と同じTEMP_TEST_VALUE。
+- **村人の見た目（今まで使った画像を使わない）**: villager_01〜17は既にどこかの町で使用済みだったため、`assets/characters/reference/reference/村人たち/`のうちどのvillager_XXにもまだ割り当てられていない生成回（同フォルダ内の別デザイン7点、ハッシュ照合で重複除外して確認）を新たに`villager_18`〜`villager_24`として`tools/build_villager_sheets.py`に追加し、`src/config/villagerSprites.ts`へ登録した。7人全員が他のどのマップとも異なる専用の見た目を持つ。
+- **デーマスの噂**: とうだい近くの老婆だけが「「デーマス」という　なを　おそれるように　ささやく　ものも　いるのよ」と、旅人のうわさとして名前だけを口にする（しょうたい・ミラー・ダイダインには触れない）。ジャンカードの秘密・たびのあいことば・タロサ・ミレイ・王家には触れない。
+
+検証: 新規/更新`tests/dakohaPort.test.mjs`（村人7人の内訳・スプライト固有性・宿屋武器屋の紐付け・固定村人の歩行可能性・徘徊NPCの歩行可能性）、`tests/shops.test.mjs`（宿屋・武器屋の紐付け）、`tests/villagerSprites.test.mjs`（登録数24へ更新）。`npm test`は581件中579 PASS・既存失敗2件（`bossBalance.test.mjs`のオロチまおうLv23バランス、本変更と無関係）。`npm run typecheck`は本変更分のエラー0（`BattleScene.ts`の`DemasBossController.dispose()`重複は他作業の既存エラー）。ブラウザ実機（Browser pane、`?mapTest=dakoha-port`、`window.__rainlandMap`経由の手動フレーム送り+キーイベント）で、やどやの主人に話しかけると宿屋メニュー（とまる/はなす/やめる）が開き「とまる」で実際に8G消費・全回復すること、「はなす」で会話本文が読めること、ぶきやの店主で武器屋メニュー（既定の「また　きな。いきて　かえって　くるんだぞ。」表示）が開くこと、とうだい近くの老婆でデーマスのうわさの段が読めること、残り4人（広場の屋台の女性・波止場の漁師・東の埠頭の少年・広場西の船乗り）が意図した位置に立つ／歩くこと、コンソールエラー0件を確認した。確認後は`localStorage['mq0.game-state']`を消去し、ユーザーの実セーブへ影響を残していない。
+
+PARTIALの理由: 台詞本文は`DIALOGUE_DRAFT`。道具屋・船での移動・デーマスの噂の深掘り・BGMは未実装のTBD（`TBD_REGISTRY.md`）。iPhone Safari実機は未確認。
+
+## DEBUG_MODEの戦闘を主人公一人へ戻す / 戦闘終了時の画面停止修正 = DONE（2026-09-29 JST）
+
+ユーザー指示「バグるので、主人公一人に戻してください」を反映した。
+
+- `DEBUG_PARTY_MEMBER_IDS`を`["hero"]`へ変更。DEBUG_MODE中の戦闘は、敵・入口（フィールド遭遇／会話イベント戦／デーマス戦／`?battleTest=`）を問わず主人公一人Lv30・全快・全魔法・最強自動装備で始まる。EXP・現在HP/MPをセーブへ書かない点、`?debug=0`でOFFになる点は変更なし。戦闘画面の表示は「DEBUG　Lv30」。
+- 調査中に、**戦闘終了のたびに例外が出てゲームループが止まる不具合**を発見・修正した（人数とは無関係）。PhaserはScene終了時に`cameras.main`を先に破棄するため、BattleSceneのSHUTDOWN後始末で`BattleCameraController.reset()`（と`DemasBossController.dispose()`）が`cameras.main`を触ると`TypeError`になり、requestAnimationFrameの次フレームが予約されず画面が固まっていた。後始末の残り（入力リスナー解除など）も飛ばされていた。カメラが既に無い場合は何もしないよう修正。
+
+検証: `tests/debugMode.test.mjs` 6件PASS（主人公一人・Lv30・全魔法）。`npm test` 573件中570 PASS・todo2・失敗1（`villagerSprites`の既存失敗、本変更と無関係）。`tsc`は本変更分のエラー0（`BattleScene.ts`248行の`weatherPresentation.dispose()`重複は他作業の既存エラー）。ブラウザ実機（`?mapTest=starting-forest`）で、通常戦（003）とデーマス戦の両方が主人公一人で始まり、戦闘終了→フィールド復帰→歩行まで例外0・コンソールエラー0を確認（修正前は同じ経路で`resetFX`の`TypeError`が出ていた）。セーブ構造への影響なし。iPhone Safari実機は未確認（入力・UIの変更は表示バッジの文言のみ）。
+
+## No.07〜No.11 まじん討伐後の中盤導線 = PARTIAL（2026-09-29 JST）
+
+ユーザー確定の順序「まじん討伐 → 王への再報告 → ザボンのタロサが一度断る → いわやまで救援 → かくれざと → 古城で魔法使いを探す → ミレイの仮同行 → デーマスの手がかり」を実装した。
+
+- 王の報告読了でNo.08を解放し、タロサは的場で一度断る。断り読了でNo.09を解放する。
+- No.09初回入場で単独通過不能の会話からタロサの救援・隊列参加へつなぎ、2F最奥を通るとNo.10を解放する。
+- No.10初回到着でNo.11を解放する。古城の水流または古代文字で魔法使いが必要だと分かると、かくれざとにミレイが現れ、古城までの仮同行として隊列に加わる。
+- ミレイの魔法で古城1Fの水流を越え、2Fの文字を読み、3Fでデーマスの存在へつながる手がかりを得る。使用フラグは`SAVE_FLAG_SPEC.md`、マップ導線は`MAP_FLOW_SPEC.md`が正本。
+
+検証: `tests/zabonVillage.test.mjs`、`tests/iwayamaCave.test.mjs`、`tests/hiddenVillage.test.mjs`、`tests/lakeCastle3D.test.mjs`、`tests/worldMapData.test.mjs`、`tests/majinCave.test.mjs`、`tests/rainlandThroneRoom.test.mjs`の72件PASS。
+
+PARTIALの理由: 台詞本文は`DIALOGUE_DRAFT`。iPhone Safari実機と、通しプレイの人手テンポ調整は未確認。
+
+## No.08ザボンのむら 住人の立ち位置・会話密度を他地域に合わせて更新 = PARTIAL（2026-09-27 JST）
+
+ユーザー指示「ザボンのむらの住人の立ち位置、会話内容を他に合わせて更新してください」を反映した。詳細: `NPC_SPEC.md`§2・§2.1。
+
+- 立ち位置: `ザボンのむら　新.png`（原画）へ座標をズームして重ね、6人（固定4・歩く2）が実際に各建物のドア前・道の要所（あつまりの大きな家の入口／西のかやぶきの家の石段／東の家／南の家のドア前、広場の柱の南、東の的場への道）に立っていることを確認した。はじまりのまち・ビーエのむら・レインランドじょうかまちと同じ配置ルールに既に一致していたため、座標は変更していない。
+- 会話: 初稿（2026-09-26、1〜3ページ）を、レインランドじょうかまちの会話第2稿（2026-09-27、各4〜6ページ）と同じ密度へ増やした。長老6ページ・屋根の穴を直せない人5ページ・けがわをなめす人6ページ・母親5ページ・守り神の柱の話4ページ・的場のタロサの話4ページ（合計30ページ）。1人1話題・1ページ最大3行・タロサに触れるのは的場の1人だけの制約は維持し、タロサの過去・デスタロッサ・いわやまのどうくつの攻略内容・ミレイ・王家の事情・ジャンカード・たびのあいことばには触れていない。
+- レインランドじょうかまち・はじまりのまちの会話が既に言い換えているザボンの話題(けがわの交易・王の使い・かたいモンスター)に対応させ、ザボン側からも「旅の商人」「つかいの兵士」を通じて他の町の様子が伝わってくる形にした(例: つかいの兵士は他の町も回っている、レインランドの大工が森の道の危険で来られない、堀の水と雨の関係)。数値・金額は書いていない。
+
+検証: 新規に`tests/zabonVillage.test.mjs`へ「1人4ページ以上」の密度チェックを追加し、既存6件と合わせて7件PASS。`npm test`は551件中548 PASS・todo2・FAIL1(`villagerSprites.test.mjs`、並行作業中の村人スプライト件数差で本変更と無関係)。`npm run typecheck`は本変更分のエラー0(`SwampCaveActionScene.ts`の並行作業由来のエラーのみ)。ブラウザ(`?mapTest=zabon-village`、手動フレーム送り)で、長老前まで歩いて話しかけると6ページの新会話が最後まで表示され読み終えると自然に閉じること、けがわをなめす人でも6ページが正しく表示されることを確認、コンソールエラー0件。
+PARTIALの理由: 台詞本文は引き続き`DIALOGUE_DRAFT`(正式本文`NPC_DIALOGUE_MASTER.md`は未提供)。北東のどうくつの接続先・建物内部・店はTBDのまま。iPhone Safari実機は未確認。
+
+## No.06レインランドじょう 王の間 会話強化・まじん討伐後の報告 = PARTIAL（2026-09-27 JST）
+
+ユーザー指示「レインランドじょう、レインランドじょうの王様との会話を強化してください。まじんのどうくつのまじん討伐、タロサの情報も追加してください。王様はタロサも頼りにしています。タロサの参考画像を間にはさみます。まじん討伐後、レインランド王に報告するところまで」を反映した。詳細: `STORY_FLOW.md`（王が主人公を信頼する理由・No.07依頼）、`MAP_FLOW_SPEC.md`§4.13、`SAVE_FLAG_SPEC.md`、`docs/NPC/04_rainland_castle.md`§4・§6。
+
+- 王(`rainland_throne_king`)の会話を、討伐前(依頼)・討伐後未報告(報告)・報告済み(短い後日談)の3状態へ書き直した(`src/data/dialogues.ts`、`getDialogue`が`STORY_FLAGS`で分岐)。討伐前は「えらばれたゆうしゃ」だからではなく異常地域を実際に越えてきた旅人として主人公を信頼し、No.07まじんのどうくつの調査を依頼する(むりにとは言わず、主人公自身が決めることだと伝える)。討伐後はまじん討伐の報告を受け取り、ねぎらう。
+- タロサはこの時点でまだ正式加入していない(`CHARACTER_GROWTH.md`: 正式同行はNo.09いわやまのどうくつ以降)ため、王が耳にした「ザボンの狩人」として言及するにとどめ、タロサの全過去・ミレイの正体・王家の事情には触れていない。
+- 会話の区切りに、ユーザー提供の参考画像`assets/characters/reference/profiles/mq0_character_profile_041_80d2fb07b9.png`(タロサが弓を構え、奥にしろが見える1448×1086)の無加工バイト一致コピー`assets/characters/portraits/tarosa_archery_report.png`を額縁つきで挟む。討伐前・討伐後のどちらの会話でもタロサの話題に入る場面で表示する。
+- 実装は新規`PortraitInterludeDialogueEvent`(`src/events/BattleEventData.ts`)と、それを処理する`RainlandImageMapScene`の`playPortraitInterlude`/`showPortrait`/`hidePortrait`(`src/scenes/RainlandForestScene.ts`)。会話を2つに分け、前半を読み終えた時点で一枚絵をフェードイン表示したまま後半の会話を開き、後半を読み終えたら一枚絵をフェードアウトする(タロサ本人がその場にいなくても使える汎用の仕組みで、他のNPC会話にも今後流用できる)。
+- No.07まじんのどうくつで、まじんを倒して(`descent`→`ascent`)どうくつを出た時点(通常脱出・リレロープ脱出とも)で`boss.majin_cave_boss_defeated`を保存するようにした(`MajinCaveScene`)。王の間でこのフラグを見た王の会話が「討伐報告」へ切り替わり、読み終えると`event.rainland_throne_majin_reported`を保存して以後は短い後日談だけになる。`?mapTest=majin-cave`のDEV確認では、他の戦利品・EXPと同じく実セーブへ書き込まない。
+
+検証: 新規`tests/rainlandThroneRoom.test.mjs`5件(討伐前・討伐後・報告済みの3状態、一枚絵がREFERENCEのバイト一致コピーで元画像の範囲内に収まること、ミレイ・王家・ジャンカードへ触れないこと)を追加、既存4件と合わせて9件PASS。`npm run typecheck`・`npm test`(545件中542 PASS、既存1件FAIL[村人スプライト数、本変更と無関係]・todo2[既存]、`npm run build` PASS)。ブラウザ(`?mapTest=rainland-throne-room`、手動フレーム送り+キーイベント)で、討伐前の王に話しかけて前半→一枚絵つき後半→依頼まで読了、`localStorage`へ`boss.majin_cave_boss_defeated`を仕込んで再訪すると報告会話(一枚絵つき)に切り替わり読了後に`event.rainland_throne_majin_reported`が保存されること、その後は短い後日談だけになること、一枚絵の表示位置がDialogueBoxと重ならないこと、コンソールエラー0件を確認。
+
+PARTIALの理由: 台詞本文は`DIALOGUE_DRAFT`(正式本文`NPC_DIALOGUE_MASTER.md`は未提供)。近衛兵2人・王の正式な人数と衣装はDEV_PLACEHOLDERのまま変更していない。一枚絵の切り取り範囲・表示サイズはTEMP_TEST_VALUE(人間の視覚調整待ち)。No.08ザボンのむらの解放条件は今回変更していない(`destination_zabon_village`は既存どおり`unlockFlag: null`のまま、正式解放条件はTBD)。iPhone Safari実機は未確認。
+
+## フィールドの「ぼうけんのきろく」／「つづきから」 = PARTIAL（2026-09-27 JST）
+
+ユーザー指示「フィールドにいる時につづきからのための、ぼうけんの記録をつけられるようにしてください」を反映した。
+
+- フィールドメニュー（C）に「ぼうけんのきろく」を追加。選ぶと共有`GameStateRepository`の`map.adventureRecord`へ、マップID・Scene・現在座標・向きを保存し、「ぼうけんの きろくを つけた！」を表示する。既存のカード、所持金、所持品、仲間、経験値、HP/MP、装備、進行フラグは置き換えない。
+- タイトルは有効な手動記録がある時だけ「つづきから」を選択可能にし、保存地点のSceneへ直接戻る。通常2D画像マップの座標（`worldScale`適用後）を復元するほか、レインランド城の3D表示は視点角、みずうみの古城は階・座標・視点角も復元する。記録の`mapId`とSceneの対応を二重に検証し、壊れたLocalStorageから任意Sceneへ遷移しない。
+- 対象は`FieldMenu`を持つ通常2Dフィールド、および同メニューを持つ2種の3Dフィールド。会話・店・戦闘・Scene遷移中に記録画面を開けない既存input lockは維持し、2Dではメニューを開いた瞬間に既存の移動速度も止める。新規ゲームは記録を持たない初期状態へ戻すため、「つづきから」を有効化しない。「もういちど」はNew Game処理を使わない。
+
+検証: 実装中の`npm run typecheck`・`npm run build`はPASS。最終確認時の`npm run typecheck`は、今回と無関係な並行変更中の`src/scenes/SwampCaveActionScene.ts`（`backgroundKey`／`backgroundPath`／`itemId`／`quantity`の6エラー）で失敗し、手動記録の変更からはエラーなし。新規`tests/adventureRecord.test.mjs`（2D位置の保存と他保存領域の保持、旧／破損記録の安全な無効化、新規ゲームでの記録消去、2D/3D復帰先検証）および`tests/saveFlags.test.mjs`／`tests/menu.test.mjs`／`tests/fieldMenu.test.mjs`は19件PASS。`npm test`全体も実行済み。ブラウザ手動確認とiPhone Safari実機でのLocalStorage永続性・タッチ導線は未確認。
+
+PARTIALの理由: タッチ用のフィールドメニュー操作、オートセーブ方針、iPhone Safari実機確認は別途必要。手動記録の保存／ロード境界とキーボード操作は実装済み。
+
+## No.10かくれざと 村人の会話を高密度化・宿屋/道具屋/武器屋を追加 = PARTIAL（2026-09-27 JST）
+
+ユーザー指示「かくれざとのむらびとを更新してください。フォルダ内のデータを確認して、村人の会話を濃くして、宿屋、道具屋、武器屋を強化してください。」を反映した。`assets/maps/hidden_village/`（`map.json`はCURRENT・`objects.json`は空・`events.json`は北西門の1件のみ）と`src/config/maps.ts`の仮住民8人・`src/data/dialogues.ts`の生活会話初稿を確認した上で、`NPC_SPEC.md`「かくれざと」の閉鎖性・秘密性、ミレイが身分を隠して出会う段階を守る制約に沿って作業した。
+
+- **会話密度**: 8人とも各1ページ（1行）だけだった会話を各3〜5ページへ増やした（既存の1行は残し、生活・仕事・家族・他地域とのうわさ話を足した、`CREATIVE_DIRECTION.md`§11）。ミレイの正体・ジャンカードの秘密・王家の事情には触れず、レインランドのもり・じょうかまちで既出の「モンスターで道が荒れている」といったうわさだけを薄く混ぜた。
+- **宿屋・道具屋・武器屋**: `NPC_SPEC.md`/`TBD_REGISTRY.md`が示す「住民5人 + ミレイへの再選抜」はNPC_DIALOGUE_MASTER.md未提供のため今回は行わず、現行8人・配置を維持したまま、2026-09-27にビーエのむらへ適用済みの方式（専用の店番を増やさず既存住民が生業と兼業）をかくれざとにも適用した。水車小屋の主=こむぎひきの傍ら刃物の手入れをする設定でぶきや、まんなかの家の人=あまった部屋を貸す設定でやどや、西の家の人=やまの薬草を分ける設定でどうぐや（`role: "shopkeeper"`、`config/shops.ts`、品揃え・価格はNo.02・ビーエのむらと同じTEMP_TEST_VALUEを再利用）。神社前・東の家・下の家と歩く2人は通常会話のまま。
+- **実装**: 共通画像マップScene（`RainlandImageMapScene`、No.05のもり・じょうかまち・いしのまち・コタンカイムの洞窟等と共有）へ、はじまりのまち・ビーエのむらと同じ`ShopWindow`を追加した。店を兼業する住民がいるマップだけ`ShopWindow`を作るため、店を持たない他の共有マップの挙動は変わらない。
+
+検証: 新規・更新テスト（`tests/hiddenVillage.test.mjs`の役割分担・会話ページ数、`tests/shops.test.mjs`のNo.10ぶきや/やどや/どうぐや判定）を含む`npm test`は540件中537 PASS・todo2・FAIL1（`bossBalance.test.mjs`のオロチまおうLv23バランスと`villagerSprites.test.mjs`の村人シート数、いずれも本変更と無関係の既存/並行作業起因）。`npm run typecheck` PASS。ブラウザ（`?mapTest=hidden-village`）で水車小屋の主に話しかけ、ぶきやの「かう」でこんぼう50G/てつのけん300Gの一覧、「はなす」で新しい導入ページ→既存ページの順に読めること、コンソールエラー0件を確認。
+
+PARTIALの理由: 台詞は引き続き`DIALOGUE_DRAFT`。住民の最終人数・配置（「5人 + ミレイ」への再選抜）、ミレイ初登場イベント、建物内部、BGM、`destination_hidden_village`の最終解放条件は`NPC_DIALOGUE_MASTER.md`またはユーザー確定情報が届くまで未確定のまま（`TBD_REGISTRY.md`）。やどや宿泊の実機フェード演出・iPhone Safari実機は未確認。
+
+## No.19 バトラスのとりでの移動停止修正 = PARTIAL（2026-09-27 JST）
+
+ユーザー報告「バトラスのとりでに入ると止まってしまいます。」を受け、生成砦の物理境界を修正した。
+
+- 原因: 砦の実寸は `166 × 30` タイル（`5312 × 960px`）だが、`Player` が衝突するArcade Physicsの境界は初期表示領域の`960 × 720px`のままだった。そのため、横へ進むと最初の表示領域の右端で移動が止まった。
+- 修正: `BattleFortressGenerator`に実寸の`getBattleFortressWorldBounds()`を追加し、`BatorasuFortressScene`がCameraとArcade Physicsの両方へ同じ境界を渡すようにした。これにより、入口からボス部屋まで全域を歩行できる。
+- 検証: `tests/battleFortressGenerator.test.mjs`へ「生成経路全体を覆うworld bounds」を追加。砦生成・世界地図・出入口・DEVマップの22テストはPASS。
+
+PARTIALの理由: Windowsブラウザ自動操作はこの実行環境のACLエラーで起動できず、実画面での再確認は未完了。プロジェクト全体の`npm run typecheck`は、今回未変更の`BieVillageScene.ts`および`StartingTownScene.ts`の`Facing`未解決エラーで失敗する（砦側の型エラーは出ていない）。
+
+## ジャンコイン正本再確定 / ガチャ画面の枚数表示 = PARTIAL（2026-09-27 JST）
+
+ユーザー指示「ジャンコイン実装します。ジャンカードガチャ画面にもジャンコインの枚数を表示するようにします。」を受け、2026-09-24の`CARD_SPEC.md`が「現行正本の料金は1回20円、`cards.jumpCoinCount`は旧実装」としていた注記をユーザー確定により撤回した。
+
+- ユーザー確定事項: 「20円の内容は古い内容です。モンスターを倒して一定の確率でジャンコインが手に入ります。」→ ジャンコイン（`cards.jumpCoinCount`、戦闘報酬G=`player.money`とは別枠の専用通貨）を正本の料金体系として維持し、入手方法はモンスター討伐時の低確率ドロップとする方針を確定した。
+- 一方で「入手導線（討伐ドロップの実装）は今回のスコープに含めない、まず表示を直す」という指示のため、`BattleCombatantDefinition.reward.drops`へのジャンコインドロップ実装は**今回は行っていない**（対象敵・確率は引き続きTBD）。
+- 実装済みの`GameStateRepository`（`jumpCoinCount`・`drawNextJumpCard`・`addJumpCoins`）と`JumpCardGachaScene`（`renderInfo()`で「ジャンコイン　N枚　1かい　1枚」を既に表示）は無変更で、既存コードがそのままユーザー確定の仕様に一致することを確認した。
+- ドキュメント整合: `CARD_SPEC.md`（1回20円→1回ジャンコイン1枚、実装互換メモを撤回として書き換え）、`MONSTER_SPEC.md`（ジャンコイン共通ドロップのSUPERSEDED注記を撤回しTBDへ）、`DATA_CONTRACTS.md`（`cards.jumpCoinCount`を正本の保存契約に含める）、`TBD_REGISTRY.md`（20円移行TBDを削除し、討伐ドロップの確率・対象敵TBDへ差し替え）、`ASSET_INDEX.md`（I.png/H.pngの「旧実装由来」注記を撤回）、`CHARACTER_GROWTH.md`（ジャンコイン初期化を現行仕様と明記）を更新した。
+
+検証: `npm test`のうち`tests/jumpCards.test.mjs`・`tests/levelProgression.test.mjs`・`tests/shops.test.mjs`（ジャンコイン関連）PASS（既存実装は無変更のため回帰なし）。ブラウザでガチャ画面（`JumpCardGachaScene`）を開き、上部の情報ウィンドウに「ジャンコイン　N枚　1かい　1枚」「あつめたカード　M / 45」が表示されること、コイン不足時に「ジャンコインが　たりません」が出ることを確認。
+PARTIALの理由: モンスター討伐によるジャンコイン入手（対象敵・確率・報酬パイプライン接続）は未実装のTBD。iPhone Safari実機は未確認。
+
 ## DEBUG_MODE（戦闘は3人Lv30で開始）= DONE（2026-09-27 JST）
+
+> **2026-09-29 SUPERSEDED（編成のみ）:** 戦闘編成は主人公一人Lv30へ戻した（本書先頭の同日エントリ）。以下の3人編成の記述は当時の記録。
 
 ユーザー指示「デバックモードとして運用します。戦闘は3人みんなレベル30で始められるようにしてください。仲間は戦闘のみ参加でよいです」を反映した。**DEBUG_ONLY**であり正式仕様ではない。詳細: `BATTLE_SPEC.md` §12、`CHARACTER_GROWTH.md` §11.1、`QA_SPEC.md` §6。
 
@@ -648,7 +764,7 @@ TEMP_TEST_VALUE。指示文中の「リライフル」は採用済み魔法プ�
 
 ## ジャンカードガチャのジャンコイン化・排出演出 = PARTIAL（2026-09-19）
 
-> **SUPERSEDED rule note（2026-09-24）:** 以下は当時の専用通貨実装の履歴。現行正本の料金は1回20円であり、`CARD_SPEC.md`を優先する。`cards.jumpCoinCount`・専用UI・画像内表記の移行はTBDとして別管理する。
+> **rule note更新（2026-09-27）:** 2026-09-24の「現行正本の料金は1回20円」というSUPERSEDED注記はユーザー確定により撤回した。以下の専用通貨実装（`cards.jumpCoinCount`）を正本のまま維持する。詳細は本ファイル下方の「ジャンコイン正本再確定」記録と`CARD_SPEC.md`を参照。
 
 ユーザー指定の`assets/title/reference/I.png`（「ジャンコインでガチャを回そう!」）と`H.png`（コイン投入）を、ジャンカードが出現する**前**の専用演出へ組み込んだ。ガチャ実行後はH（コイン投入）→I（ハンドルを回す）→虹色の後光→白フラッシュの順に約**6秒**のレア演出を再生し（2026-09-23更新）、フラッシュが明けてから初めてカードを表示する。演出中はキーボード・タッチの決定／キャンセルをロックし、二重排出しない。
 
@@ -912,7 +1028,7 @@ Phase 8.6では既存世界地図REFERENCEを背景にしたROUGH_FIELDを追加
 会話・配置を再設計する対象:
 - No.02 はじまりのまち（7人配置済み、本文は初稿）
 - No.04 ビーエのむら（目安6人）
-- No.06 レインランドじょうかまち／レインランドじょう（目安8人／7人）
+- No.06 レインランドじょうかまち／レインランドじょう（生活NPC目安8人 + ジャンカード対戦者1人／7人）
 - No.08 ザボンのむら（目安6人）
 - No.10 かくれざと（目安5人 + ミレイ。仮住民8人は未確定）
 

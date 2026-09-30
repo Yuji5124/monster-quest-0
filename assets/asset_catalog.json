@@ -1,6 +1,6 @@
 {
   "project": "Monster Quest 0 - 幻の冒険の書",
-  "updated": "2026-09-27T00:00:00+09:00",
+  "updated": "2026-10-01T00:00:00+09:00",
   "note": "Catalog only. Files marked ready_to_import are not considered present until the file exists at the path. Old female protagonist asset is superseded by the current male protagonist setting.",
   "assets": [
     {
@@ -8,6 +8,27 @@
       "path": "assets/maps/world_map/background.png",
       "status": "current",
       "note": "2026-09-18: CURRENT original 1448x1086 high-resolution 4:3 world-map background. It is displayed with LINEAR filtering for point selection and zoom. Destination positions remain separately tracked as DEV_PLACEHOLDER_POSITION."
+    },
+    {
+      "key": "map.lake_castle.material.stone",
+      "path": "assets/maps/lake_castle/materials/castle_stone.png",
+      "status": "current",
+      "sha256": "1da9e16ae33dc54c448ae10c1bbfceef4cd4a2271771865cdabecb150273dde8",
+      "note": "2026-09-29: CURRENT repeating white ancient-stone material for No.11 みずうみの古城. LakeCastle3DScene loads it for floor, bridge, wall, and ceiling surfaces, sharing the decoded image while varying UV repeat."
+    },
+    {
+      "key": "map.lake_castle.material.water",
+      "path": "assets/maps/lake_castle/materials/lake_water.png",
+      "status": "current",
+      "sha256": "8507205b64f0ab9d9173b645aa298a77d11800fc499b512fb29cc7a6f32fb1d1",
+      "note": "2026-09-29: CURRENT repeating deep-teal water material for No.11 みずうみの古城. LakeCastle3DScene loads it for the single water plane."
+    },
+    {
+      "key": "map.lake_castle.material.stained_glass",
+      "path": "assets/maps/lake_castle/materials/stained_glass.png",
+      "status": "current",
+      "sha256": "4374996b31ad2ee383bbc4554fdd5e3553c9b27963a88388cea6b3d00fcad8eb",
+      "note": "2026-09-29: CURRENT repeating blue-and-gold stained-glass material for No.11 みずうみの古城. LakeCastle3DScene loads it for chapel and sanctuary windows."
     },
     {
       "key": "map.stone_town.entry_splash_reference",
@@ -42,7 +63,7 @@
       "path": "assets/maps/reference/reference/新しいフォルダー/ぬまちのどうくつ.png",
       "status": "reference",
       "sha256": "5b2480c80aa6e66678fd290d74593819d1ec3c7660d90690886e568df92d0786",
-      "note": "2026-09-27: user-supplied 1672x941 top-down No.17 swamp-cave field artwork. The first short action slice loads this unmodified reference directly; a human-reviewed CURRENT background/collision package for the full dungeon remains TBD."
+      "note": "2026-09-27: user-supplied 1672x941 top-down No.17 swamp-cave field artwork. The block-built action course uses this unmodified reference only for its short final treasure room; a human-reviewed CURRENT background/collision package for the full dungeon remains TBD."
     },
     {
       "key": "map.swamp_cave.mood_reference",
@@ -50,6 +71,20 @@
       "status": "reference",
       "sha256": "1486d20b63964434be279ae418f45cddf498bab90e0657630245f2a3ece8eb2a",
       "note": "2026-09-27: user-supplied 1672x941 perspective mood/composition reference for No.17. It is not loaded by the action scene."
+    },
+    {
+      "key": "map.starting_town.entry_splash_reference",
+      "path": "assets/maps/reference/reference/はじまりのまち_イメージ.png",
+      "status": "reference",
+      "sha256": "0b22ebcb5f76341ac9bf66bec3a446fc8c5d7746fede406ab36c34404f4a097b",
+      "note": "2026-09-27: user-supplied SOURCE artwork for the No.02 はじまりのまち entry projection. Copied unmodified into assets/maps/starting_town/entry_splash.png; this original is kept and never overwritten/redrawn. It is not the top-down walking background."
+    },
+    {
+      "key": "map.starting_town.entry_splash",
+      "path": "assets/maps/starting_town/entry_splash.png",
+      "status": "current",
+      "sha256": "0b22ebcb5f76341ac9bf66bec3a446fc8c5d7746fede406ab36c34404f4a097b",
+      "note": "2026-09-27: CURRENT entry-splash image for No.02 はじまりのまち, an unmodified copy of map.starting_town.entry_splash_reference. MapSplashScene fades it in (1s), holds it (3s) and fades it out (1s) when the player enters from the world map (src/config/mapSplash.ts)."
     },
     {
       "key": "map.starting_place.source_night",
@@ -991,8 +1026,9 @@
     {
       "key": "battle.bg.starting_forest",
       "path": "assets/battle/backgrounds/reference/mq0_battle_bg_013_5ecb71635c.png",
-      "status": "reference",
-      "note": "Reused as the No.03 ビーエのもり (legacy internal ID starting_forest) random-encounter battle background for DEV_BATTLE_MONSTERS 001/003, per user request 2026-09-19. Not a finalized MONSTER_SPEC.md background."
+      "status": "current",
+      "sha256": "3ea68f28dd0f8a709d7f00f3dd84819d0dde52eaf58d3529b5d09d133d018e24",
+      "note": "2026-10-01: CURRENT 1448x1086 derived battle background for the No.03 ビーエのもり boss えりまきとかげ, selected by user request. StartingForestScene passes it only to that boss battle; the same image remains the current forest background for DEV_BATTLE_MONSTERS 001/003 and No.05 normal encounters. Human visual adjustment remains pending."
     },
     {
       "key": "title.logo.main",
@@ -1129,6 +1165,13 @@
       "status": "current",
       "sha256": "b336655aa7bf38101df5ea6396ea6bedb05de5c28d6b35bc03806d6dd9288c39",
       "note": "2026-09-26: byte-identical copy of the user-supplied assets/characters/reference/reference/タロサ/タロサ立ち姿.png (1448x1086 RGB with forest background; original kept unmodified). StartingForestScene shows a framed vertical crop (x380-1200) while Tarosa talks after the erimaki-tokage boss."
+    },
+    {
+      "key": "char.tarosa.archery_report_portrait",
+      "path": "assets/characters/portraits/tarosa_archery_report.png",
+      "status": "current",
+      "sha256": "80d2fb07b9f87d382982972ad9c00eb1ab6822ed41de2934d060e26a9abfabdb",
+      "note": "2026-09-27: byte-identical copy of the user-supplied assets/characters/reference/profiles/mq0_character_profile_041_80d2fb07b9.png (1448x1086 RGB, Tarosa mid-shot with a castle in the background). RainlandThroneRoomScene (via the shared RainlandImageMapScene's PortraitInterludeDialogueEvent) shows a framed crop (x0-1300) while the king talks about the Zabon hunter, both when first requesting the Majin's-cave investigation and when the player reports the Majin defeated."
     },
     {
       "key": "char.mirei.reference",

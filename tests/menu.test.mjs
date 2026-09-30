@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { TITLE_MENU_ITEMS } from "../src/config/menu.ts";
+import { getTitleMenuItems, TITLE_MENU_ITEMS } from "../src/config/menu.ts";
 
 test("title menu has the 6 official items in spec order", () => {
   assert.deepEqual(
@@ -9,10 +9,15 @@ test("title menu has the 6 official items in spec order", () => {
   );
 });
 
-test("only continueGame is disabled (no SaveSystem yet)", () => {
+test("the base title template keeps continueGame unavailable until a manual record is supplied", () => {
   for (const item of TITLE_MENU_ITEMS) {
     assert.equal(item.enabled, item.id !== "continueGame");
   }
+});
+
+test("continueGame is enabled only when a manual adventure record exists", () => {
+  assert.equal(getTitleMenuItems(false).find((item) => item.id === "continueGame")?.enabled, false);
+  assert.equal(getTitleMenuItems(true).find((item) => item.id === "continueGame")?.enabled, true);
 });
 
 test("ids and actions are unique", () => {

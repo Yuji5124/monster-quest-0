@@ -3,6 +3,8 @@ import type { JumpCardDefinition } from "../data/jumpCards.ts";
 import { getExpForLevel } from "../data/expTable.ts";
 import { createDefaultTowerState, normalizeTowerState } from "./TowerState.ts";
 import type { TowerSaveState } from "./TowerState.ts";
+import { normalizeRainlandWeatherState } from "../config/rainlandWeather.ts";
+import type { RainlandWeatherState } from "../config/rainlandWeather.ts";
 
 /**
  * SaveSystem未実装中の最小GameState境界。
@@ -37,6 +39,27 @@ export interface CharacterVitalsSaveState {
   readonly mp: number;
 }
 
+/** A manual field record. Coordinates use the receiving Scene's runtime coordinate space. */
+export type AdventureResumeState =
+  | { readonly kind: "2d"; readonly x: number; readonly y: number; readonly facing: "up" | "down" | "left" | "right" }
+  | { readonly kind: "castle3d"; readonly x: number; readonly y: number; readonly yaw: number }
+  | { readonly kind: "lake3d"; readonly floor: 1 | 2 | 3; readonly x: number; readonly y: number; readonly yaw: number };
+
+/**
+ * 「ぼうけんのきろく」で保存する現在地。Scene名だけを信用せず、ロード側ではmapIdとの対応も検証する。
+ */
+export interface AdventureRecord {
+  readonly mapId: string;
+  readonly sceneKey: string;
+  readonly resume: AdventureResumeState;
+}
+
+export interface MapSaveState {
+  readonly adventureRecord?: AdventureRecord;
+  /** No.05's persistent exploration weather. Other maps do not read or mutate this value. */
+  readonly rainlandForestWeather?: RainlandWeatherState;
+}
+
 export interface GameState {
   readonly version: number;
   readonly player: {
@@ -58,6 +81,8 @@ export interface GameState {
   readonly tower: TowerSaveState;
   /** True-only, named progress flags for one-time events, chests, bosses, and world unlocks. */
   readonly flags: Readonly<Record<string, true>>;
+  /** Manual continuation point. A new game deliberately starts without one. */
+  readonly map: MapSaveState;
 }
 
 export interface KeyValueStorage {
@@ -100,6 +125,7 @@ export function createDefaultGameState(options: DefaultGameStateOptions = {}): G
     inventory: {},
     tower: createDefaultTowerState(),
     flags: {},
+    map: {},
   };
 }
 
@@ -118,6 +144,7 @@ export function normalizeGameState(value: unknown): GameState | undefined {
     inventory?: unknown;
     tower?: unknown;
     flags?: unknown;
+    map?: unknown;
   };
   if (candidate.version !== GAME_STATE_VERSION) return undefined;
 
@@ -150,6 +177,7 @@ export function normalizeGameState(value: unknown): GameState | undefined {
     inventory,
     tower,
     flags,
+    map: normalizeMapSaveState(candidate.map),
   };
 }
 
@@ -319,6 +347,41 @@ export class GameStateRepository {
     return this.load().flags[flag] === true;
   }
 
+  /** Returns the last manual field record, if this save has one. */
+  getAdventureRecord(): AdventureRecord | undefined {
+    return this.load().map.adventureRecord;
+  }
+
+  /** A card draw or an event flag is not a continuation point; only a manual record enables 「つづきから」. */
+  hasAdventureRecord(): boolean {
+    return this.getAdventureRecord() !== undefined;
+  }
+
+  /** Reads No.05's weather independently from the manual continuation record. */
+  getRainlandForestWeather(): RainlandWeatherState | undefined {
+    return this.load().map.rainlandForestWeather;
+  }
+
+  /** Saves only a normalized No.05 weather state; party, flags and manual records remain intact. */
+  saveRainlandForestWeather(weather: RainlandWeatherState): GameState {
+    const normalized = normalizeRainlandWeatherState(weather);
+    const state = this.load();
+    if (!normalized) return state;
+    const nextState: GameState = { ...state, map: { ...state.map, rainlandForestWeather: normalized } };
+    this.save(nextState);
+    return nextState;
+  }
+
+  /** Saves a validated field position without replacing party, inventory, flags, or cards. */
+  saveAdventureRecord(record: AdventureRecord): GameState {
+    const normalized = normalizeAdventureRecord(record);
+    const state = this.load();
+    if (!normalized) return state;
+    const nextState: GameState = { ...state, map: { ...state.map, adventureRecord: normalized } };
+    this.save(nextState);
+    return nextState;
+  }
+
   /** Idempotently records a valid progress flag while retaining every other saved subsystem. */
   setFlag(flag: string): GameState {
     const state = this.load();
@@ -413,4 +476,50 @@ function normalizeFlags(value: unknown): Record<string, true> {
       .filter(([flag, enabled]) => isSaveFlag(flag) && enabled === true)
       .map(([flag]) => [flag, true]),
   ) as Record<string, true>;
+}
+
+function normalizeMapSaveState(value: unknown): MapSaveState {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const candidate = value as { adventureRecord?: unknown; rainlandForestWeather?: unknown };
+  const record = normalizeAdventureRecord(candidate.adventureRecord);
+  const rainlandForestWeather = normalizeRainlandWeatherState(candidate.rainlandForestWeather);
+  return {
+    ...(record ? { adventureRecord: record } : {}),
+    ...(rainlandForestWeather ? { rainlandForestWeather } : {}),
+  };
+}
+
+/** Reject malformed/tampered positions before a title-screen continue can attempt to start a Scene. */
+export function normalizeAdventureRecord(value: unknown): AdventureRecord | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const candidate = value as { mapId?: unknown; sceneKey?: unknown; resume?: unknown };
+  if (!isSafeMapId(candidate.mapId) || !isSafeSceneKey(candidate.sceneKey) || !candidate.resume || typeof candidate.resume !== "object") return undefined;
+  const resume = candidate.resume as { kind?: unknown; x?: unknown; y?: unknown; facing?: unknown; yaw?: unknown; floor?: unknown };
+  if (!isFiniteCoordinate(resume.x) || !isFiniteCoordinate(resume.y)) return undefined;
+  if (resume.kind === "2d" && isFacing(resume.facing)) {
+    return { mapId: candidate.mapId, sceneKey: candidate.sceneKey, resume: { kind: "2d", x: resume.x, y: resume.y, facing: resume.facing } };
+  }
+  if (resume.kind === "castle3d" && isFiniteCoordinate(resume.yaw)) {
+    return { mapId: candidate.mapId, sceneKey: candidate.sceneKey, resume: { kind: "castle3d", x: resume.x, y: resume.y, yaw: resume.yaw } };
+  }
+  if (resume.kind === "lake3d" && (resume.floor === 1 || resume.floor === 2 || resume.floor === 3) && isFiniteCoordinate(resume.yaw)) {
+    return { mapId: candidate.mapId, sceneKey: candidate.sceneKey, resume: { kind: "lake3d", floor: resume.floor, x: resume.x, y: resume.y, yaw: resume.yaw } };
+  }
+  return undefined;
+}
+
+function isSafeMapId(value: unknown): value is string {
+  return typeof value === "string" && /^[a-z][a-z0-9_]*$/.test(value);
+}
+
+function isSafeSceneKey(value: unknown): value is string {
+  return typeof value === "string" && /^[A-Za-z][A-Za-z0-9]*Scene$/.test(value);
+}
+
+function isFiniteCoordinate(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && Math.abs(value) <= 1_000_000;
+}
+
+function isFacing(value: unknown): value is "up" | "down" | "left" | "right" {
+  return value === "up" || value === "down" || value === "left" || value === "right";
 }

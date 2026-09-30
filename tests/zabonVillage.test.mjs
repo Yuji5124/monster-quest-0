@@ -8,6 +8,8 @@ import { MAPS } from "../src/config/maps.ts";
 import { inflateSync } from "node:zlib";
 import { INTERACTION_REACH } from "../src/config/interaction.ts";
 import { VILLAGER_SPRITES } from "../src/config/villagerSprites.ts";
+import { TAROSA_SPRITE } from "../src/config/tarosaSprite.ts";
+import { STORY_FLAGS } from "../src/config/storyFlags.ts";
 import { bodyOffset } from "../src/config/characterWalkSprite.ts";
 import { getDialogue } from "../src/data/dialogues.ts";
 import { buildCollisionRects } from "../src/systems/ImageMapCollisionData.ts";
@@ -61,20 +63,38 @@ test("the fromWorldMap spawn's Player body clears the north exit zone (no instan
 });
 
 test("zabon-village has six data-driven villagers: four fixed at doors and two local walkers", () => {
-  const npcs = MAPS.map_zabon_village.npcs;
-  assert.equal(npcs.length, 6, "NPC_SPEC.md: 目安6人");
-  assert.equal(npcs.filter((npc) => !npc.movement).length, 4);
-  assert.equal(npcs.filter((npc) => npc.movement?.kind === "wander").length, 2);
+  const villagers = MAPS.map_zabon_village.npcs.filter((npc) => !npc.characterId);
+  assert.equal(villagers.length, 6, "NPC_SPEC.md: 目安6人");
+  assert.equal(villagers.filter((npc) => !npc.movement).length, 4);
+  assert.equal(villagers.filter((npc) => npc.movement?.kind === "wander").length, 2);
   let tarosaMentions = 0;
-  for (const npc of npcs) {
+  for (const npc of villagers) {
     assert.equal(npc.mapId, "map_zabon_village");
     assert.ok(npc.spriteId && VILLAGER_SPRITES[npc.spriteId], `${npc.id} uses a user-supplied villager sheet`);
     const dialogue = getDialogue(npc.dialogueId);
     assert.ok(dialogue && dialogue.pages.length > 0, `${npc.id} has dialogue`);
+    // 2026-09-27ユーザー依頼「住人の立ち位置、会話内容を他に合わせて更新」: レインランドじょうかまちと同じく1人4ページ以上。
+    assert.ok(dialogue.pages.length >= 4, `${npc.id} carries a dense conversation (${dialogue.pages.length} pages)`);
     for (const page of dialogue.pages) assert.ok(page.split("\n").length <= 3, `${npc.id} page fits the dialogue box`);
     if (dialogue.pages.some((page) => page.includes("タロサ"))) tarosaMentions += 1;
   }
   assert.ok(tarosaMentions <= 1, "not every villager talks about タロサ");
+});
+
+test("after the Majin report, Tarosa waits at the range, refuses once, then leaves to rescue the hero", () => {
+  const tarosa = MAPS.map_zabon_village.npcs.find((npc) => npc.id === "npc_zabon_tarosa");
+  assert.deepEqual(
+    [tarosa?.characterId, tarosa?.role, tarosa?.requiredFlag, tarosa?.departedFlag],
+    ["tarosa", "story", STORY_FLAGS.majinCaveReportedToKing, STORY_FLAGS.tarosaJoinedAtIwayama],
+  );
+  assert.equal(tarosa?.spriteId, undefined, "Tarosa must use his supplied character sheet, not a villager substitute");
+  const refusal = getDialogue("npc_zabon_tarosa", undefined, { hasFlag: () => false });
+  assert.equal(refusal.afterDialogue?.type, "story-flags");
+  assert.deepEqual(refusal.afterDialogue?.flags, [STORY_FLAGS.tarosaRefusedRequest]);
+  assert.match(refusal.pages.join("\n"), /ひとりで　いく/);
+  const afterRefusal = getDialogue("npc_zabon_tarosa", undefined, { hasFlag: (flag) => flag === STORY_FLAGS.tarosaRefusedRequest });
+  assert.equal(afterRefusal.afterDialogue, undefined);
+  assert.match(afterRefusal.pages.join("\n"), /あとから　いく/);
 });
 
 test("zabon-village fixed villagers can be talked to from the walkable path right below them", () => {
@@ -83,7 +103,7 @@ test("zabon-village fixed villagers can be talked to from the walkable path righ
   const collisionRects = buildCollisionRects(readPngAsMask(path.join(MAP_DIR, "collision.png")), manifest.collisionCellSize)
     .map((rect) => ({ x: rect.x * scale, y: rect.y * scale, width: rect.width * scale, height: rect.height * scale }));
   const overlaps = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
-  for (const npc of MAPS.map_zabon_village.npcs.filter((candidate) => !candidate.movement)) {
+  for (const npc of MAPS.map_zabon_village.npcs.filter((candidate) => !candidate.movement && !candidate.characterId)) {
     assert.equal(npc.facing, "down", `${npc.id} faces the path`);
     const sprite = VILLAGER_SPRITES[npc.spriteId];
     const offset = bodyOffset(sprite, PLAYER.width, PLAYER.height);
@@ -95,6 +115,24 @@ test("zabon-village fixed villagers can be talked to from the walkable path righ
     assert.equal(collisionRects.some((rect) => overlaps({ ...player, y: top + PLAYER.height }, rect)), false, `${npc.id} is reachable from the road`);
     assert.ok(top + PLAYER.height / 2 - INTERACTION_REACH <= npcBottom, `${npc.id} is within talking reach (gap ${(top - npcBottom).toFixed(1)}px)`);
   }
+});
+
+test("Tarosa's story position is reachable from the archery-range path", () => {
+  const manifest = readImageMapManifest(readJson(path.join(MAP_DIR, "map.json")));
+  const scale = manifest.worldScale;
+  const collisionRects = buildCollisionRects(readPngAsMask(path.join(MAP_DIR, "collision.png")), manifest.collisionCellSize)
+    .map((rect) => ({ x: rect.x * scale, y: rect.y * scale, width: rect.width * scale, height: rect.height * scale }));
+  const overlaps = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+  const tarosa = MAPS.map_zabon_village.npcs.find((npc) => npc.id === "npc_zabon_tarosa");
+  assert.ok(tarosa);
+  const offset = bodyOffset(TAROSA_SPRITE, PLAYER.width, PLAYER.height);
+  const npcBottom = tarosa.position.y * scale - TAROSA_SPRITE.frameHeight / 2 + offset.y + PLAYER.height;
+  const player = { x: tarosa.position.x * scale - PLAYER.width / 2, width: PLAYER.width, height: PLAYER.height };
+  let top = npcBottom;
+  while (top < npcBottom + 60 && collisionRects.some((rect) => overlaps({ ...player, y: top }, rect))) top += 1;
+  assert.equal(collisionRects.some((rect) => overlaps({ ...player, y: top }, rect)), false, "Tarosa has walkable ground below");
+  assert.equal(collisionRects.some((rect) => overlaps({ ...player, y: top + PLAYER.height }, rect)), false, "Tarosa is reachable from the range path");
+  assert.ok(top + PLAYER.height / 2 - INTERACTION_REACH <= npcBottom, "Tarosa is within talking reach");
 });
 
 test("zabon-village walkers only wander over walkable ground", () => {

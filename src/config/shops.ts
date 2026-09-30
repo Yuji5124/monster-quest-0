@@ -44,6 +44,57 @@ export const SHOPS: Readonly<Record<string, ShopDefinition>> = {
       { itemId: "dokukeshi", price: 10 },
     ],
   },
+  // No.04ビーエのむら(2026-09-27ユーザー指示「村人を再度見直し、宿屋・武器屋・道具屋等の役割を追加」)。
+  // 山あいの小さな村のため専用の店番は増やさず、既存の固定村人3人がそれぞれの生業と兼業する形にした
+  // (水車小屋の主=刃物の手入れもする村いちばんの鍛冶仕事、北東の家の農家=広い家で旅人へ部屋を貸す、
+  // 店先の日よけの人=干した薬草を旅人へも分ける)。品揃え・価格はNo.02と同じTEMP_TEST_VALUEをそのまま
+  // 再利用し、地域ごとの経済差はTBD(TBD_REGISTRY.md)。
+  npc_bie_village_miller: {
+    kind: "weapon",
+    stock: [
+      { memberId: "hero", weaponId: "hero_konbo", price: 50 },
+      { memberId: "hero", weaponId: "hero_tetsu_no_ken", price: 300 },
+    ],
+  },
+  npc_bie_village_farmer: { kind: "inn", price: 8 },
+  npc_bie_village_herb_drier: {
+    kind: "item",
+    stock: [
+      { itemId: "kaifukuyaku", price: 8 },
+      { itemId: "dokukeshi", price: 10 },
+    ],
+  },
+  // No.10かくれざと(2026-09-27ユーザー指示「宿屋・武器屋・道具屋を強化」)。ビーエのむらと同じく専用の
+  // 店番は増やさず、固定住民3人が生業と兼業する(水車小屋の主=こむぎひきのかたわら刃物の手入れをするので
+  // ぶきや、まんなかの家の人=あまった部屋を旅人に貸すのでやどや、西の家の人=やまの薬草を分けるのでどうぐや)。
+  // 品揃え・価格はNo.02・ビーエのむらと同じTEMP_TEST_VALUEを再利用し、地域ごとの経済差はTBD(TBD_REGISTRY.md)。
+  npc_hidden_village_watermill_keeper: {
+    kind: "weapon",
+    stock: [
+      { memberId: "hero", weaponId: "hero_konbo", price: 50 },
+      { memberId: "hero", weaponId: "hero_tetsu_no_ken", price: 300 },
+    ],
+  },
+  npc_hidden_village_central_householder: { kind: "inn", price: 8 },
+  npc_hidden_village_west_householder: {
+    kind: "item",
+    stock: [
+      { itemId: "kaifukuyaku", price: 8 },
+      { itemId: "dokukeshi", price: 10 },
+    ],
+  },
+  // No.12港町ダコハ(2026-09-29ユーザー指示「村人を追加、他の村と同じように宿屋・武器屋を追加」)。
+  // ユーザー指示は宿屋・武器屋の2つだけのため、道具屋は今回追加しない。やどやの主人・ぶきやの店主は
+  // 専用の店番として配置した固定村人(config/maps.ts、role: "shopkeeper")。品揃え・価格は他の町と同じ
+  // TEMP_TEST_VALUEを再利用し、地域ごとの経済差はTBD(TBD_REGISTRY.md)。
+  npc_dakoha_port_innkeeper: { kind: "inn", price: 8 },
+  npc_dakoha_port_armory_keeper: {
+    kind: "weapon",
+    stock: [
+      { memberId: "hero", weaponId: "hero_konbo", price: 50 },
+      { memberId: "hero", weaponId: "hero_tetsu_no_ken", price: 300 },
+    ],
+  },
 };
 
 export function getShop(npcId: string): ShopDefinition | undefined {

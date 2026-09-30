@@ -32,6 +32,7 @@ import { beginMapTransition } from "../systems/MapTransition.ts";
 import type { Facing } from "../systems/PlayerMovement.ts";
 import { DialogueBox } from "../ui/DialogueBox.ts";
 import { FieldMenu } from "../ui/FieldMenu.ts";
+import { GameStateRepository } from "../systems/GameStateRepository.ts";
 import { RAINLAND_CASTLE_PACKAGE } from "./RainlandCastleScene.ts";
 import { RAINLAND_THRONE_ROOM_PACKAGE } from "./RainlandThroneRoomScene.ts";
 import type { RainlandMapPackage } from "./RainlandForestScene.ts";
@@ -107,6 +108,7 @@ export class Castle3DScene extends Phaser.Scene {
   private glow?: (x: number, y: number, z: number, size: number) => void;
   /** 描画品質(端末に合わせてbuildViewで決める)。 */
   private quality!: Castle3DQuality;
+  private readonly gameState = new GameStateRepository();
 
   constructor(sceneKey: string, pkg: RainlandMapPackage, cfg: Castle3DConfig) {
     super({ key: sceneKey });
@@ -162,7 +164,16 @@ export class Castle3DScene extends Phaser.Scene {
       color: "#ffffff", fontFamily: "monospace", fontSize: "22px",
     }).setOrigin(0.5).setDepth(HUD_DEPTH);
     this.createHud();
-    this.fieldMenu = new FieldMenu(this);
+    this.fieldMenu = new FieldMenu(this, {
+      onRecord: () => {
+        const sprite = feetToSprite(this.feet.x, this.feet.y, this.worldScale);
+        this.gameState.saveAdventureRecord({
+          mapId: this.pkg.mapId,
+          sceneKey: this.scene.key,
+          resume: { kind: "castle3d", x: sprite.x, y: sprite.y, yaw: this.yaw },
+        });
+      },
+    });
     this.dialogueBox = new DialogueBox(this);
     this.actions = new InputSystem(window, document);
     this.actions.setLocked(true);

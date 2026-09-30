@@ -1,6 +1,14 @@
 import type { DevBattleMonsterId } from "../config/battle.ts";
 import { DEV_BATTLE_MONSTER_IDS } from "../config/battle.ts";
+import type { RainlandWeatherPhase } from "../config/rainlandWeather.ts";
 import type { Facing } from "../systems/PlayerMovement.ts";
+import type { PartyMemberId } from "../systems/PartySystem.ts";
+
+/** Immutable field-weather snapshot passed into BattleScene at encounter entry. */
+export interface BattleWeatherContext {
+  readonly biome: "rainland-forest";
+  readonly phase: RainlandWeatherPhase;
+}
 
 export interface BattleDialogueEvent {
   readonly type: "battle";
@@ -26,6 +34,10 @@ export interface BattleDialogueEvent {
   readonly returnFloor?: number;
   /** Optional exact first-person camera yaw. 2D maps continue to use returnFacing. */
   readonly returnYaw?: number;
+  /** Optional local encounter backdrop. It overrides only this event, not the shared monster definition. */
+  readonly battleBackground?: { readonly key: string; readonly url: string };
+  /** Optional local-map weather snapshot. BattleScene never reaches back into the field Scene. */
+  readonly weather?: BattleWeatherContext;
 }
 
 /** DEV recruitment event. The dialogue chooses this only when its prerequisite is satisfied. */
@@ -51,9 +63,32 @@ export interface NpcDepartDialogueEvent {
   readonly eventId: string;
   readonly npcId: string;
   readonly flags: readonly string[];
+  /** 去ると同時にパーティへ加わる場合だけ指定する(ミレイがかくれざとを去り旅の仲間になる等)。 */
+  readonly joinsPartyAs?: PartyMemberId;
 }
 
-export type DialogueAfterEvent = BattleDialogueEvent | PartyJoinDialogueEvent | StoryFlagsDialogueEvent | NpcDepartDialogueEvent;
+/**
+ * 会話を読み終えると、額縁つきの一枚絵を挟んでから続きの会話を開く(王がタロサの話をする場面など)。
+ * 一枚絵はcontinuationPagesが読み終わるまで表示したままにし、閉じた時点でthenFlagsを保存する。
+ */
+export interface PortraitInterludeDialogueEvent {
+  readonly type: "portrait-interlude";
+  readonly portrait: {
+    readonly key: string;
+    readonly path: string;
+    readonly crop: { readonly x: number; readonly y: number; readonly width: number; readonly height: number };
+    readonly displayHeight: number;
+  };
+  readonly continuationPages: readonly string[];
+  readonly thenFlags?: readonly string[];
+}
+
+export type DialogueAfterEvent =
+  | BattleDialogueEvent
+  | PartyJoinDialogueEvent
+  | StoryFlagsDialogueEvent
+  | NpcDepartDialogueEvent
+  | PortraitInterludeDialogueEvent;
 
 export interface BattleSceneStartData extends BattleDialogueEvent {
   readonly mode: "event";
@@ -77,6 +112,10 @@ export function isStoryFlagsDialogueEvent(event: DialogueAfterEvent | undefined)
 
 export function isNpcDepartDialogueEvent(event: DialogueAfterEvent | undefined): event is NpcDepartDialogueEvent {
   return event?.type === "npc-depart";
+}
+
+export function isPortraitInterludeDialogueEvent(event: DialogueAfterEvent | undefined): event is PortraitInterludeDialogueEvent {
+  return event?.type === "portrait-interlude";
 }
 
 /** Tiled Object properties -> existing dialogue battle contract. Coordinates stay with the map. */

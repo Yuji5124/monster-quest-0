@@ -70,11 +70,11 @@ test("starting-forest package routes its north archway to the world map and keep
   const chest = objects.find((object) => object.id === "chest_starting_forest_kaifukuyaku");
   assert.deepEqual(chest && {
     type: chest.type,
-    itemId: chest.type === "chest" ? chest.itemId : undefined,
+    jumpCoinCount: chest.type === "chest" ? chest.jumpCoinCount : undefined,
     openedFlag: chest.type === "chest" ? chest.openedFlag : undefined,
   }, {
     type: "chest",
-    itemId: "kaifukuyaku",
+    jumpCoinCount: 1,
     openedFlag: "chest.starting_forest_kaifukuyaku_opened",
   });
   const arrival = objects.find((object) => object.id === "arrival_starting_forest_tarosa");

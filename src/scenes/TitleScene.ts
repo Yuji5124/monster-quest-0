@@ -1,12 +1,14 @@
 import Phaser from "phaser";
 import { DISPLAY, SCALE_FACTOR } from "../config/display.ts";
-import { TITLE_MENU_ITEMS } from "../config/menu.ts";
+import { getTitleMenuItems } from "../config/menu.ts";
+import type { TitleMenuItem } from "../config/menu.ts";
 import { OPENING_INTRO } from "../config/openingIntro.ts";
 import type { TitleSceneData } from "../config/openingIntro.ts";
 import { TITLE_PRESENTATION } from "../config/titlePresentation.ts";
 import { InputSystem } from "../systems/InputSystem.ts";
 import { openingCampfireAudio } from "../systems/OpeningCampfireAudio.ts";
 import { GameStateRepository } from "../systems/GameStateRepository.ts";
+import { resolveAdventureResume } from "../systems/AdventureResume.ts";
 import { DEV_STARTING_ITEMS, inventory } from "../systems/Inventory.ts";
 import { partySystem } from "../systems/PartySystem.ts";
 
@@ -45,6 +47,7 @@ export class TitleScene extends Phaser.Scene {
   private promptBlinkElapsedMs = 0;
   private cursorTween?: Phaser.Tweens.Tween;
   private entry: TitleSceneData = {};
+  private menuItems: readonly TitleMenuItem[] = [];
 
   constructor() {
     super("TitleScene");
@@ -66,6 +69,7 @@ export class TitleScene extends Phaser.Scene {
     this.gameStarting = false;
     this.mode = "splash";
     this.promptBlinkElapsedMs = 0;
+    this.menuItems = getTitleMenuItems(new GameStateRepository().hasAdventureRecord());
 
     this.textures.get(BACKGROUND_KEY).setFilter(Phaser.Textures.FilterMode.LINEAR);
     this.textures.get(LOGO_KEY).setFilter(Phaser.Textures.FilterMode.LINEAR);
@@ -221,7 +225,7 @@ export class TitleScene extends Phaser.Scene {
 
   private createLogo(): { menuTop: number; menuHeight: number } {
     const maxLogoWidth = DISPLAY.width - MARGIN_X * 2;
-    const menuHeight = TITLE_MENU_ITEMS.length * MENU_LINE_HEIGHT;
+    const menuHeight = this.menuItems.length * MENU_LINE_HEIGHT;
     const maxLogoHeight = DISPLAY.height - MARGIN_TOP - MARGIN_BOTTOM - MENU_GAP - menuHeight;
     const logo = this.add.image(DISPLAY.width / 2, MARGIN_TOP, LOGO_KEY).setOrigin(0.5, 0);
     const scale = Math.min(maxLogoWidth / logo.width, maxLogoHeight / logo.height, 1);
@@ -236,7 +240,7 @@ export class TitleScene extends Phaser.Scene {
   }
 
   private createMenu(menuTop: number): void {
-    this.itemTexts = TITLE_MENU_ITEMS.map((item, index) =>
+    this.itemTexts = this.menuItems.map((item, index) =>
       this.add.text(DISPLAY.width / 2, menuTop + index * MENU_LINE_HEIGHT, item.label, {
         fontFamily: "monospace",
         fontSize: `${MENU_FONT_SIZE}px`,
@@ -391,13 +395,13 @@ export class TitleScene extends Phaser.Scene {
 
   private moveSelection(delta: number): void {
     const next = this.selectedIndex + delta;
-    if (next < 0 || next >= TITLE_MENU_ITEMS.length) return;
+    if (next < 0 || next >= this.menuItems.length) return;
     this.selectedIndex = next;
     this.renderMenu();
   }
 
   private renderMenu(): void {
-    TITLE_MENU_ITEMS.forEach((item, index) => {
+    this.menuItems.forEach((item, index) => {
       this.itemTexts[index].setColor(index === this.selectedIndex ? "#fff1a8" : item.enabled ? "#eeeeee" : "#5a5a5a");
     });
     const selectedText = this.itemTexts[this.selectedIndex];
@@ -414,7 +418,7 @@ export class TitleScene extends Phaser.Scene {
   }
 
   private handleConfirm(): void {
-    const item = TITLE_MENU_ITEMS[this.selectedIndex];
+    const item = this.menuItems[this.selectedIndex];
     if (!item.enabled) {
       console.log(`[TitleScene] ${item.action} is not available yet (no save data).`);
       return;
@@ -450,6 +454,17 @@ export class TitleScene extends Phaser.Scene {
     console.log(`[TitleScene] action: ${action}`);
     if (action === "START_GAME") this.resetForNewGame();
     if (action === "START_GAME") this.scene.start("OpeningGlitchScene");
+    if (action === "CONTINUE") {
+      const destination = resolveAdventureResume(new GameStateRepository().getAdventureRecord());
+      if (destination) this.scene.start(destination.sceneKey, destination.data);
+      else {
+        // A malformed/obsolete record must not trap the player on a locked title item.
+        this.gameStarting = false;
+        this.actions.setLocked(false);
+        this.menuItems = getTitleMenuItems(false);
+        this.renderMenu();
+      }
+    }
     if (action === "JANCARD_GACHA") this.scene.start("JumpCardGachaScene");
     if (action === "JANCARD_BOOK") this.scene.start("JumpCardEncyclopediaScene");
     // 未接続項目は、既存どおり入力解除してタイトルへ留まる。

@@ -1,0 +1,168 @@
+{
+ "output": "public/audio/trailer_mix.wav",
+ "samples": 1440000,
+ "seconds": 30.0,
+ "integrated_lufs": -14.0,
+ "true_peak_dbtp": -1.26,
+ "bgm_song_offset_sec": 13.4983,
+ "bgm_in_frame": 210,
+ "bgm_stop_frame": 765,
+ "bgm_samples_after_stop": 0,
+ "events": [
+  {
+   "id": "digital_noise",
+   "at": 1
+  },
+  {
+   "id": "campfire",
+   "at": 12
+  },
+  {
+   "id": "wind",
+   "at": 12
+  },
+  {
+   "id": "type",
+   "frames": [
+    24,
+    28,
+    32,
+    36,
+    40,
+    44,
+    48,
+    52,
+    56,
+    60,
+    64,
+    68,
+    72,
+    76,
+    80,
+    84,
+    88,
+    92,
+    96,
+    100,
+    104
+   ]
+  },
+  {
+   "id": "riser",
+   "at": 120
+  },
+  {
+   "id": "whoosh",
+   "at": 196
+  },
+  {
+   "id": "boom",
+   "at": 210
+  },
+  {
+   "id": "snap",
+   "at": 256
+  },
+  {
+   "id": "snap",
+   "at": 268
+  },
+  {
+   "id": "snap",
+   "at": 279
+  },
+  {
+   "id": "type_hi",
+   "frames": [
+    303,
+    305,
+    307,
+    309,
+    311,
+    313,
+    315,
+    317
+   ]
+  },
+  {
+   "id": "type_hi",
+   "frames": [
+    321,
+    323,
+    325,
+    327,
+    329,
+    331,
+    333,
+    335
+   ]
+  },
+  {
+   "id": "type_hi",
+   "frames": [
+    339,
+    341,
+    343,
+    345,
+    347,
+    349
+   ]
+  },
+  {
+   "id": "whoosh",
+   "at": 358
+  },
+  {
+   "id": "flash_hit",
+   "at": 429
+  },
+  {
+   "id": "impact",
+   "at": 452
+  },
+  {
+   "id": "bow",
+   "at": 487
+  },
+  {
+   "id": "snap",
+   "at": 498
+  },
+  {
+   "id": "explosion",
+   "at": 552
+  },
+  {
+   "id": "explosion",
+   "at": 562
+  },
+  {
+   "id": "explosion",
+   "at": 571
+  },
+  {
+   "id": "rumble",
+   "at": 591
+  },
+  {
+   "id": "sparkle",
+   "at": 618
+  },
+  {
+   "id": "water",
+   "at": 672
+  },
+  {
+   "id": "join",
+   "at": 725
+  },
+  {
+   "id": "campfire",
+   "at": 765
+  },
+  {
+   "id": "impact_logo",
+   "at": 792
+  }
+ ]
+}

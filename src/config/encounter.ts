@@ -35,7 +35,8 @@ export const IWAYAMA_CAVE_RANDOM_ENCOUNTER: RandomEncounterConfig = IMAGE_MAP_BA
 
 // No.11 is a compact native-3D grid (one world unit per cell), so its pacing values use
 // that coordinate space rather than the 1.5x image-map pixel convention above.
-// TEMP_TEST_VALUE: the formal No.11 monster table and encounter pacing remain TBD.
+// 2026-09-29: formal monster selection is ENCOUNTER_TABLES.lake_castle. The compact-grid
+// pacing values remain TEMP_TEST_VALUE until a device playtest confirms their feel.
 // 2026-09-27: ユーザー指示で他のダンジョン・森と同じ割合(encounterChanceのみ0.25→0.375、1.5倍)にした。
 export const LAKE_CASTLE_RANDOM_ENCOUNTER: RandomEncounterConfig = {
   stepDistance: 22,

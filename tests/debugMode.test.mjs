@@ -18,37 +18,27 @@ test("DEBUG_MODE never turns on in a production build or under Node", () => {
   assert.equal(isDebugMode(), false, "import.meta.env.DEV is absent outside Vite, so the other tests keep exercising normal play");
 });
 
-test("the debug party is hero → tarosa → mirei, all at Lv30, independent of joining or the save", () => {
+test("the debug party is the hero alone at Lv30, independent of joining or the save", () => {
   assert.equal(DEBUG_PARTY_LEVEL, 30);
-  assert.deepEqual(DEBUG_PARTY_MEMBER_IDS, ["hero", "tarosa", "mirei"]);
+  assert.deepEqual(DEBUG_PARTY_MEMBER_IDS, ["hero"]);
   const party = buildDebugParty();
-  assert.deepEqual(party.map((member) => member.id), ["hero", "tarosa", "mirei"]);
-  for (const member of party) {
-    assert.equal(member.initialHp, undefined, `${member.id} starts at full HP`);
-    assert.equal(member.initialMp, undefined, `${member.id} starts at full MP`);
-  }
+  assert.deepEqual(party.map((member) => member.id), ["hero"]);
+  assert.equal(party[0].initialHp, undefined, "hero starts at full HP");
+  assert.equal(party[0].initialMp, undefined, "hero starts at full MP");
 });
 
 test("Lv30 stats extend the same linear curve past the formal Lv25 cap", () => {
-  for (const id of DEBUG_PARTY_MEMBER_IDS) {
-    const lv25 = getCharacterBaseStatsAtLevel(id, MAX_CHARACTER_LEVEL);
-    const lv30 = getCharacterBaseStatsAtLevel(id, DEBUG_PARTY_LEVEL, DEBUG_PARTY_LEVEL);
-    assert.equal(lv30.level, 30);
-    assert.ok(lv30.maxHp > lv25.maxHp && lv30.maxMp > lv25.maxMp && lv30.attack > lv25.attack, `${id} keeps growing to Lv30`);
-  }
-  const [hero, tarosa, mirei] = buildDebugParty();
-  assert.ok(hero.maxHp > tarosa.maxHp && tarosa.maxHp > mirei.maxHp, "HP order 主人公>タロサ>ミレイ still holds at Lv30");
-  assert.ok(mirei.maxMp > hero.maxMp && hero.maxMp > tarosa.maxMp, "MP order ミレイ>主人公>タロサ still holds at Lv30");
-  assert.ok(tarosa.attack > hero.attack && hero.attack > mirei.attack, "attack order タロサ>主人公>ミレイ still holds at Lv30");
+  const lv25 = getCharacterBaseStatsAtLevel("hero", MAX_CHARACTER_LEVEL);
+  const lv30 = getCharacterBaseStatsAtLevel("hero", DEBUG_PARTY_LEVEL, DEBUG_PARTY_LEVEL);
+  assert.equal(lv30.level, 30);
+  assert.ok(lv30.maxHp > lv25.maxHp && lv30.maxMp > lv25.maxMp && lv30.attack > lv25.attack, "hero keeps growing to Lv30");
+  const [hero] = buildDebugParty();
+  assert.equal(hero.maxHp, lv30.maxHp);
 });
 
-test("the debug party knows every spell and carries the best auto-equipped weapons", () => {
-  const [hero, tarosa, mirei] = buildDebugParty();
+test("the debug hero knows every spell", () => {
+  const [hero] = buildDebugParty();
   assert.deepEqual(hero.learnedMagic.map((magic) => magic.name), ["エレキテル", "ライフ", "ヒート", "ビーター"]);
-  assert.equal(tarosa.learnedMagic.length, 3);
-  assert.equal(mirei.learnedMagic.length, 6);
-  assert.ok(mirei.learnedMagic.some((magic) => magic.name === "ミラー"), "ミレイ can use ミラー for the デーマス fight");
-  assert.equal(tarosa.weaponAction.statusEffect, "poison", "タロサ holds the poison bow");
 });
 
 test("normal play stays capped at Lv25 when no override is given", () => {

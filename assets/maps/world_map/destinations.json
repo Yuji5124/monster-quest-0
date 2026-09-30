@@ -102,7 +102,7 @@
       "y": 813,
       "labelOffset": { "x": -80, "y": -30 },
       "visible": true,
-      "unlockFlag": null,
+      "unlockFlag": "event.rainland_throne_majin_reported",
       "positionStatus": "FINAL_POSITION"
     },
     {
@@ -115,7 +115,7 @@
       "y": 705,
       "labelOffset": { "x": -15, "y": 27 },
       "visible": true,
-      "unlockFlag": null,
+      "unlockFlag": "event.zabon_tarosa_refused",
       "positionStatus": "FINAL_POSITION"
     },
     {
@@ -128,7 +128,7 @@
       "y": 545,
       "labelOffset": { "x": -20, "y": 30 },
       "visible": true,
-      "unlockFlag": null,
+      "unlockFlag": "story.iwayama_cave_cleared",
       "positionStatus": "FINAL_POSITION"
     },
     {
@@ -157,7 +157,7 @@
       "y": 415,
       "labelOffset": { "x": 0, "y": -30 },
       "visible": true,
-      "unlockFlag": null,
+      "unlockFlag": "event.hidden_village_visited",
       "positionStatus": "FINAL_POSITION"
     },
     {
@@ -248,7 +248,7 @@
       "y": 475,
       "labelOffset": { "x": 65, "y": 25 },
       "visible": true,
-      "unlockFlag": null,
+      "unlockFlag": "story.stone_town_unlocked",
       "positionStatus": "FINAL_POSITION"
     },
     {

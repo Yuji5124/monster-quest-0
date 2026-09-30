@@ -166,6 +166,11 @@ export function getJumpCardDisplayName(card: Pick<JumpCardDefinition, "publicNam
   return card.isSpoiler ? "？？？" : card.publicName;
 }
 
+/** Stable-ID lookup for systems such as optional card battles. */
+export function getJumpCardDefinition(id: string): JumpCardDefinition | undefined {
+  return JUMP_CARD_DEFINITIONS.find((card) => card.id === id);
+}
+
 export function getJumpCardRecords(obtainedIds: readonly string[]): readonly JumpCardRecord[] {
   const obtained = new Set(obtainedIds);
   return JUMP_CARD_DEFINITIONS.map((card) => ({ ...card, obtained: obtained.has(card.id) }));

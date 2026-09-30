@@ -49,10 +49,13 @@ test("exit bounds are non-empty rectangles", () => {
   }
 });
 
-test("No.01 and No.02 use the point-selection WorldMapScene as the active round-trip route", () => {
+test("No.01's north and south trails, and No.02, use the point-selection WorldMapScene as the active round-trip route", () => {
   const no01NorthGate = startingPlaceEvents.find((event) => event.id === "event_no01_north_gate");
+  const no01SouthGate = startingPlaceEvents.find((event) => event.id === "event_no01_south_gate");
   assert.equal(no01NorthGate.commands[0].type, "world-map");
   assert.equal(resolveWorldMapEntryDestination(worldMapManifest, worldMapDestinations, no01NorthGate.commands[0].worldMapEntryId).id, "destination_starting_place");
+  assert.equal(no01SouthGate.commands[0].type, "world-map");
+  assert.equal(resolveWorldMapEntryDestination(worldMapManifest, worldMapDestinations, no01SouthGate.commands[0].worldMapEntryId).id, "destination_starting_place");
 
   const westExit02 = startingTownEvents.find((event) => event.id === "event_starting_town_west_exit");
   assert.equal(westExit02.commands[0].type, "world-map");

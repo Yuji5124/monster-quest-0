@@ -68,6 +68,14 @@ export const MONSTER_ROSTER: readonly MonsterRosterEntry[] = [
 export const MONSTER_ROSTER_BY_ID: Readonly<Record<string, MonsterRosterEntry>> =
   Object.fromEntries(MONSTER_ROSTER.map((monster) => [monster.id, monster]));
 
+/** No.03ビーエのもりだけに適用する、2026-10-01ユーザー指定の経験値調整。 */
+export const BIE_FOREST_EXPERIENCE_MULTIPLIER = 0.8;
+
+function bieForestExperience(monsterId: "tamago_ghost" | "purin"): number {
+  // 戦闘報酬は整数のため、80%にした結果の端数はBattleSystemへ渡す前に切り捨てる。
+  return Math.floor(MONSTER_ROSTER_BY_ID[monsterId].exp * BIE_FOREST_EXPERIENCE_MULTIPLIER);
+}
+
 /** Looks up a roster entry by its stable code id (e.g. "purin", "orochi_maou"). */
 export function getMonsterRosterEntry(id: string): MonsterRosterEntry | undefined {
   return MONSTER_ROSTER_BY_ID[id];
@@ -145,9 +153,30 @@ function iwayamaCaveMonster(id: "koakuma" | "erimaki_hebi" | "daija", portraitUr
   };
 }
 
+/** No.11みずうみの古城の通常敵。No.10〜12の正本ロスター値と、名前を照合済みの原資料カードを使う。 */
+function lakeCastleMonster(id: "yaki_purin" | "kamaitachi" | "kirimaneki", portraitUrl: string): DevBattleMonsterDefinition {
+  const roster = MONSTER_ROSTER_BY_ID[id];
+  return {
+    id,
+    displayName: roster.name,
+    portraitUrl,
+    portraitFormat: "jpeg",
+    maxHp: roster.hp,
+    attack: roster.attack,
+    defense: roster.defense,
+    speed: roster.speed,
+    reward: { experience: roster.exp, money: roster.gold },
+    display: { scale: 0.56, offsetY: 0 },
+    background: {
+      key: "battle.bg.lake_castle",
+      url: new URL("../../assets/maps/reference/reference/みずうみの古城_イメージ.png", import.meta.url).href,
+    },
+  };
+}
+
 // Direct Vite URLs retain the source files and avoid an unnecessary runtime copy.
 export const DEV_BATTLE_MONSTERS: Record<DevBattleMonsterId, DevBattleMonsterDefinition> = {
-  // No.03ビーエのもり（内部starting_forest）の通常敵。HP/攻撃/防御/素早さ/EXP/ゴールドはMONSTER_ROSTERの正本を参照する。
+  // No.03ビーエのもり（内部starting_forest）の通常敵。HP/攻撃/防御/ゴールドはMONSTER_ROSTERの正本を参照する。
   "001": {
     id: "001",
     displayName: MONSTER_ROSTER_BY_ID.tamago_ghost.name,
@@ -157,9 +186,9 @@ export const DEV_BATTLE_MONSTERS: Record<DevBattleMonsterId, DevBattleMonsterDef
     attack: MONSTER_ROSTER_BY_ID.tamago_ghost.attack,
     defense: MONSTER_ROSTER_BY_ID.tamago_ghost.defense,
     speed: MONSTER_ROSTER_BY_ID.tamago_ghost.speed,
-    // 固有ドロップ(かいふくやく)の確率自体は未確定のためTEMP_TEST_VALUEを維持。EXP/ゴールドのみ確定値。
+    // 固有ドロップ(かいふくやく)の確率自体は未確定のためTEMP_TEST_VALUEを維持。経験値はこの地域だけ80%に調整する。
     reward: {
-      experience: MONSTER_ROSTER_BY_ID.tamago_ghost.exp,
+      experience: bieForestExperience("tamago_ghost"),
       money: MONSTER_ROSTER_BY_ID.tamago_ghost.gold,
       drops: [{ itemId: "kaifukuyaku", chance: 0.15 }], // TEMP_TEST_VALUE
     },
@@ -178,9 +207,9 @@ export const DEV_BATTLE_MONSTERS: Record<DevBattleMonsterId, DevBattleMonsterDef
     attack: MONSTER_ROSTER_BY_ID.purin.attack,
     defense: MONSTER_ROSTER_BY_ID.purin.defense,
     speed: MONSTER_ROSTER_BY_ID.purin.speed,
-    // 固有ドロップ(どくけし)の確率自体は未確定のためTEMP_TEST_VALUEを維持。EXP/ゴールドのみ確定値。
+    // 固有ドロップ(どくけし)の確率自体は未確定のためTEMP_TEST_VALUEを維持。経験値はこの地域だけ80%に調整する。
     reward: {
-      experience: MONSTER_ROSTER_BY_ID.purin.exp,
+      experience: bieForestExperience("purin"),
       money: MONSTER_ROSTER_BY_ID.purin.gold,
       drops: [{ itemId: "dokukeshi", chance: 0.1 }], // TEMP_TEST_VALUE
     },
@@ -222,6 +251,20 @@ export const DEV_BATTLE_MONSTERS: Record<DevBattleMonsterId, DevBattleMonsterDef
   daija: iwayamaCaveMonster(
     "daija",
     new URL("../../assets/monsters/source/portraits/mq0_monster_011_1e59d48bf6.png", import.meta.url).href,
+  ),
+  // No.11みずうみの古城。対象は正式ロスターの連続する通常敵No.10〜12に整理する。
+  // 原資料カードに記載されたHP/MP/攻撃値は資料値として保存し、戦闘値・EXP・GはMONSTER_ROSTERを正とする。
+  yaki_purin: lakeCastleMonster(
+    "yaki_purin",
+    new URL("../../assets/monsters/source/cards/mq0_monster_card_010_28a8a1a26e.jpeg", import.meta.url).href,
+  ),
+  kamaitachi: lakeCastleMonster(
+    "kamaitachi",
+    new URL("../../assets/monsters/source/cards/mq0_monster_card_063_df17a6bc38.jpeg", import.meta.url).href,
+  ),
+  kirimaneki: lakeCastleMonster(
+    "kirimaneki",
+    new URL("../../assets/monsters/source/cards/mq0_monster_card_039_6f43c43df9.jpeg", import.meta.url).href,
   ),
   "006": {
     id: "006",

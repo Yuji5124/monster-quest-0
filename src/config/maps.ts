@@ -2,6 +2,10 @@ import { WORLD_LOCATIONS } from "./field.ts";
 import type { Facing } from "../systems/PlayerMovement.ts";
 import { STORY_FLAGS } from "./storyFlags.ts";
 import type { VillagerSpriteId } from "./villagerSprites.ts";
+import type { JumpCardBattleId } from "./jumpCardBattles.ts";
+
+/** Villagers and story characters use different supplied walk sheets, but share the same field NPC rules. */
+export type StoryCharacterId = "tarosa" | "mirei";
 
 // ローカルマップとlegacy徒歩Fieldの定義。地域間の正式導線はWorldMapSceneであり、
 // field_starting_region は削除しないlegacy / prototypeの仮IDとして保持する。
@@ -73,8 +77,12 @@ export interface NpcDefinition {
   readonly position: { readonly x: number; readonly y: number };
   readonly facing: Facing;
   readonly dialogueId: string;
+  /** Optional isolated card-minigame challenge. It never runs through the RPG battle system. */
+  readonly jumpCardBattleId?: JumpCardBattleId;
   /** Optional user-supplied villager appearance. Omit only for legacy placeholder NPCs. */
   readonly spriteId?: VillagerSpriteId;
+  /** Named story character drawn from its supplied playable walk sheet, never a villager substitute. */
+  readonly characterId?: StoryCharacterId;
   /**
    * Shopkeepers stay at their assigned storefront; residents can wander locally;
    * story NPCs stand still and belong to a one-time event (not one of the red-point villagers).
@@ -82,6 +90,8 @@ export interface NpcDefinition {
   readonly role?: "shopkeeper" | "resident" | "story";
   /** 一度きりの会話イベントで去るNPC。このフラグが保存済みなら、Sceneは最初からこのNPCを生成しない。 */
   readonly departedFlag?: string;
+  /** The NPC appears only once this saved story flag is present. */
+  readonly requiredFlag?: string;
   /** Native-background-pixel wander radius and speed. The scene applies worldScale. */
   readonly movement?: {
     readonly kind: "wander";
@@ -93,8 +103,9 @@ export interface NpcDefinition {
 }
 
 /** 保存済みフラグから見て、そのNPCが今マップにいるか(一度きりのイベントで去った後はfalse)。 */
-export function isNpcPresent(definition: Pick<NpcDefinition, "departedFlag">, savedFlags: ReadonlySet<string>): boolean {
-  return !definition.departedFlag || !savedFlags.has(definition.departedFlag);
+export function isNpcPresent(definition: Pick<NpcDefinition, "departedFlag" | "requiredFlag">, savedFlags: ReadonlySet<string>): boolean {
+  return (!definition.departedFlag || !savedFlags.has(definition.departedFlag))
+    && (!definition.requiredFlag || savedFlags.has(definition.requiredFlag));
 }
 
 // Phase 8-A: 建物は外観+Collisionのみ。内部Sceneはまだ存在しない(DEV_PLACEHOLDER_INTERIOR_PENDING)。
@@ -384,10 +395,13 @@ export const MAPS: Record<MapId, MapDefinition> = {
     // 北東の家／東の家に立たせる。西の家と木こりの家はドア前が通行不可で話しかけられないため置かない。
     // 足元Bodyの下端をドア前の通行可能セルの上端+2pxに合わせる(tests/bieVillage.test.mjs)。
     // 木こり救出イベント・会話の正式本文はTBD(台詞はdata/dialogues.tsの初稿)。
+    // 2026-09-27ユーザー指示「村人を再度見直し、宿屋・武器屋・道具屋等の役割を追加」: 固定4人のうち3人を
+    // config/shops.tsの店に割り当てた(水車小屋=ぶきや、北東の家=やどや、店先の日よけ=どうぐや)。
+    // 東の家の「となりの人」は木こり失踪の手掛かりを持つため、ショップUIを挟まず引き続き通常会話のまま。
     npcs: [
-      { id: "npc_bie_village_miller", mapId: "map_03_bie_village", position: { x: 310, y: 333 }, facing: "down", dialogueId: "npc_bie_village_miller", spriteId: "villager_08", role: "resident" },
-      { id: "npc_bie_village_herb_drier", mapId: "map_03_bie_village", position: { x: 640, y: 429 }, facing: "down", dialogueId: "npc_bie_village_herb_drier", spriteId: "villager_09", role: "resident" },
-      { id: "npc_bie_village_farmer", mapId: "map_03_bie_village", position: { x: 957, y: 317 }, facing: "down", dialogueId: "npc_bie_village_farmer", spriteId: "villager_10", role: "resident" },
+      { id: "npc_bie_village_miller", mapId: "map_03_bie_village", position: { x: 310, y: 333 }, facing: "down", dialogueId: "npc_bie_village_miller", spriteId: "villager_08", role: "shopkeeper" },
+      { id: "npc_bie_village_herb_drier", mapId: "map_03_bie_village", position: { x: 640, y: 429 }, facing: "down", dialogueId: "npc_bie_village_herb_drier", spriteId: "villager_09", role: "shopkeeper" },
+      { id: "npc_bie_village_farmer", mapId: "map_03_bie_village", position: { x: 957, y: 317 }, facing: "down", dialogueId: "npc_bie_village_farmer", spriteId: "villager_10", role: "shopkeeper" },
       // 東の家のドアは石段の右寄り。道から上がって来られる地面が石段の左下までなので、石段の左側に立たせる。
       { id: "npc_bie_village_neighbor", mapId: "map_03_bie_village", position: { x: 1214, y: 565 }, facing: "down", dialogueId: "npc_bie_village_neighbor", spriteId: "villager_04", role: "resident" },
       { id: "npc_bie_village_tree_walker", mapId: "map_03_bie_village", position: { x: 668, y: 524 }, facing: "right", dialogueId: "npc_bie_village_tree_walker", spriteId: "villager_06", role: "resident", movement: { kind: "wander", radius: 24, speed: 32, minPauseMs: 800, maxPauseMs: 2000 } },
@@ -419,8 +433,8 @@ export const MAPS: Record<MapId, MapDefinition> = {
       // その1の北口から入る位置。南の木の階段の上、上向き。出口Event zone(y:1050-1086)と重ならない。
       fromForest1: { x: 378, y: 960, facing: "up" },
     },
-    // 正式出口は assets/maps/rainland_forest_2/events.json の南口(その1)Eventで管理する。
-    // 北・西・東の3方向へ描かれた道は接続先未定の行き止まりとして残している。
+    // 正式出口はassets/maps/rainland_forest_2/events.jsonで管理する。
+    // 南口はその1へ戻り、ユーザー指定の北・西・東の道端はワールドマップへ戻る。
     exits: [],
     // 2026-09-27ユーザー指示: 注釈画像のオレンジポイント(北の橋の北東、道の左端)に木こりが立つ。話すとレインランドじょう
     // (世界地図のレインランドじょうかまち)へ行けるようになる(data/dialogues.tsのFIRST_TALK_UNLOCKS)。座標は注釈画像を
@@ -458,6 +472,8 @@ export const MAPS: Record<MapId, MapDefinition> = {
       { id: "npc_rainland_town_plaza_walker", mapId: "map_rainland_castle_town", position: { x: 730, y: 360 }, facing: "down", dialogueId: "npc_rainland_town_plaza_walker", spriteId: "villager_06", role: "resident", movement: { kind: "wander", radius: 28, speed: 34, minPauseMs: 700, maxPauseMs: 1800 } },
       { id: "npc_rainland_town_avenue_walker", mapId: "map_rainland_castle_town", position: { x: 730, y: 740 }, facing: "up", dialogueId: "npc_rainland_town_avenue_walker", spriteId: "villager_08", role: "resident", movement: { kind: "wander", radius: 28, speed: 36, minPauseMs: 600, maxPauseMs: 1700 } },
       { id: "npc_rainland_town_east_walker", mapId: "map_rainland_castle_town", position: { x: 1190, y: 360 }, facing: "left", dialogueId: "npc_rainland_town_east_walker", spriteId: "villager_07", role: "resident", movement: { kind: "wander", radius: 20, speed: 32, minPauseMs: 800, maxPauseMs: 2000 } },
+      // ユーザー指定: プリンカードを持つ相手との1回勝負。噴水西の広場は固定NPCが安全に話せる石畳。
+      { id: "npc_rainland_town_purin_card_battler", mapId: "map_rainland_castle_town", position: { x: 560, y: 420 }, facing: "down", dialogueId: "npc_rainland_town_purin_card_battler", jumpCardBattleId: "rainland_purin_challenge", spriteId: "villager_04", role: "resident" },
     ],
     buildings: [],
   },
@@ -502,7 +518,7 @@ export const MAPS: Record<MapId, MapDefinition> = {
     buildings: [],
   },
   // 正式No.08「ザボンのむら」。旧番号由来のmap_08_majin_cave(正式No.07)と紛らわしいためIDに番号を付けない。
-  // 座標は background.png(ザボンのむら　新.png、1448×1086)のネイティブ背景ピクセル。NPCは docs/NPC_SPEC.md で構成再検討中のため未配置。
+  // 座標は background.png(ザボンのむら　新.png、1448×1086)のネイティブ背景ピクセル。
   map_zabon_village: {
     id: "map_zabon_village",
     sceneKey: "ZabonVillageScene",
@@ -525,11 +541,13 @@ export const MAPS: Record<MapId, MapDefinition> = {
       { id: "npc_zabon_village_mother", mapId: "map_zabon_village", position: { x: 512, y: 741 }, facing: "down", dialogueId: "npc_zabon_village_mother", spriteId: "villager_05", role: "resident" },
       { id: "npc_zabon_village_totem_walker", mapId: "map_zabon_village", position: { x: 716, y: 636 }, facing: "up", dialogueId: "npc_zabon_village_totem_walker", spriteId: "villager_10", role: "resident", movement: { kind: "wander", radius: 28, speed: 32, minPauseMs: 800, maxPauseMs: 2000 } },
       { id: "npc_zabon_village_range_walker", mapId: "map_zabon_village", position: { x: 1032, y: 372 }, facing: "right", dialogueId: "npc_zabon_village_range_walker", spriteId: "villager_08", role: "resident", movement: { kind: "wander", radius: 28, speed: 36, minPauseMs: 600, maxPauseMs: 1700 } },
+      // 王への報告後だけ的場の手前にいる。村人6人とは別の本編NPCで、救援後はパーティにいるため村には残らない。
+      { id: "npc_zabon_tarosa", mapId: "map_zabon_village", position: { x: 1188, y: 522 }, facing: "down", dialogueId: "npc_zabon_tarosa", characterId: "tarosa", role: "story", requiredFlag: STORY_FLAGS.majinCaveReportedToKing, departedFlag: STORY_FLAGS.tarosaJoinedAtIwayama },
     ],
     buildings: [],
   },
   // 正式No.12「港町ダコハ」。座標は background.png(港町ダコハ.png、1448×1086)のネイティブ背景ピクセル。
-  // 陸側の北門(画像上端中央のアーチ)から世界地図へ出入りする。港・桟橋・灯台への道は歩けるが、船での移動・店・NPCは未実装。
+  // 陸側の北門(画像上端中央のアーチ)から世界地図へ出入りする。港・桟橋・灯台への道は歩けるが、船での移動は未実装。
   map_dakoha_port: {
     id: "map_dakoha_port",
     sceneKey: "DakohaPortScene",
@@ -539,7 +557,20 @@ export const MAPS: Record<MapId, MapDefinition> = {
     },
     // 正式出口は assets/maps/dakoha_port/events.json の北門Event(世界地図へ)で管理する。
     exits: [],
-    npcs: [],
+    // 2026-09-29ユーザー指示「港町ダコハの村人を追加、他の村と同じように宿屋・武器屋を追加」＋
+    // 「今まで使った村人の画像は使わない」。NPC_SPEC.mdの目安7人: 固定5人(やどや・ぶきや・とうだいの
+    // 老婆・広場の屋台・波止場の漁師)＋歩く2人(東の埠頭・広場西)。宿屋はやどやの主人、武器屋はぶきやの
+    // 店主が兼業する(ビーエのむら・かくれざとと同じく専用の店番を増やさない、config/shops.ts)。
+    // 座標はcollision.pngへ実プレイヤー体格(PLAYER.width/height)で検証済み(下に歩行可能・INTERACTION_REACH内)。
+    npcs: [
+      { id: "npc_dakoha_port_innkeeper", mapId: "map_dakoha_port", position: { x: 215, y: 200 }, facing: "down", dialogueId: "npc_dakoha_port_innkeeper", spriteId: "villager_18", role: "shopkeeper" },
+      { id: "npc_dakoha_port_armory_keeper", mapId: "map_dakoha_port", position: { x: 900, y: 531 }, facing: "down", dialogueId: "npc_dakoha_port_armory_keeper", spriteId: "villager_19", role: "shopkeeper" },
+      { id: "npc_dakoha_port_lighthouse_widow", mapId: "map_dakoha_port", position: { x: 1250, y: 155 }, facing: "down", dialogueId: "npc_dakoha_port_lighthouse_widow", spriteId: "villager_20", role: "resident" },
+      { id: "npc_dakoha_port_market_vendor", mapId: "map_dakoha_port", position: { x: 260, y: 455 }, facing: "down", dialogueId: "npc_dakoha_port_market_vendor", spriteId: "villager_21", role: "resident" },
+      { id: "npc_dakoha_port_fisherman", mapId: "map_dakoha_port", position: { x: 700, y: 575 }, facing: "down", dialogueId: "npc_dakoha_port_fisherman", spriteId: "villager_22", role: "resident" },
+      { id: "npc_dakoha_port_pier_boy", mapId: "map_dakoha_port", position: { x: 982, y: 630 }, facing: "left", dialogueId: "npc_dakoha_port_pier_boy", spriteId: "villager_23", role: "resident", movement: { kind: "wander", radius: 20, speed: 34, minPauseMs: 700, maxPauseMs: 1800 } },
+      { id: "npc_dakoha_port_plaza_dockhand", mapId: "map_dakoha_port", position: { x: 240, y: 516 }, facing: "up", dialogueId: "npc_dakoha_port_plaza_dockhand", spriteId: "villager_24", role: "resident", movement: { kind: "wander", radius: 16, speed: 32, minPauseMs: 800, maxPauseMs: 2000 } },
+    ],
     buildings: [],
   },
   // 正式No.14「ポサロ城」。ユーザー提供の見下ろしボス間背景をCURRENTの歩行マップとして使う。
@@ -567,11 +598,21 @@ export const MAPS: Record<MapId, MapDefinition> = {
     },
     // 正式出口は assets/maps/revival_shrine/events.json の南口Event(世界地図へ)で管理する。
     exits: [],
-    npcs: [],
+    // 2026-09-27ユーザー指示「ふっかつのほこらに村人を追加」。NPC_SPEC.md §2.1の目安2人。どちらも歩き回らず、
+    // tools/build_revival_shrine_collision.pyのWALKABLE矩形の内側(壁・柱・水から十分離れた位置)に立つ。
+    // ほこらのばんにんは下の広場、学者は北の台座手前の段(ゆうしゃのかんむりの手がかりに触れるが、
+    // MAP_FLOW_SPEC.md §4.19のとおり「反射を連想できる薄いヒント」に留め、ミラーの答えは直言しない)。
+    npcs: [
+      { id: "npc_revival_shrine_keeper", mapId: "map_revival_shrine", position: { x: 800, y: 700 }, facing: "down", dialogueId: "npc_revival_shrine_keeper", spriteId: "villager_09", role: "resident" },
+      { id: "npc_revival_shrine_scholar", mapId: "map_revival_shrine", position: { x: 760, y: 160 }, facing: "down", dialogueId: "npc_revival_shrine_scholar", spriteId: "villager_16", role: "resident" },
+    ],
     buildings: [],
   },
   // 正式No.10「かくれざと」。ユーザー提供背景の北西門から世界地図へ出入りする山あいの村。
-  // ミレイの初登場・正式同行は本編イベントとして別途実装し、ここでは住民の生活会話だけを置く。
+  // 住民8人は生活会話。ミレイだけは古城で魔法使いが必要と分かった後の一度きり本編イベント。
+  // 2026-09-27ユーザー指示「宿屋・道具屋・武器屋を強化」: ビーエのむらと同じく専用の店番は増やさず、
+  // 固定6人のうち3人がconfig/shops.tsの店を兼業する(水車小屋=ぶきや、まんなかの家=やどや、西の家=どうぐや)。
+  // 神社前・東の家・下の家と歩く2人は生業のままの通常会話(role: "resident")。
   map_hidden_village: {
     id: "map_hidden_village",
     sceneKey: "HiddenVillageScene",
@@ -583,13 +624,15 @@ export const MAPS: Record<MapId, MapDefinition> = {
     // No.02と同じ正式村人シート。家や施設の前の人は固定、広場と花畑の人だけ近傍を歩く。
     npcs: [
       { id: "npc_hidden_village_shrine_keeper", mapId: "map_hidden_village", position: { x: 724, y: 184 }, facing: "down", dialogueId: "npc_hidden_village_shrine_keeper", spriteId: "villager_08", role: "resident" },
-      { id: "npc_hidden_village_west_householder", mapId: "map_hidden_village", position: { x: 176, y: 416 }, facing: "down", dialogueId: "npc_hidden_village_west_householder", spriteId: "villager_09", role: "resident" },
-      { id: "npc_hidden_village_central_householder", mapId: "map_hidden_village", position: { x: 520, y: 376 }, facing: "down", dialogueId: "npc_hidden_village_central_householder", spriteId: "villager_10", role: "resident" },
+      { id: "npc_hidden_village_west_householder", mapId: "map_hidden_village", position: { x: 176, y: 416 }, facing: "down", dialogueId: "npc_hidden_village_west_householder", spriteId: "villager_09", role: "shopkeeper" },
+      { id: "npc_hidden_village_central_householder", mapId: "map_hidden_village", position: { x: 520, y: 376 }, facing: "down", dialogueId: "npc_hidden_village_central_householder", spriteId: "villager_10", role: "shopkeeper" },
       { id: "npc_hidden_village_east_householder", mapId: "map_hidden_village", position: { x: 1092, y: 376 }, facing: "down", dialogueId: "npc_hidden_village_east_householder", spriteId: "villager_01", role: "resident" },
       { id: "npc_hidden_village_lower_householder", mapId: "map_hidden_village", position: { x: 364, y: 784 }, facing: "down", dialogueId: "npc_hidden_village_lower_householder", spriteId: "villager_02", role: "resident" },
-      { id: "npc_hidden_village_watermill_keeper", mapId: "map_hidden_village", position: { x: 1112, y: 784 }, facing: "down", dialogueId: "npc_hidden_village_watermill_keeper", spriteId: "villager_03", role: "resident" },
+      { id: "npc_hidden_village_watermill_keeper", mapId: "map_hidden_village", position: { x: 1112, y: 784 }, facing: "down", dialogueId: "npc_hidden_village_watermill_keeper", spriteId: "villager_03", role: "shopkeeper" },
       { id: "npc_hidden_village_plaza_walker", mapId: "map_hidden_village", position: { x: 790, y: 424 }, facing: "left", dialogueId: "npc_hidden_village_plaza_walker", spriteId: "villager_05", role: "resident", movement: { kind: "wander", radius: 28, speed: 34, minPauseMs: 700, maxPauseMs: 1800 } },
       { id: "npc_hidden_village_garden_walker", mapId: "map_hidden_village", position: { x: 208, y: 456 }, facing: "left", dialogueId: "npc_hidden_village_garden_walker", spriteId: "villager_06", role: "resident", movement: { kind: "wander", radius: 24, speed: 36, minPauseMs: 600, maxPauseMs: 1600 } },
+      // 古城で魔法使いを必要と知った後だけ、山里の中央の道にミレイが現れる。身分は明かさない。
+      { id: "npc_hidden_village_mirei", mapId: "map_hidden_village", position: { x: 688, y: 438 }, facing: "down", dialogueId: "npc_hidden_village_mirei", characterId: "mirei", role: "story", requiredFlag: STORY_FLAGS.lakeCastleInscriptionNeedsMage, departedFlag: STORY_FLAGS.hiddenVillageMireiJoined },
     ],
     buildings: [],
   },
@@ -639,7 +682,7 @@ export const MAPS: Record<MapId, MapDefinition> = {
       fromCaveFloor1: { x: 512, y: 1160, facing: "up" },
     },
     // 正式出口は assets/maps/iwayama_cave_2/events.json の南の階段Event(1Fへ)で管理する。
-    // 北の階段の上(おく)はイベント予約地点のDEVメッセージのみ。タロサ一時参加はTBD(SPECIAL_GAMEPLAY_SPEC.md §2)。
+    // 北の階段の上(おく)は、タロサと洞窟を抜けた初回だけかくれざとへの導線を保存する。
     // 崩落シューティングは1Fの赤い丸から(IwayamaShootingScene)。
     exits: [],
     npcs: [],

@@ -11,6 +11,22 @@ const PIXEL_COLUMNS = 24;
 const PIXEL_ROWS = 18;
 const PIXEL_COLORS = [0x182233, 0x273a4b, 0x42333f, 0x28434a] as const;
 
+interface LakeCastleBattleIntroAccent {
+  readonly glowColor: number;
+  readonly rippleColor: number;
+}
+
+/** The same short ancient-water backdrop is used only by No.11 random encounters. */
+export function lakeCastleBattleIntroAccent(event: Pick<BattleDialogueEvent, "eventId" | "monsterId">): LakeCastleBattleIntroAccent | undefined {
+  if (event.eventId !== "event_lake_castle_random_encounter") return undefined;
+  switch (event.monsterId) {
+    case "yaki_purin": return { glowColor: 0xffbe63, rippleColor: 0x77411e };
+    case "kamaitachi": return { glowColor: 0x80ecff, rippleColor: 0x1e5d77 };
+    case "kirimaneki": return { glowColor: 0xd0a8ff, rippleColor: 0x533778 };
+    default: return undefined;
+  }
+}
+
 /** Timing helper, so the entrance duration stays unit-testable. */
 export function battleEntranceProgress(elapsedMs: number): number {
   return Phaser.Math.Clamp(elapsedMs / BATTLE_ENTRANCE_DURATION_MS, 0, 1);
@@ -44,7 +60,7 @@ export function beginBattleEntrance(scene: Phaser.Scene, actions: InputSystem, e
     elapsedMs = Math.min(BATTLE_ENTRANCE_DURATION_MS, elapsedMs + Math.max(0, delta));
     const progress = battleEntranceProgress(elapsedMs);
     overlay.setAlpha(easeInCubic(progress));
-    drawPixelVortex(graphics, centerX, centerY, progress);
+    drawPixelVortex(graphics, centerX, centerY, progress, event);
 
     if (progress >= 1) {
       cleanup();
@@ -57,8 +73,10 @@ export function beginBattleEntrance(scene: Phaser.Scene, actions: InputSystem, e
   scene.events.once(Phaser.Scenes.Events.DESTROY, cleanup);
 }
 
-function drawPixelVortex(graphics: Phaser.GameObjects.Graphics, centerX: number, centerY: number, progress: number): void {
+function drawPixelVortex(graphics: Phaser.GameObjects.Graphics, centerX: number, centerY: number, progress: number, event: BattleDialogueEvent): void {
   graphics.clear();
+  const lakeCastleAccent = lakeCastleBattleIntroAccent(event);
+  if (lakeCastleAccent) drawLakeCastleBattleBackdrop(graphics, centerX, centerY, progress, lakeCastleAccent);
   const pull = easeInOutCubic(Phaser.Math.Clamp((progress - 0.03) / 0.9, 0, 1));
   const tileWidth = DISPLAY.width / PIXEL_COLUMNS;
   const tileHeight = DISPLAY.height / PIXEL_ROWS;
@@ -94,6 +112,32 @@ function drawPixelVortex(graphics: Phaser.GameObjects.Graphics, centerX: number,
       graphics.fillStyle(index === 1 ? 0x5a2936 : 0x1c4e54, tearAlpha);
       graphics.fillRect(centerX - width / 2, y, width, Math.max(2, 4 * (1 - pull)));
     }
+  }
+}
+
+/** Renderer-only 1.3 second backdrop; no monster data or field state is changed here. */
+function drawLakeCastleBattleBackdrop(
+  graphics: Phaser.GameObjects.Graphics,
+  centerX: number,
+  centerY: number,
+  progress: number,
+  accent: LakeCastleBattleIntroAccent,
+): void {
+  const reveal = Math.sin(Math.PI * Phaser.Math.Clamp(progress / 0.76, 0, 1));
+  graphics.fillStyle(0x061927, 0.58 * reveal).fillRect(0, 0, DISPLAY.width, DISPLAY.height);
+  const archWidth = DISPLAY.width * (0.78 - progress * 0.18);
+  const archHeight = DISPLAY.height * 0.68;
+  graphics.lineStyle(5, accent.glowColor, 0.34 * reveal).strokeRoundedRect(centerX - archWidth / 2, centerY - archHeight / 2, archWidth, archHeight, 42);
+  graphics.lineStyle(2, 0xd3f5ff, 0.26 * reveal).strokeRoundedRect(centerX - archWidth / 2 + 12, centerY - archHeight / 2 + 12, archWidth - 24, archHeight - 24, 32);
+  for (let row = 0; row < 6; row += 1) {
+    const y = centerY + archHeight * 0.26 + row * 12;
+    const width = archWidth * (0.48 + row * 0.045) * (1 - progress * 0.5);
+    graphics.lineStyle(2, accent.rippleColor, (0.5 - row * 0.055) * reveal).lineBetween(centerX - width / 2, y, centerX + width / 2, y);
+  }
+  for (let index = 0; index < 7; index += 1) {
+    const angle = index / 7 * Math.PI * 2 + progress * 1.7;
+    const radius = archWidth * (0.2 + (index % 3) * 0.04) * (1 - progress * 0.45);
+    graphics.fillStyle(accent.glowColor, 0.48 * reveal).fillCircle(centerX + Math.cos(angle) * radius, centerY + Math.sin(angle) * archHeight * 0.18, 2 + (index % 2));
   }
 }
 

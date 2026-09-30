@@ -2,6 +2,8 @@ import Phaser from "phaser";
 import { INTERACTION_REACH, INTERACTION_SPAN } from "../config/interaction.ts";
 import { MAPS, MAP_TRANSITION_FADE_MS, isNpcPresent } from "../config/maps.ts";
 import { getDialogue } from "../data/dialogues.ts";
+import { ITEM_DEFINITIONS } from "../data/items.ts";
+import type { ItemId } from "../data/items.ts";
 import type { DialogueAfterEvent, NpcDepartDialogueEvent } from "../events/BattleEventData.ts";
 import { isBattleDialogueEvent, isNpcDepartDialogueEvent, isPartyJoinDialogueEvent, isStoryFlagsDialogueEvent } from "../events/BattleEventData.ts";
 import { beginDialogueBattleEvent } from "../events/DialogueEvents.ts";
@@ -11,7 +13,8 @@ import { InputSystem } from "../systems/InputSystem.ts";
 import { buildCollisionRects, createImageMapCollision, readCollisionMaskImageData } from "../systems/ImageMapCollision.ts";
 import type { ImageMapCollisionRuntime } from "../systems/ImageMapCollision.ts";
 import { readImageMapEvents, readImageMapManifest, readImageMapObjects, scaleRect } from "../systems/ImageMapData.ts";
-import type { ImageMapEvent } from "../systems/ImageMapData.ts";
+import type { ImageMapChestObject, ImageMapEvent } from "../systems/ImageMapData.ts";
+import { createChestVisual } from "../systems/ChestTexture.ts";
 import { PROTAGONIST_SPRITE } from "../config/protagonistSprite.ts";
 import { TAROSA_SPRITE } from "../config/tarosaSprite.ts";
 import { MIREI_SPRITE } from "../config/mireiSprite.ts";
@@ -19,11 +22,14 @@ import { VILLAGER_SPRITES } from "../config/villagerSprites.ts";
 import { ensureWalkAnimations, preloadWalkSprite } from "../systems/CharacterWalkSprite.ts";
 import { configureMapCamera } from "../systems/MapCamera.ts";
 import { startFieldAmbience } from "../systems/FieldAmbience.ts";
+import { startStartingTownPresentation } from "../systems/StartingTownPresentation.ts";
 import { PartyFollowers } from "../systems/PartyFollowers.ts";
 import { partySystem } from "../systems/PartySystem.ts";
 import { GameStateRepository } from "../systems/GameStateRepository.ts";
+import { inventory } from "../systems/Inventory.ts";
 import { canInteract } from "../systems/Interaction.ts";
 import { beginMapTransition } from "../systems/MapTransition.ts";
+import type { Facing } from "../systems/PlayerMovement.ts";
 import { DialogueBox } from "../ui/DialogueBox.ts";
 import { FieldMenu } from "../ui/FieldMenu.ts";
 import { ShopWindow } from "../ui/ShopWindow.ts";
@@ -48,8 +54,18 @@ const NPC_DEPART_HOLD_MS = 700;
 
 const isDevMode = typeof import.meta.env !== "undefined" && import.meta.env.DEV;
 
+interface ChestRuntime {
+  readonly definition: ImageMapChestObject;
+  readonly bodyMarker: Phaser.GameObjects.Rectangle;
+  readonly visual: Phaser.GameObjects.Container;
+}
+
 export interface StartingTownSceneData {
   readonly spawnId?: string;
+  /** Manual record coordinates use the already-scaled runtime map space. */
+  readonly spawnX?: number;
+  readonly spawnY?: number;
+  readonly spawnFacing?: Facing;
   readonly battleEventReturn?: boolean;
 }
 
@@ -74,6 +90,7 @@ export class StartingTownScene extends Phaser.Scene {
   private transitioning = false;
   private afterDialogueEvent: DialogueAfterEvent | undefined;
   private awaitBattleReturnRelease = false;
+  private chests: ChestRuntime[] = [];
   private readonly gameState = new GameStateRepository();
 
   constructor(sceneKey = "StartingTownScene") {
@@ -98,14 +115,14 @@ export class StartingTownScene extends Phaser.Scene {
     this.transitioning = false;
     this.afterDialogueEvent = undefined;
     this.awaitBattleReturnRelease = data?.battleEventReturn === true;
+    this.chests = [];
     this.consumedEventIds.clear();
     const manifest = readImageMapManifest(this.cache.json.get(MANIFEST_KEY));
     if (manifest.id !== MAP_ID || manifest.assetStatus !== "CURRENT") {
       throw new Error(`StartingTownScene requires the CURRENT ${MAP_ID} image-map package`);
     }
     const events = readImageMapEvents(this.cache.json.get(EVENTS_KEY));
-    // objects.jsonは現状空。No.02のNPCは対話・見た目・歩行設定をMAPS.npcsのデータで管理する。
-    readImageMapObjects(this.cache.json.get(OBJECTS_KEY));
+    const objects = readImageMapObjects(this.cache.json.get(OBJECTS_KEY));
     const worldScale = manifest.worldScale;
 
     // 高解像度背景は縮小時も輪郭を保つため、pixelArt全体設定から独立してLINEARで表示する(No.01と同じ)。
@@ -139,9 +156,13 @@ export class StartingTownScene extends Phaser.Scene {
       .map((definition) => new Npc(this, scaleNpcDefinition(definition, worldScale)));
 
     const spawnId = data?.spawnId && map.spawns[data.spawnId] ? data.spawnId : Object.keys(map.spawns)[0];
-    const spawn = map.spawns[spawnId];
+    const native = map.spawns[spawnId];
+    const hasExactSpawn = typeof data?.spawnX === "number" && typeof data?.spawnY === "number";
+    const spawn = hasExactSpawn
+      ? { x: data!.spawnX!, y: data!.spawnY!, facing: data?.spawnFacing ?? native.facing }
+      : { x: native.x * worldScale, y: native.y * worldScale, facing: native.facing };
     ensureWalkAnimations(this, PROTAGONIST_SPRITE);
-    this.player = new Player(this, spawn.x * worldScale, spawn.y * worldScale, spawn.facing);
+    this.player = new Player(this, spawn.x, spawn.y, spawn.facing);
     this.player.setDepth(1000);
     this.partyFollowers = new PartyFollowers(this, this.player);
 
@@ -158,6 +179,18 @@ export class StartingTownScene extends Phaser.Scene {
       for (let other = index + 1; other < this.npcs.length; other += 1) {
         this.physics.add.collider(this.npcs[index].body, this.npcs[other].body);
       }
+    }
+
+    for (const object of objects) {
+      const bounds = scaleRect(object, worldScale);
+      if (object.type === "chest") {
+        if (!savedFlags.has(object.openedFlag)) this.chests.push(this.createChest(object, bounds));
+        continue;
+      }
+      const marker = this.add.rectangle(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2, bounds.width, bounds.height, 0x35b7d4, 1);
+      marker.setDepth(800).setVisible(isDevMode);
+      addStaticBody(this, marker);
+      if (object.blocking) this.physics.add.collider(this.player.body, marker.body as Phaser.Physics.Arcade.StaticBody);
     }
 
     for (const event of events) {
@@ -179,7 +212,14 @@ export class StartingTownScene extends Phaser.Scene {
 
     // 会話ウィンドウは他の表示物の後に作り、常に最前面へ描画する。
     this.dialogueBox = new DialogueBox(this);
-    this.fieldMenu = new FieldMenu(this);
+    this.fieldMenu = new FieldMenu(this, {
+      onOpen: () => this.player.body.setVelocity(0, 0),
+      onRecord: () => this.gameState.saveAdventureRecord({
+        mapId: MAP_ID,
+        sceneKey: MAPS[MAP_ID].sceneKey,
+        resume: { kind: "2d", x: this.player.visual.x, y: this.player.visual.y, facing: this.player.facing },
+      }),
+    });
     // やどや・ぶきや・どうぐやの店主は、話しかけると店の窓を開く。「はなす」で通常の会話へ移る。
     this.shopWindow = new ShopWindow(this, (npcId) => {
       const dialogue = getDialogue(MAPS[MAP_ID].npcs.find((npc) => npc.id === npcId)?.dialogueId ?? "");
@@ -190,6 +230,8 @@ export class StartingTownScene extends Phaser.Scene {
     });
 
     configureMapCamera(this, this.player.visual, { x: 0, y: 0, width: manifest.width * worldScale, height: manifest.height * worldScale });
+    // 噴水・滝・川と店の日よけにだけ重ねるNo.02固有の表示層。背景／Collision／進行状態は変更しない。
+    startStartingTownPresentation(this, worldScale, () => this.player.visual);
     // 雲の影・漂う粒などの環境エフェクト(config/fieldAmbience.ts)。見た目だけで、背景・判定・進行には触れない。
     startFieldAmbience(this, MAP_ID);
     this.cameras.main.setBackgroundColor("#101018");
@@ -233,7 +275,7 @@ export class StartingTownScene extends Phaser.Scene {
       }
       for (const npc of this.npcs) npc.update(this.time.now);
       this.player.update(this.actions);
-      if (confirmPressed) this.tryStartDialogue();
+      if (confirmPressed && !this.tryOpenChest()) this.tryStartDialogue();
     };
     this.events.on(Phaser.Scenes.Events.PRE_UPDATE, tick);
     const toggleCollision = (keyboardEvent: KeyboardEvent): void => {
@@ -263,6 +305,40 @@ export class StartingTownScene extends Phaser.Scene {
       // eslint-disable-next-line no-console
       console.log(`[IMAGE_MAP] ${manifest.id} loaded: ${manifest.width}x${manifest.height}, collisionRects=${collisionRects.length}`);
     }
+  }
+
+  /** OBJECTの座標・判定を共有し、開封済みなら次回以降は表示しない通常の宝箱。 */
+  private createChest(definition: ImageMapChestObject, bounds: ReturnType<typeof scaleRect>): ChestRuntime {
+    const center = new Phaser.Math.Vector2(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+    const bodyMarker = this.add.rectangle(center.x, center.y, bounds.width, bounds.height, 0x35b7d4, isDevMode ? 0.16 : 0);
+    bodyMarker.setDepth(900);
+    addStaticBody(this, bodyMarker);
+    if (definition.blocking) this.physics.add.collider(this.player.body, bodyMarker.body as Phaser.Physics.Arcade.StaticBody);
+    return { definition, bodyMarker, visual: createChestVisual(this, center, bounds) };
+  }
+
+  /** 宝箱の前で決定すると中身を保存し、開封済みの宝箱を消す。 */
+  private tryOpenChest(): boolean {
+    const center = this.player.body.center;
+    const chest = this.chests.find((candidate) => {
+      const body = candidate.bodyMarker.body as Phaser.Physics.Arcade.StaticBody;
+      return canInteract(center, this.player.facing, { x: body.x, y: body.y, width: body.width, height: body.height }, INTERACTION_REACH, INTERACTION_SPAN);
+    });
+    if (!chest) return false;
+    const itemId = chest.definition.itemId;
+    if (!itemId || !Object.hasOwn(ITEM_DEFINITIONS, itemId)) {
+      throw new Error(`StartingTownScene chest ${chest.definition.id} must reference a known item`);
+    }
+    if (!inventory.add(itemId as ItemId)) {
+      throw new Error(`StartingTownScene chest ${chest.definition.id} could not add ${itemId}`);
+    }
+    this.gameState.setFlag(chest.definition.openedFlag);
+    chest.bodyMarker.destroy();
+    chest.visual.destroy();
+    this.chests = this.chests.filter((candidate) => candidate !== chest);
+    this.player.body.setVelocity(0, 0);
+    this.dialogueBox.open(["たからばこを　あけた！", `${ITEM_DEFINITIONS[itemId as ItemId].name}を\nてにいれた！`]);
+    return true;
   }
 
   private tryStartDialogue(): void {
@@ -331,6 +407,7 @@ export class StartingTownScene extends Phaser.Scene {
         npc.destroy();
       }
       for (const flag of event.flags) this.gameState.setFlag(flag);
+      if (event.joinsPartyAs && partySystem.addMember(event.joinsPartyAs)) this.partyFollowers.syncMembers();
       this.time.delayedCall(NPC_DEPART_HOLD_MS, () => {
         camera.fadeIn(NPC_DEPART_FADE_MS, 0, 0, 0);
         camera.once(Phaser.Cameras.Scene2D.Events.FADE_IN_COMPLETE, () => {

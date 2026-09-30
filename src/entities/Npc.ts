@@ -3,6 +3,9 @@ import { idleFrame, bodyOffset } from "../config/characterWalkSprite.ts";
 import { NPC_VISUAL } from "../config/npc.ts";
 import { PLAYER } from "../config/player.ts";
 import { VILLAGER_SPRITES } from "../config/villagerSprites.ts";
+import { TAROSA_SPRITE } from "../config/tarosaSprite.ts";
+import { MIREI_SPRITE } from "../config/mireiSprite.ts";
+import type { WalkSpriteGeometry } from "../config/characterWalkSprite.ts";
 import type { NpcDefinition } from "../config/maps.ts";
 import { ensureWalkAnimations, walkAnimKey } from "../systems/CharacterWalkSprite.ts";
 import type { Facing } from "../systems/PlayerMovement.ts";
@@ -18,6 +21,7 @@ export class Npc {
   private readonly spawnX: number;
   private readonly spawnY: number;
   private readonly movement: NpcDefinition["movement"];
+  private readonly geometry?: WalkSpriteGeometry;
   private facing: Facing;
   private nextDecisionAt = 0;
   private target?: Phaser.Math.Vector2;
@@ -29,10 +33,12 @@ export class Npc {
     this.movement = definition.movement;
     this.facing = definition.facing;
 
-    const geometry = definition.spriteId ? VILLAGER_SPRITES[definition.spriteId] : undefined;
-    if (geometry) {
-      ensureWalkAnimations(scene, geometry);
-      this.visual = scene.add.sprite(definition.position.x, definition.position.y, geometry.key, idleFrame(this.facing));
+    this.geometry = definition.characterId === "tarosa" ? TAROSA_SPRITE
+      : definition.characterId === "mirei" ? MIREI_SPRITE
+        : definition.spriteId ? VILLAGER_SPRITES[definition.spriteId] : undefined;
+    if (this.geometry) {
+      ensureWalkAnimations(scene, this.geometry);
+      this.visual = scene.add.sprite(definition.position.x, definition.position.y, this.geometry.key, idleFrame(this.facing));
     } else {
       // Legacy maps can keep their placeholder dialogue NPCs until their own
       // formal art and placement pass; No.02 always provides a villager sprite.
@@ -43,10 +49,10 @@ export class Npc {
 
     scene.physics.add.existing(this.visual);
     this.body = this.visual.body as Phaser.Physics.Arcade.Body;
-    if (geometry) {
+    if (this.geometry) {
       // Villagers use the same small foot collision as the player. Their
       // painted silhouette is much larger than a doorway or plaza gap.
-      const offset = bodyOffset(geometry, PLAYER.width, PLAYER.height);
+      const offset = bodyOffset(this.geometry, PLAYER.width, PLAYER.height);
       this.body.setSize(PLAYER.width, PLAYER.height, false);
       this.body.setOffset(offset.x, offset.y);
     }
@@ -75,8 +81,8 @@ export class Npc {
 
     this.facing = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? "left" : "right") : (dy < 0 ? "up" : "down");
     this.body.setVelocity(dx / distance * this.movement.speed, dy / distance * this.movement.speed);
-    if (this.visual instanceof Phaser.GameObjects.Sprite && this.definition.spriteId) {
-      this.visual.play(walkAnimKey(VILLAGER_SPRITES[this.definition.spriteId], this.facing), true);
+    if (this.visual instanceof Phaser.GameObjects.Sprite && this.geometry) {
+      this.visual.play(walkAnimKey(this.geometry, this.facing), true);
     }
     this.syncDepth();
   }

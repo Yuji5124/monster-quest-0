@@ -19,5 +19,8 @@ test("battle entrance uses a pixel vortex instead of the removed prism flash", (
   const entrance = readFileSync(new URL("../src/events/BattleEntrance.ts", import.meta.url), "utf8");
   assert.match(entrance, /drawPixelVortex/);
   assert.match(entrance, /PIXEL_COLUMNS/);
+  assert.match(entrance, /lakeCastleBattleIntroAccent/);
+  assert.match(entrance, /drawLakeCastleBattleBackdrop/);
+  assert.match(entrance, /event_lake_castle_random_encounter/);
   assert.doesNotMatch(entrance, /drawPrismBreach|drawDiamond|\.flash\(/);
 });

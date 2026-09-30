@@ -50,15 +50,40 @@ test("starting-town background and collision share the same pixel dimensions as 
   assert.deepEqual(collisionSize, { width: manifest.width, height: manifest.height });
 });
 
-test("starting-town package routes its west-edge event to the point-selection world map", () => {
+test("starting-town package routes both red-marked exits to the point-selection world map and places the blue-marked chest", () => {
   const events = readImageMapEvents(JSON.parse(readFileSync(path.join(MAP_DIR, "events.json"), "utf-8")));
   const objects = readImageMapObjects(JSON.parse(readFileSync(path.join(MAP_DIR, "objects.json"), "utf-8")));
-  assert.equal(events.length, 1);
-  assert.equal(events[0].trigger, "enter");
-  assert.equal(events[0].commands[0].type, "world-map");
-  assert.equal(events[0].commands[0].worldMapEntryId, "from_starting_town");
-  // NPCs still come from MAPS.npcs (dialogue/party-join/battle integration); objects.json stays empty.
-  assert.deepEqual(objects, []);
+  assert.equal(events.length, 2);
+  for (const id of ["event_starting_town_west_exit", "event_starting_town_south_exit"]) {
+    const exit = events.find((event) => event.id === id);
+    assert.ok(exit, `${id} must exist`);
+    assert.equal(exit.trigger, "enter");
+    assert.equal(exit.commands[0].type, "world-map");
+    assert.equal(exit.commands[0].worldMapEntryId, "from_starting_town");
+  }
+  const chest = objects.find((object) => object.id === "chest_starting_town_waterfall_kaifukuyaku");
+  assert.deepEqual(chest && {
+    type: chest.type,
+    x: chest.x,
+    y: chest.y,
+    itemId: chest.type === "chest" ? chest.itemId : undefined,
+    openedFlag: chest.type === "chest" ? chest.openedFlag : undefined,
+  }, {
+    type: "chest",
+    x: 1176,
+    y: 188,
+    itemId: "kaifukuyaku",
+    openedFlag: "chest.starting_town_waterfall_kaifukuyaku_opened",
+  });
+});
+
+test("starting-town scene renders, opens, and persists its data-owned chest", () => {
+  const source = readFileSync(path.join(REPO_ROOT, "src/scenes/StartingTownScene.ts"), "utf-8");
+  assert.match(source, /if \(object\.type === "chest"\).*this\.chests\.push\(this\.createChest\(object, bounds\)\)/s);
+  assert.match(source, /if \(confirmPressed && !this\.tryOpenChest\(\)\) this\.tryStartDialogue\(\)/);
+  assert.match(source, /createChestVisual\(this, center, bounds\)/);
+  assert.match(source, /this\.gameState\.setFlag\(chest\.definition\.openedFlag\)/);
+  assert.match(source, /inventory\.add\(itemId as ItemId\)/);
 });
 
 test("starting-town collision mask keeps the plaza, west exit and every building's front spawn walkable", () => {
@@ -71,9 +96,15 @@ test("starting-town collision mask keeps the plaza, west exit and every building
   const town = MAPS.map_02_starting_town;
   const fieldArrival = town.spawns.fromWorldMap;
   assert.equal(isBlocked(fieldArrival.x, fieldArrival.y), false, "the green field-arrival spawn must be walkable");
-  const westExit = readImageMapEvents(JSON.parse(readFileSync(path.join(MAP_DIR, "events.json"), "utf-8"))).find((event) => event.id === "event_starting_town_west_exit");
+  const events = readImageMapEvents(JSON.parse(readFileSync(path.join(MAP_DIR, "events.json"), "utf-8")));
+  const westExit = events.find((event) => event.id === "event_starting_town_west_exit");
+  const southExit = events.find((event) => event.id === "event_starting_town_south_exit");
   assert.ok(westExit, "the blue west-exit event must exist");
+  assert.ok(southExit, "the south exit event must exist");
   assert.equal(isBlocked(westExit.bounds.x + westExit.bounds.width / 2, westExit.bounds.y + westExit.bounds.height / 2), false, "the blue west exit must be walkable");
+  assert.equal(isBlocked(southExit.bounds.x + southExit.bounds.width / 2, southExit.bounds.y + southExit.bounds.height / 2), false, "the south exit must be walkable");
+  assert.equal(isBlocked(1198, 206), false, "the waterfall chest must sit on walkable ground");
+  assert.equal(isBlocked(1198, 240), false, "the player can stand on the path below the waterfall chest");
   assert.equal(isBlocked(620, 480), false, "the fountain plaza approach must be walkable");
 
   for (const building of town.buildings) {

@@ -6,9 +6,10 @@
   "width": 1672,
   "height": 941,
   "background": "../reference/reference/新しいフォルダー/ぬまちのどうくつ.png",
+  "backgroundUsage": "final-room-only",
   "collision": "collision.json",
   "events": "events.json",
   "objects": "objects.json",
-  "assetStatus": "REFERENCE_BACKED_ACTION_SLICE",
+  "assetStatus": "BLOCK_ACTION_STAGE_WITH_REFERENCE_FINAL_ROOM",
   "worldScale": 1
 }

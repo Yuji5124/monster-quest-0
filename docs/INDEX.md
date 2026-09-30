@@ -23,12 +23,14 @@
 - `MAP_FLOW_SPEC.md` — No.01〜20、No.01再訪、No.20再戦
 - `SPECIAL_GAMEPLAY_SPEC.md` — 特殊ダンジョン・No.09・No.20の縦シューティング・ボス攻略骨格
 - `MAP_SYSTEM.md` — 新規ローカルマップとワールドマップの制作・データ方針
+- `RAINLAND_WEATHER_SPEC.md` — No.05の天候状態、Weather Layer、戦闘連携
 - `TOWER_EXPANSION_BOUNDARY.md` — 不思議なとうの任意地点・成長／NPC移住／AI連携の境界
 - `NPC_SPEC.md` — NPC会話方針
 - `GLITCH_SPEC.md` — 終盤異常 / 「もういちど」
 
 ## 戦闘・成長・データ
 - `BATTLE_SPEC.md` — コマンド戦闘、だいヒット、まじん／デーマス／バトラス／オロチゾンビ
+- `RAINLAND_WEATHER_SPEC.md` — No.05のフィールド天候とBattleWeatherBridge
 - `CHARACTER_GROWTH.md` — 男性主人公 / タロサ / ミレイ / わたべ
 - `MAGIC_SPEC.md` — 魔法
 - `MONSTER_SPEC.md` — 25体、公開ネタバレ、裏ボス

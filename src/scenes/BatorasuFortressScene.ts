@@ -13,10 +13,12 @@ import { InputSystem } from "../systems/InputSystem.ts";
 import { PartyFollowers } from "../systems/PartyFollowers.ts";
 import { GameStateRepository } from "../systems/GameStateRepository.ts";
 import { inventory } from "../systems/Inventory.ts";
+import { getBattleFortressRoomPresentation } from "../systems/BattleFortressPresentation.ts";
 import {
   BATTLE_FORTRESS_TILE_SIZE,
   buildBattleFortressWallRects,
   generateBattleFortress,
+  getBattleFortressWorldBounds,
 } from "../systems/BattleFortressGenerator.ts";
 import type { BattleFortressPlan, FortressRoom } from "../systems/BattleFortressGenerator.ts";
 import type { Facing } from "../systems/PlayerMovement.ts";
@@ -45,6 +47,15 @@ interface TreasureRuntime {
   readonly visual: Phaser.GameObjects.Container;
 }
 
+interface ReconfigureRuntime {
+  readonly roomId: string;
+  readonly x: number;
+  readonly y: number;
+  readonly switchVisual: Phaser.GameObjects.Container;
+  readonly sealVisual: Phaser.GameObjects.Rectangle;
+  activated: boolean;
+}
+
 /**
  * No.19: a generated room-module fortress. Generation/state lives in
  * BattleFortressGenerator; this Scene only renders it and adapts field input/events.
@@ -57,9 +68,13 @@ export class BatorasuFortressScene extends Phaser.Scene {
   private roomLayers = new Map<string, Phaser.GameObjects.Container>();
   private activatedRooms = new Set<string>();
   private treasures: TreasureRuntime[] = [];
+  private reconfigureSwitches: ReconfigureRuntime[] = [];
+  private fortressAmbientTweens: Phaser.Tweens.Tween[] = [];
   private bossVisual: Phaser.GameObjects.Image | undefined;
+  private bossPulse: Phaser.Tweens.Tween | undefined;
   private notice: Phaser.GameObjects.Text | undefined;
   private locked = false;
+  private nextDirectRumbleAt = 0;
 
   constructor() {
     super(SCENE_KEY);
@@ -81,7 +96,21 @@ export class BatorasuFortressScene extends Phaser.Scene {
     this.roomLayers.clear();
     this.activatedRooms.clear();
     this.treasures = [];
+    this.reconfigureSwitches = [];
+    this.fortressAmbientTweens = [];
+    this.bossPulse = undefined;
+    this.nextDirectRumbleAt = 0;
     this.cameras.main.setBackgroundColor(0x050609);
+    const worldBounds = getBattleFortressWorldBounds(this.plan);
+    // Arcade Physics は既定でゲーム表示領域(960×720)だけを移動境界にする。
+    // この砦は横長の生成マップなので、Camera bounds と同じ実寸へ広げないと
+    // 主人公が最初の画面の右端で止まり、以後の部屋へ進めなくなる。
+    this.physics.world.setBounds(
+      worldBounds.x,
+      worldBounds.y,
+      worldBounds.width,
+      worldBounds.height,
+    );
     this.actions = new InputSystem(window, document);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.actions.destroy());
 
@@ -94,12 +123,7 @@ export class BatorasuFortressScene extends Phaser.Scene {
     this.player.setDepth(PLAYER_DEPTH);
     new PartyFollowers(this, this.player);
     this.createWalls();
-    configureMapCamera(this, this.player.visual, {
-      x: 0,
-      y: 0,
-      width: this.plan.width * BATTLE_FORTRESS_TILE_SIZE,
-      height: this.plan.height * BATTLE_FORTRESS_TILE_SIZE,
-    });
+    configureMapCamera(this, this.player.visual, worldBounds);
     this.notice = this.add.text(10, 10, "", {
       fontFamily: "monospace", fontSize: "14px", color: "#d7d2c7", stroke: "#08080b", strokeThickness: 4,
     }).setScrollFactor(0).setDepth(3000);
@@ -118,7 +142,8 @@ export class BatorasuFortressScene extends Phaser.Scene {
     const confirm = this.actions.consumePressed("confirm");
     this.player.update(this.actions);
     this.handleRoomArrival();
-    if (!this.handleTreasureInteraction(confirm)) this.handleFieldExit(confirm);
+    if (!this.handleTreasureInteraction(confirm) && !this.handleReconfiguration(confirm)) this.handleFieldExit(confirm);
+    this.handleDirectCorridorRumble();
     this.handleBossApproach();
   }
 
@@ -132,24 +157,37 @@ export class BatorasuFortressScene extends Phaser.Scene {
         const tile = this.plan.tiles[y][x];
         const px = x * tileSize;
         const py = y * tileSize;
+        const room = this.getRoomAtTile(x, y);
+        const presentation = getBattleFortressRoomPresentation(room);
+        const detail = Math.abs(Math.imul(x + 31, 97) ^ Math.imul(y + 17, 57) ^ this.plan.seed);
         if (tile === "floor") {
-          const shade = 0x202127 + ((x * 13 + y * 7 + this.plan.seed) % 3) * 0x030303;
-          graphics.fillStyle(shade, 1);
+          graphics.fillStyle(detail % 3 === 0 ? presentation.floor + 0x020202 : presentation.floor, 1);
           graphics.fillRect(px, py, tileSize, tileSize);
-          graphics.lineStyle(1, 0x101116, 0.65);
-          graphics.strokeRect(px, py, tileSize, tileSize);
-          if ((x * 17 + y * 11 + this.plan.seed) % 11 === 0) {
-            graphics.lineStyle(1, 0x555158, 0.45);
+          graphics.fillStyle(presentation.floorInset, 0.72);
+          graphics.fillRect(px + 3, py + 3, tileSize - 6, tileSize - 6);
+          graphics.lineStyle(1, 0x101116, 0.84);
+          graphics.strokeRect(px + 1, py + 1, tileSize - 2, tileSize - 2);
+          if (detail % 7 === 0) {
+            graphics.lineStyle(1, presentation.accent, 0.33);
             graphics.lineBetween(px + 7, py + 8, px + 16, py + 17);
-            graphics.lineBetween(px + 16, py + 17, px + 13, py + 24);
+            graphics.lineBetween(px + 16, py + 17, px + 12, py + 25);
+          }
+          if (presentation.poison && detail % 13 === 0) {
+            graphics.fillStyle(0x65d876, 0.22);
+            graphics.fillEllipse(px + 16, py + 19, 14, 6);
+          }
+          if (presentation.bossTerritory && detail % 17 === 0) {
+            graphics.fillStyle(0x9b3139, 0.34);
+            graphics.fillRect(px + 4, py + 4, tileSize - 8, 3);
           }
         } else if (tile === "wall") {
-          graphics.fillStyle(0x3a3a42, 1);
+          graphics.fillStyle(presentation.wall, 1);
           graphics.fillRect(px, py, tileSize, tileSize);
-          graphics.fillStyle(0x1a1a20, 1);
+          graphics.fillStyle(presentation.wallInset, 1);
           graphics.fillRect(px + 3, py + 4, tileSize - 6, tileSize - 8);
-          graphics.lineStyle(2, 0x64626b, 0.65);
-          graphics.lineBetween(px + 2, py + 2, px + tileSize - 3, py + 2);
+          graphics.lineStyle(2, presentation.accent, 0.38);
+          graphics.lineBetween(px + 2, py + 3, px + tileSize - 3, py + 3);
+          if (detail % 2 === 0) graphics.lineBetween(px + 5, py + 5, px + 5, py + tileSize - 5);
         }
       }
     }
@@ -163,47 +201,103 @@ export class BatorasuFortressScene extends Phaser.Scene {
     const layer = this.add.container(0, 0).setDepth(PROP_DEPTH);
     this.roomLayers.set(room.id, layer);
     const centre = this.toWorld({ x: room.x + Math.floor(room.width / 2), y: room.y + Math.floor(room.height / 2) });
-    const torch = (x: number, y: number, color = 0xffa344): void => {
-      const mount = this.add.rectangle(x, y, 5, 14, 0x16151a).setStrokeStyle(1, 0x81736a);
-      const flame = this.add.circle(x, y - 9, 5, color, 0.88).setBlendMode(Phaser.BlendModes.ADD);
-      this.tweens.add({ targets: flame, scaleY: { from: 0.72, to: 1.25 }, alpha: { from: 0.45, to: 1 }, duration: 420 + (x % 3) * 90, yoyo: true, repeat: -1 });
+    const presentation = getBattleFortressRoomPresentation(room);
+    const torch = (x: number, y: number, color = presentation.torch): void => {
+      const mount = this.add.rectangle(x, y, 6, 16, 0x17151a).setStrokeStyle(1, 0xa5a0a0);
+      const flame = this.add.circle(x, y - 10, 5, color, 0.88).setBlendMode(Phaser.BlendModes.ADD);
+      this.fortressAmbientTweens.push(this.tweens.add({
+        targets: flame, scaleY: { from: 0.72, to: 1.25 }, alpha: { from: 0.45, to: 1 },
+        duration: 420 + (x % 3) * 90, yoyo: true, repeat: -1,
+      }));
       layer.add([mount, flame]);
     };
-    torch((room.x + 1) * tileSize + 8, (room.y + 2) * tileSize + 17, room.kind === "boss" || room.kind === "boss-gate" ? 0xde4a38 : 0xffa344);
-    torch((room.x + room.width - 1) * tileSize - 8, (room.y + room.height - 2) * tileSize - 17, room.kind === "boss" ? 0xde4a38 : 0xffa344);
+    const banner = (x: number, y: number, color = presentation.banner): void => {
+      const pole = this.add.rectangle(x, y - 20, 36, 4, 0x82776a).setStrokeStyle(1, 0x1a171b);
+      const cloth = this.add.rectangle(x, y, 24, 36, color).setStrokeStyle(2, 0x39161c);
+      const emblem = this.add.circle(x, y - 2, 6, 0x190e12, 0.9).setStrokeStyle(1, presentation.accent, 0.7);
+      layer.add([pole, cloth, emblem]);
+    };
+    const pillar = (x: number, y: number): void => {
+      const base = this.add.rectangle(x, y + 28, 30, 10, 0x29282d).setStrokeStyle(2, 0x77747b);
+      const shaft = this.add.rectangle(x, y - 5, 18, 58, 0x4f4e57).setStrokeStyle(2, 0x8b878e);
+      const cap = this.add.rectangle(x, y - 36, 26, 10, 0x5c5a62).setStrokeStyle(2, 0x918d93);
+      layer.add([base, shaft, cap]);
+    };
+    const crate = (x: number, y: number): void => {
+      const box = this.add.rectangle(x, y, 21, 20, 0x6a4529).setStrokeStyle(2, 0x271a16);
+      const crossA = this.add.rectangle(x, y, 25, 3, 0xb17a3c).setAngle(42);
+      const crossB = this.add.rectangle(x, y, 25, 3, 0xb17a3c).setAngle(-42);
+      layer.add([box, crossA, crossB]);
+    };
+    const barrel = (x: number, y: number): void => {
+      const body = this.add.ellipse(x, y, 18, 24, 0x6f4528).setStrokeStyle(2, 0x201513);
+      const hoopA = this.add.rectangle(x, y - 6, 17, 2, 0xa19b8a);
+      const hoopB = this.add.rectangle(x, y + 6, 17, 2, 0xa19b8a);
+      layer.add([body, hoopA, hoopB]);
+    };
+    torch((room.x + 1) * tileSize + 8, (room.y + 2) * tileSize + 17);
+    torch((room.x + room.width - 1) * tileSize - 8, (room.y + room.height - 2) * tileSize - 17);
+    if (!room.optional && room.kind !== "entrance") banner(centre.x, (room.y + 2) * tileSize + 18);
+    if (room.kind === "combat" || room.kind === "branch" || room.kind === "misprint") {
+      crate((room.x + 2) * tileSize + 16, (room.y + room.height - 3) * tileSize + 16);
+      barrel((room.x + room.width - 2) * tileSize + 6, (room.y + 3) * tileSize + 14);
+    }
     if (room.kind === "entrance") {
       const exit = this.toWorld(this.plan.entrance);
-      layer.add(this.add.rectangle(exit.x, exit.y, 30, 30, 0x1b2835, 0.86).setStrokeStyle(2, 0x87a7b3));
+      layer.add(this.add.rectangle(exit.x, exit.y, 34, 34, 0x1b2835, 0.9).setStrokeStyle(2, 0x87a7b3));
+      for (const offset of [-10, 0, 10]) layer.add(this.add.rectangle(exit.x + offset, exit.y - 1, 2, 25, 0x9ca6a8));
       layer.add(this.add.text(exit.x, exit.y + 31, "もどる", {
         fontFamily: "monospace", fontSize: "10px", color: "#c7dde1", stroke: "#050609", strokeThickness: 3,
       }).setOrigin(0.5, 0));
     }
     if (room.kind === "prison") {
-      for (let index = 0; index < 5; index += 1) layer.add(this.add.rectangle(centre.x - 48 + index * 24, centre.y, 4, 64, 0x6a6972));
+      for (let index = 0; index < 5; index += 1) {
+        layer.add(this.add.rectangle(centre.x - 48 + index * 24, centre.y, 4, 64, 0x6a6972).setStrokeStyle(1, 0x171419));
+        layer.add(this.add.rectangle(centre.x - 48 + index * 24, centre.y - 40, 7, 11, 0x3c3a42));
+      }
+      layer.add(this.add.rectangle(centre.x, centre.y - 28, 112, 4, 0x77717a));
     }
     if (room.kind === "misprint") {
-      for (let index = 0; index < 10; index += 1) layer.add(this.add.rectangle(centre.x - 72 + (index % 5) * 36, centre.y - 30 + Math.floor(index / 5) * 60, 17, 18, 0x6c5141).setStrokeStyle(2, 0x2b2020));
+      for (let index = 0; index < 10; index += 1) {
+        const duplicate = this.add.rectangle(centre.x - 72 + (index % 5) * 36, centre.y - 30 + Math.floor(index / 5) * 60, 18, 20, 0x6c5141)
+          .setStrokeStyle(2, index % 3 === 0 ? 0x5fdca5 : 0x2b2020);
+        layer.add(duplicate);
+      }
+      layer.add(this.add.rectangle(centre.x, centre.y, 180, 4, 0x5fdca5, 0.36).setBlendMode(Phaser.BlendModes.ADD));
     }
     if (room.kind === "reconfigure") {
-      layer.add(this.add.rectangle(centre.x, centre.y, 24, 24, 0x30313a).setStrokeStyle(3, 0x9c8a65));
-      layer.add(this.add.circle(centre.x, centre.y, 5, 0x5fdca5, 0.8).setBlendMode(Phaser.BlendModes.ADD));
+      const switchVisual = this.add.container(centre.x, centre.y);
+      const base = this.add.rectangle(0, 2, 28, 24, 0x30313a).setStrokeStyle(3, 0x9c8a65);
+      const rune = this.add.circle(0, -5, 6, 0x5fdca5, 0.9).setBlendMode(Phaser.BlendModes.ADD);
+      const prompt = this.add.text(0, 22, "しらべる", { fontFamily: "monospace", fontSize: "10px", color: "#b9edcf", stroke: "#07120c", strokeThickness: 3 }).setOrigin(0.5, 0);
+      switchVisual.add([base, rune, prompt]);
+      const sealVisual = this.add.rectangle(centre.x + 86, centre.y, 16, 76, 0x29272d).setStrokeStyle(3, 0x5fdca5, 0.8);
+      layer.add([switchVisual, sealVisual]);
+      this.fortressAmbientTweens.push(this.tweens.add({ targets: rune, alpha: { from: 0.35, to: 1 }, duration: 700, yoyo: true, repeat: -1 }));
+      this.reconfigureSwitches.push({ roomId: room.id, x: centre.x, y: centre.y, switchVisual, sealVisual, activated: false });
     }
     if (room.kind === "checkpoint") {
       const poison = this.toWorld(this.plan.poisonHint);
-      layer.add(this.add.ellipse(poison.x, poison.y, 38, 18, 0x48cf73, 0.52).setBlendMode(Phaser.BlendModes.ADD));
+      layer.add(this.add.ellipse(poison.x, poison.y, 54, 24, 0x48cf73, 0.52).setBlendMode(Phaser.BlendModes.ADD));
       layer.add(this.add.rectangle(poison.x - 24, poison.y - 13, 14, 28, 0x5b625c).setAngle(-24));
       layer.add(this.add.rectangle(poison.x + 25, poison.y - 11, 14, 29, 0x5b625c).setAngle(26));
+      layer.add(this.add.rectangle(poison.x, poison.y - 17, 58, 4, 0x6de487, 0.38));
     }
     if (room.kind === "boss-gate") {
-      layer.add(this.add.rectangle(centre.x + 86, centre.y, 18, 86, 0x151519).setStrokeStyle(3, 0x8c3132));
-      layer.add(this.add.rectangle(centre.x + 96, centre.y, 8, 72, 0x77717a));
+      layer.add(this.add.rectangle(centre.x + 86, centre.y, 22, 96, 0x151519).setStrokeStyle(3, 0x8c3132));
+      for (const offset of [-7, 0, 7]) layer.add(this.add.rectangle(centre.x + 86 + offset, centre.y, 3, 76, 0x9d9297));
+      layer.add(this.add.rectangle(centre.x + 86, centre.y - 52, 42, 9, 0x5d1d27).setStrokeStyle(2, 0xb8403f));
     }
     if (room.kind === "boss") {
+      layer.add(this.add.ellipse(centre.x, centre.y + 32, 248, 110, 0x55bd68, 0.22).setBlendMode(Phaser.BlendModes.ADD));
       for (const side of [-1, 1] as const) {
-        layer.add(this.add.rectangle(centre.x + side * 155, centre.y, 24, 126, 0x54535a).setStrokeStyle(3, 0x8e3135));
-        layer.add(this.add.rectangle(centre.x + side * 120, centre.y + 86, 36, 18, 0x5d4840).setAngle(side * 14));
+        pillar(centre.x + side * 155, centre.y);
+        banner(centre.x + side * 112, centre.y - 58, 0xa52b36);
+        layer.add(this.add.rectangle(centre.x + side * 120, centre.y + 86, 38, 18, 0x5d4840).setAngle(side * 14));
+        layer.add(this.add.rectangle(centre.x + side * 92, centre.y + 68, 42, 5, 0x8e8a82).setAngle(side * 22));
       }
-      layer.add(this.add.rectangle(centre.x, centre.y + 110, 210, 13, 0x581e25, 0.7));
+      layer.add(this.add.rectangle(centre.x, centre.y + 110, 218, 13, 0x581e25, 0.8));
+      layer.add(this.add.rectangle(centre.x, centre.y + 110, 124, 4, 0x8c2e34, 0.72));
     }
     // The unfinished room begins as bare floor; its decoration is revealed once reached.
     if (room.kind === "assembly") layer.setVisible(false);
@@ -237,9 +331,16 @@ export class BatorasuFortressScene extends Phaser.Scene {
   private createBossVisual(): void {
     if (this.gameState.hasFlag(BOSS_FLAG)) return;
     const point = this.toWorld(this.plan.boss);
+    const poisonMist = this.add.ellipse(point.x, point.y + 26, 174, 58, 0x65d876, 0.18)
+      .setDepth(PROP_DEPTH + 3).setBlendMode(Phaser.BlendModes.ADD);
+    this.fortressAmbientTweens.push(this.tweens.add({
+      targets: poisonMist, scaleX: { from: 0.85, to: 1.18 }, alpha: { from: 0.08, to: 0.3 },
+      duration: 1500, yoyo: true, repeat: -1, ease: "Sine.easeInOut",
+    }));
     this.bossVisual = this.add.image(point.x, point.y - 18, "fortress.batorasu").setDepth(PROP_DEPTH + 4);
     this.bossVisual.setScale(Math.min(128 / this.bossVisual.width, 132 / this.bossVisual.height));
-    this.tweens.add({ targets: this.bossVisual, y: point.y - 23, duration: 1300, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+    this.bossPulse = this.tweens.add({ targets: this.bossVisual, y: point.y - 23, duration: 1300, yoyo: true, repeat: -1, ease: "Sine.easeInOut" });
+    this.fortressAmbientTweens.push(this.bossPulse);
   }
 
   private handleRoomArrival(): void {
@@ -247,7 +348,7 @@ export class BatorasuFortressScene extends Phaser.Scene {
     if (!current || this.activatedRooms.has(current.id)) return;
     this.activatedRooms.add(current.id);
     if (current.kind === "assembly") this.playAssembly(current);
-    else if (current.kind === "reconfigure") this.playReconstruction(current);
+    else if (current.kind === "reconfigure") this.setNotice("石の台座が　かすかに　脈打っている。", 2600);
     else if (current.kind === "checkpoint") this.setNotice("朽ちた武器と　どくに　やられた鎧が　転がっている。", 3200);
     else if (current.kind === "direct") this.setNotice("通路は　不自然なほど　まっすぐだ。", 2600);
   }
@@ -262,6 +363,26 @@ export class BatorasuFortressScene extends Phaser.Scene {
     chest.visual.setVisible(false);
     this.setNotice(`${chest.itemId === "dokukeshi" ? "どくけし" : "かいふくやく"}を　てにいれた。`, 2200);
     return true;
+  }
+
+  /** A deliberate confirm makes the reconfiguration readable and prevents automatic input locks. */
+  private handleReconfiguration(confirm: boolean): boolean {
+    if (!confirm) return false;
+    const mechanism = this.reconfigureSwitches.find((entry) => !entry.activated
+      && Phaser.Math.Distance.Between(this.player.body.center.x, this.player.body.center.y, entry.x, entry.y) < 52);
+    if (!mechanism) return false;
+    mechanism.activated = true;
+    const room = this.plan.rooms.find((entry) => entry.id === mechanism.roomId);
+    if (room) this.playReconstruction(room, mechanism);
+    return true;
+  }
+
+  /** The fixed final corridor receives a restrained rumble without running a permanent timer. */
+  private handleDirectCorridorRumble(): void {
+    const current = this.plan.rooms.find((room) => this.isPlayerIn(room));
+    if (current?.kind !== "direct" || this.time.now < this.nextDirectRumbleAt) return;
+    this.nextDirectRumbleAt = this.time.now + 2400;
+    this.cameras.main.shake(90, 0.0018);
   }
 
   /** The entrance is an explicit return point so entering from WorldMap never immediately bounces back. */
@@ -313,7 +434,7 @@ export class BatorasuFortressScene extends Phaser.Scene {
     this.time.delayedCall(900, () => { this.locked = false; this.actions.setLocked(false); });
   }
 
-  private playReconstruction(room: FortressRoom): void {
+  private playReconstruction(room: FortressRoom, mechanism: ReconfigureRuntime): void {
     this.locked = true;
     this.actions.setLocked(true);
     const layer = this.roomLayers.get(room.id);
@@ -321,12 +442,16 @@ export class BatorasuFortressScene extends Phaser.Scene {
       const startX = layer.x;
       this.tweens.add({ targets: layer, x: startX + 38, duration: 200, yoyo: true, repeat: 1, ease: "Stepped" });
     }
+    this.tweens.add({ targets: mechanism.sealVisual, x: mechanism.sealVisual.x + 42, alpha: 0, duration: 380, ease: "Quad.easeIn" });
+    this.tweens.add({ targets: mechanism.switchVisual, scale: 1.22, duration: 140, yoyo: true, repeat: 1, ease: "Sine.easeOut" });
     this.cameras.main.shake(180, 0.004);
     this.setNotice("石壁が　ずれて　道を　つなぎなおした。", 1700);
     this.time.delayedCall(620, () => { this.locked = false; this.actions.setLocked(false); });
   }
 
   private stopFortress(): void {
+    for (const tween of this.fortressAmbientTweens) tween.pause();
+    this.bossPulse?.stop();
     this.bossVisual?.destroy();
     this.bossVisual = undefined;
     for (const layer of this.roomLayers.values()) {
@@ -341,7 +466,8 @@ export class BatorasuFortressScene extends Phaser.Scene {
       `reachable: ${this.plan.reachable ? "yes" : "NO"}`,
       `entrance: ${this.plan.entrance.x},${this.plan.entrance.y}  boss: ${this.plan.boss.x},${this.plan.boss.y}`,
       `main path: ${this.plan.mainPathRoomIds.join(" → ")}`,
-      `poison route: tarosa_bow_poison (Lv19 auto-equip); hint ${this.plan.poisonHint.x},${this.plan.poisonHint.y}`,
+      `special: ${this.plan.specialRoomIds.join(", ")}`,
+      `poison route: tarosa_bow_poison (Lv19 auto-equip); ${this.plan.poisonGuideRoomId} hint ${this.plan.poisonHint.x},${this.plan.poisonHint.y}`,
       `treasure: ${this.plan.treasures.map((treasure) => treasure.id).join(", ")}`,
     ];
     this.add.text(10, DISPLAY.height - 10, lines.join("\n"), {
@@ -353,6 +479,10 @@ export class BatorasuFortressScene extends Phaser.Scene {
     const x = this.player.body.center.x / BATTLE_FORTRESS_TILE_SIZE;
     const y = this.player.body.center.y / BATTLE_FORTRESS_TILE_SIZE;
     return x >= room.x && x < room.x + room.width && y >= room.y && y < room.y + room.height;
+  }
+
+  private getRoomAtTile(x: number, y: number): FortressRoom | undefined {
+    return this.plan.rooms.find((room) => x >= room.x && x < room.x + room.width && y >= room.y && y < room.y + room.height);
   }
 
   private toWorld(point: { readonly x: number; readonly y: number }, facing?: Facing): { x: number; y: number; facing: Facing } {

@@ -51,6 +51,11 @@ const OBJECTS_PATH = new URL("../../assets/maps/starting_forest/objects.json", i
 const BOSS_SPRITE_KEY = "starting-forest.boss.erimaki-tokage";
 const BOSS_SPRITE_PATH = new URL("../../assets/monsters/majin_cave/monster_erimaki_hebi.png", import.meta.url).toString();
 const BOSS_IDLE_ANIMATION_KEY = `${BOSS_SPRITE_KEY}.idle`;
+// この戦闘だけは洞窟で同じIDを使うエリマキヘビと背景を共有しない。
+const BOSS_BATTLE_BACKGROUND = {
+  key: "battle.bg.starting_forest",
+  url: new URL("../../assets/battle/backgrounds/reference/mq0_battle_bg_013_5ecb71635c.png", import.meta.url).toString(),
+} as const;
 // タロサ立ち姿(ユーザー提供REFERENCEのバイト一致コピー、1448×1086)。会話中だけ画面右上寄りに表示する。
 const TAROSA_PORTRAIT_KEY = "char.tarosa.portrait";
 const TAROSA_PORTRAIT_FRAME = "figure";
@@ -61,6 +66,10 @@ const TAROSA_PORTRAIT_DISPLAY_HEIGHT = 140 * SCALE_FACTOR;
 const TAROSA_PORTRAIT_FADE_MS = 240;
 // 登場・退場の歩く速さ。主人公の歩行速度(PLAYER.moveSpeed)と同じ速さで歩かせる。
 const TAROSA_WALK_SPEED = PLAYER.moveSpeed;
+// 2026-09-27: ボス撃破位置(≒主人公の戻り位置)へ寄せすぎると重なるため、タロサの立ち位置は主人公から
+// 最低この距離(world px)だけ離す。タロサ44px・主人公54px(共にworldScale 1.5)のスプライト幅が
+// 重ならない目安として、両者の半幅の合計(約74px)に近い値にした。
+const TAROSA_MIN_DISTANCE_FROM_PLAYER = 72;
 
 const isDevMode = typeof import.meta.env !== "undefined" && import.meta.env.DEV;
 
@@ -220,7 +229,14 @@ export class StartingForestScene extends Phaser.Scene {
       }).setScrollFactor(0).setDepth(2000);
     }
 
-    this.fieldMenu = new FieldMenu(this);
+    this.fieldMenu = new FieldMenu(this, {
+      onOpen: () => this.player.body.setVelocity(0, 0),
+      onRecord: () => this.gameState.saveAdventureRecord({
+        mapId: MAP_ID,
+        sceneKey: MAPS[MAP_ID].sceneKey,
+        resume: { kind: "2d", x: this.player.visual.x, y: this.player.visual.y, facing: this.player.facing },
+      }),
+    });
     this.dialogueBox = new DialogueBox(this);
     this.actions = new InputSystem(window, document);
     const movePlayer = (): void => this.tick();
@@ -355,17 +371,27 @@ export class StartingForestScene extends Phaser.Scene {
       return canInteract(center, this.player.facing, { x: body.x, y: body.y, width: body.width, height: body.height }, INTERACTION_REACH, INTERACTION_SPAN);
     });
     if (!chest) return false;
-    if (!Object.hasOwn(ITEM_DEFINITIONS, chest.definition.itemId)) {
-      throw new Error(`starting forest chest ${chest.definition.id} references an unknown item ${chest.definition.itemId}`);
-    }
-    const itemId = chest.definition.itemId as ItemId;
-    if (!inventory.add(itemId)) throw new Error(`starting forest chest ${chest.definition.id} could not add ${itemId}`);
+    const rewardMessage = chest.definition.itemId === undefined
+      ? (() => {
+          const jumpCoinCount = chest.definition.jumpCoinCount;
+          if (jumpCoinCount === undefined) throw new Error(`starting forest chest ${chest.definition.id} has no reward`);
+          this.gameState.addJumpCoins(jumpCoinCount);
+          return `ジャンコインを\n${jumpCoinCount}まい てにいれた！`;
+        })()
+      : (() => {
+          const itemId = chest.definition.itemId;
+          if (!Object.hasOwn(ITEM_DEFINITIONS, itemId)) {
+            throw new Error(`starting forest chest ${chest.definition.id} references an unknown item ${itemId}`);
+          }
+          if (!inventory.add(itemId as ItemId)) throw new Error(`starting forest chest ${chest.definition.id} could not add ${itemId}`);
+          return `${ITEM_DEFINITIONS[itemId as ItemId].name}を\nてにいれた！`;
+        })();
     this.gameState.setFlag(chest.definition.openedFlag);
     chest.bodyMarker.destroy();
     chest.visual.destroy();
     this.chests = this.chests.filter((candidate) => candidate !== chest);
     this.player.body.setVelocity(0, 0);
-    this.dialogueBox.open(["たからばこを　あけた！", `${ITEM_DEFINITIONS[itemId].name}を\nてにいれた！`]);
+    this.dialogueBox.open(["たからばこを　あけた！", rewardMessage]);
     return true;
   }
 
@@ -386,6 +412,7 @@ export class StartingForestScene extends Phaser.Scene {
       returnSpawnX: this.player.visual.x,
       returnSpawnY: this.player.visual.y,
       returnFacing: this.player.facing,
+      battleBackground: BOSS_BATTLE_BACKGROUND,
       victoryFlag: definition.victoryFlag,
       victoryFlags: [definition.unlockFlag],
     };
@@ -410,7 +437,9 @@ export class StartingForestScene extends Phaser.Scene {
       (arrival.x + arrival.width / 2) * worldScale,
       (arrival.y + arrival.height / 2) * worldScale,
     );
-    const target = new Phaser.Math.Vector2(bossPosition.x - 48, bossPosition.y - 4);
+    const defaultTarget = new Phaser.Math.Vector2(bossPosition.x - 48, bossPosition.y - 4);
+    const playerPos = new Phaser.Math.Vector2(this.player.visual.x, this.player.visual.y);
+    const target = keepAwayFromPlayer(defaultTarget, playerPos, TAROSA_MIN_DISTANCE_FROM_PLAYER);
     const tarosa = this.add.sprite(start.x, start.y, TAROSA_SPRITE.key, idleFrame("down"))
       .setDepth(1100)
       .setAlpha(0);
@@ -560,6 +589,14 @@ export class StartingForestScene extends Phaser.Scene {
 
 function addStaticBody(scene: Phaser.Scene, object: Phaser.GameObjects.Rectangle): void {
   scene.physics.add.existing(object, true);
+}
+
+/** pointがplayerからminDistance未満なら、player→pointの向きへminDistanceぶん押し出した位置を返す。 */
+function keepAwayFromPlayer(point: Phaser.Math.Vector2, player: Phaser.Math.Vector2, minDistance: number): Phaser.Math.Vector2 {
+  const away = point.clone().subtract(player);
+  if (away.length() >= minDistance) return point;
+  if (away.length() === 0) away.set(0, -1);
+  return player.clone().add(away.normalize().scale(minDistance));
 }
 
 function ensureForestBossIdleAnimation(scene: Phaser.Scene): void {

@@ -22,12 +22,15 @@ import { VILLAGER_SPRITES } from "../config/villagerSprites.ts";
 import { getDialogue } from "../data/dialogues.ts";
 import { Npc } from "../entities/Npc.ts";
 import type { NpcDefinition } from "../config/maps.ts";
+import { getShop } from "../config/shops.ts";
 import { isStoryFlagsDialogueEvent } from "../events/BattleEventData.ts";
 import type { DialogueAfterEvent } from "../events/BattleEventData.ts";
 import { GameStateRepository } from "../systems/GameStateRepository.ts";
 import { canInteract } from "../systems/Interaction.ts";
 import { startVillagerGlitch } from "../systems/VillagerGlitch.ts";
 import { DialogueBox } from "../ui/DialogueBox.ts";
+import { ShopWindow } from "../ui/ShopWindow.ts";
+import type { Facing } from "../systems/PlayerMovement.ts";
 
 const MAP_ID = "map_03_bie_village";
 const MANIFEST_KEY = "image-map.bie-village.manifest";
@@ -46,6 +49,9 @@ const isDevMode = typeof import.meta.env !== "undefined" && import.meta.env.DEV;
 
 export interface BieVillageSceneData {
   readonly spawnId?: string;
+  readonly spawnX?: number;
+  readonly spawnY?: number;
+  readonly spawnFacing?: Facing;
 }
 
 /**
@@ -53,7 +59,9 @@ export interface BieVillageSceneData {
  * ビーエのもりから続く地域の異変として、背景の一部が一瞬だけ乱れる小さな異変(config/bieVillageAnomaly.ts)を常時重ねる。
  * StartingPlaceScene(No.01)と同じBACKGROUND/COLLISION/EVENT/OBJECT
  * 画像マップ方式をそのまま再利用する。村人6人(MAPS.npcs、No.02と同じ「固定はドアの真ん前＋周辺を歩く人」)と
- * 会話初稿、村人の小さなバグり(config/bieVillageAnomaly.tsのBIE_VILLAGER_GLITCH)を持つ。
+ * 会話初稿、村人の小さなバグり(config/bieVillageAnomaly.tsのBIE_VILLAGER_GLITCH)を持つ。固定4人のうち3人は
+ * config/shops.tsのやどや・ぶきや・どうぐや(No.02と同じShopWindow)を兼業し、残り1人(となりの人)は
+ * 木こり失踪の手掛かりを持つため通常会話のまま(2026-09-27)。
  * 木こり救出イベント・正式台詞・ランダムエンカウントは未実装(docs/NPC/02_bie_no_mura.md)。
  */
 export class BieVillageScene extends Phaser.Scene {
@@ -62,6 +70,7 @@ export class BieVillageScene extends Phaser.Scene {
   private collisionRuntime!: ImageMapCollisionRuntime;
   private fieldMenu!: FieldMenu;
   private dialogueBox!: DialogueBox;
+  private shopWindow!: ShopWindow;
   private afterDialogueEvent: DialogueAfterEvent | undefined;
   private readonly gameState = new GameStateRepository();
   private npcs: Npc[] = [];
@@ -126,9 +135,13 @@ export class BieVillageScene extends Phaser.Scene {
     const mapConfig = MAPS[MAP_ID];
     // definition.position / movementはネイティブ背景ピクセルなので、worldScaleを掛けた複製をNpcへ渡す(No.02と同じ)。
     this.npcs = mapConfig.npcs.map((definition) => new Npc(this, scaleNpcDefinition(definition, worldScale)));
-    const spawn = mapConfig.spawns[data?.spawnId ?? "fromWorldMap"] ?? mapConfig.spawns.fromWorldMap;
+    const native = mapConfig.spawns[data?.spawnId ?? "fromWorldMap"] ?? mapConfig.spawns.fromWorldMap;
+    const hasExactSpawn = typeof data?.spawnX === "number" && typeof data?.spawnY === "number";
+    const spawn = hasExactSpawn
+      ? { x: data!.spawnX!, y: data!.spawnY!, facing: data?.spawnFacing ?? native.facing }
+      : { x: native.x * worldScale, y: native.y * worldScale, facing: native.facing };
     ensureWalkAnimations(this, PROTAGONIST_SPRITE);
-    this.player = new Player(this, spawn.x * worldScale, spawn.y * worldScale, spawn.facing);
+    this.player = new Player(this, spawn.x, spawn.y, spawn.facing);
     this.player.setDepth(1000);
     // 加入済みの仲間(タロサ・ミレイ)は、他の画像マップと同じく主人公の軌跡を辿って付いてくる。
     new PartyFollowers(this, this.player);
@@ -192,12 +205,31 @@ export class BieVillageScene extends Phaser.Scene {
 
     // 会話ウィンドウは他の表示物の後に作り、常に最前面へ描画する。
     this.dialogueBox = new DialogueBox(this);
-    this.fieldMenu = new FieldMenu(this);
+    // 水車小屋・北東の家・店先の日よけの3人は店番(config/shops.ts)。「はなす」で選ぶと、はじまりのまちの
+    // 店主と同じくこのNPCのdialogueIdをそのまま読む(会話後イベントの扱いも同じhandleAfterDialogueを使う)。
+    this.shopWindow = new ShopWindow(this, (npcId) => {
+      const dialogue = getDialogue(MAPS[MAP_ID].npcs.find((npc) => npc.id === npcId)?.dialogueId ?? "");
+      if (!dialogue) return;
+      this.afterDialogueEvent = dialogue.afterDialogue;
+      this.dialogueBox.open(dialogue.pages);
+    });
+    this.fieldMenu = new FieldMenu(this, {
+      onOpen: () => this.player.body.setVelocity(0, 0),
+      onRecord: () => this.gameState.saveAdventureRecord({
+        mapId: MAP_ID,
+        sceneKey: MAPS[MAP_ID].sceneKey,
+        resume: { kind: "2d", x: this.player.visual.x, y: this.player.visual.y, facing: this.player.facing },
+      }),
+    });
     this.actions = new InputSystem(window, document);
     const movePlayer = (): void => {
       const confirmPressed = this.actions.consumePressed("confirm");
       if (this.dialogueBox.isOpen) {
         if (confirmPressed && this.dialogueBox.advance()) this.handleAfterDialogue();
+        return;
+      }
+      if (this.shopWindow.isOpen) {
+        this.shopWindow.handleInput(this.actions, confirmPressed);
         return;
       }
       if (this.fieldMenu.isOpen) {
@@ -257,6 +289,13 @@ export class BieVillageScene extends Phaser.Scene {
       )
     );
     if (!npc) return;
+    const shop = getShop(npc.definition.id);
+    if (shop) {
+      this.player.body.setVelocity(0, 0);
+      npc.stop();
+      this.shopWindow.open(npc.definition.id, shop);
+      return;
+    }
     const dialogue = getDialogue(npc.definition.dialogueId);
     if (!dialogue) return;
     this.player.body.setVelocity(0, 0);

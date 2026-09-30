@@ -51,7 +51,7 @@ export function buildPartyCombatant(
 
 /**
  * DEBUG_MODE専用の戦闘編成。加入状況・セーブ(レベル/購入装備/持ち越しHP・MP)を一切見ず、
- * 主人公→タロサ→ミレイの3人をLv30・全快・レベル基準の最強自動装備で組み立てる。
+ * 主人公一人をLv30・全快・レベル基準の最強自動装備で組み立てる。
  * Lv30は正式な成長上限Lv25の外側にあるDEBUG_ONLY値(TEMP_TEST_VALUEカーブの直線延長)。
  */
 export function buildDebugParty(level: number = DEBUG_PARTY_LEVEL): BattleCombatantDefinition[] {

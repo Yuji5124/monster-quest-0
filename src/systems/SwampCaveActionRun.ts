@@ -11,6 +11,7 @@ export interface SwampCaveEnemyState extends Omit<SwampCaveEnemySpawn, "x" | "y"
 }
 
 export interface SwampCaveActionRun {
+  phase: "action" | "final";
   endurance: number;
   damageReadyAt: number;
   readonly abilityReadyAt: Record<SwampCaveAbilityId, number>;
@@ -35,6 +36,7 @@ export interface SwampCaveAdvanceResult {
 
 export function createSwampCaveActionRun(): SwampCaveActionRun {
   return {
+    phase: "action",
     endurance: SWAMP_CAVE_ACTION.player.endurance,
     damageReadyAt: 0,
     abilityReadyAt: { hero_sword: 0, tarosa_bow: 0, mirei_magic: 0 },
@@ -120,12 +122,23 @@ export function areAllSwampCaveEnemiesDefeated(run: SwampCaveActionRun): boolean
 }
 
 export function canOpenSwampCaveChest(run: SwampCaveActionRun, player: SwampCavePoint): boolean {
-  return !run.chestOpened && areAllSwampCaveEnemiesDefeated(run) && distanceBetween(player, SWAMP_CAVE_ACTION.chest) <= SWAMP_CAVE_ACTION.chest.radius;
+  return run.phase === "final" && !run.chestOpened && areAllSwampCaveEnemiesDefeated(run) && distanceBetween(player, SWAMP_CAVE_ACTION.chest) <= SWAMP_CAVE_ACTION.chest.radius;
 }
 
 export function openSwampCaveChest(run: SwampCaveActionRun, player: SwampCavePoint): boolean {
   if (!canOpenSwampCaveChest(run, player)) return false;
   run.chestOpened = true;
+  return true;
+}
+
+/** The block-built action course is cleared before the short background-backed inner room opens. */
+export function canEnterSwampCaveFinalRoom(run: SwampCaveActionRun, player: SwampCavePoint): boolean {
+  return run.phase === "action" && areAllSwampCaveEnemiesDefeated(run) && distanceBetween(player, SWAMP_CAVE_ACTION.exit) <= SWAMP_CAVE_ACTION.exit.radius;
+}
+
+export function enterSwampCaveFinalRoom(run: SwampCaveActionRun, player: SwampCavePoint): boolean {
+  if (!canEnterSwampCaveFinalRoom(run, player)) return false;
+  run.phase = "final";
   return true;
 }
 
@@ -137,6 +150,7 @@ export function restoreSwampCaveActionRun(run: SwampCaveActionRun, progress: { r
     }
   }
   run.chestOpened = progress.chestOpened;
+  if (progress.chestOpened) run.phase = "final";
 }
 
 function closestLivingEnemy(run: SwampCaveActionRun, origin: SwampCavePoint, range: number): SwampCaveEnemyState | undefined {

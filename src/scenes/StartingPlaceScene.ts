@@ -18,6 +18,8 @@ import { FieldMenu } from "../ui/FieldMenu.ts";
 import { DISPLAY } from "../config/display.ts";
 import { OPENING_CAMPFIRE, OPENING_CAMPFIRE_NARRATION } from "../config/openingCampfire.ts";
 import { openingCampfireAudio } from "../systems/OpeningCampfireAudio.ts";
+import { GameStateRepository } from "../systems/GameStateRepository.ts";
+import type { Facing } from "../systems/PlayerMovement.ts";
 
 const MAP_ID = "map_01_starting_place";
 const MANIFEST_KEY = "image-map.no01.manifest";
@@ -40,6 +42,10 @@ const CAMPFIRE_WORLD_POSITION = { x: 725, y: 515 } as const;
 
 export interface StartingPlaceSceneData {
   readonly spawnId?: string;
+  /** Manual record / battle return coordinates are already in runtime pixels. */
+  readonly spawnX?: number;
+  readonly spawnY?: number;
+  readonly spawnFacing?: Facing;
   /** タイトルの「はじめから」だけがNo.01の導入演出を再生する。通常の再入場では再生しない。 */
   readonly openingSequence?: boolean;
 }
@@ -60,6 +66,7 @@ export class StartingPlaceScene extends Phaser.Scene {
   private openingInputLocked = false;
   private openingAmbienceActive = false;
   private openingOverlays: Phaser.GameObjects.GameObject[] = [];
+  private readonly gameState = new GameStateRepository();
 
   constructor(sceneKey = "StartingPlaceScene") {
     super({ key: sceneKey, physics: { arcade: { gravity: { x: 0, y: 0 } } } });
@@ -113,8 +120,12 @@ export class StartingPlaceScene extends Phaser.Scene {
 
     ensureWalkAnimations(this, PROTAGONIST_SPRITE);
     const mapConfig = MAPS[MAP_ID];
-    const spawn = mapConfig.spawns[data?.spawnId ?? "opening"] ?? mapConfig.spawns.opening;
-    this.player = new Player(this, spawn.x * worldScale, spawn.y * worldScale, spawn.facing);
+    const native = mapConfig.spawns[data?.spawnId ?? "opening"] ?? mapConfig.spawns.opening;
+    const hasExactSpawn = typeof data?.spawnX === "number" && typeof data?.spawnY === "number";
+    const spawn = hasExactSpawn
+      ? { x: data!.spawnX!, y: data!.spawnY!, facing: data?.spawnFacing ?? native.facing }
+      : { x: native.x * worldScale, y: native.y * worldScale, facing: native.facing };
+    this.player = new Player(this, spawn.x, spawn.y, spawn.facing);
     this.player.setDepth(1000);
     new PartyFollowers(this, this.player);
     for (const body of this.collisionRuntime.bodies) this.physics.add.collider(this.player.body, body);
@@ -160,7 +171,14 @@ export class StartingPlaceScene extends Phaser.Scene {
       }).setScrollFactor(0).setDepth(2000);
     }
 
-    this.fieldMenu = new FieldMenu(this);
+    this.fieldMenu = new FieldMenu(this, {
+      onOpen: () => this.player.body.setVelocity(0, 0),
+      onRecord: () => this.gameState.saveAdventureRecord({
+        mapId: MAP_ID,
+        sceneKey: MAPS[MAP_ID].sceneKey,
+        resume: { kind: "2d", x: this.player.visual.x, y: this.player.visual.y, facing: this.player.facing },
+      }),
+    });
     this.actions = new InputSystem(window, document);
     if (this.openingInputLocked) this.actions.setLocked(true);
     const movePlayer = (): void => {

@@ -146,6 +146,64 @@ export const VILLAGER_SPRITES = {
     walkFrameRate: 6,
     baselineY: 67,
   },
+  // 2026-09-29: No.12港町ダコハ専用(ユーザー指示「今まで使った村人の画像は使わないでください」)。
+  // villager_01〜17とは別デザインの生成回を新規に割り当てる(tools/build_villager_sheets.py参照)。
+  villager_18: { // やどやの主人
+    key: "char.villager.18.walk",
+    path: new URL("../../assets/characters/npc/villager_18_walk.png", import.meta.url).toString(),
+    frameWidth: 70,
+    frameHeight: 70,
+    walkFrameRate: 6,
+    baselineY: 67,
+  },
+  villager_19: { // ぶきやの店主
+    key: "char.villager.19.walk",
+    path: new URL("../../assets/characters/npc/villager_19_walk.png", import.meta.url).toString(),
+    frameWidth: 70,
+    frameHeight: 70,
+    walkFrameRate: 6,
+    baselineY: 67,
+  },
+  villager_20: { // とうだい近くの老婆
+    key: "char.villager.20.walk",
+    path: new URL("../../assets/characters/npc/villager_20_walk.png", import.meta.url).toString(),
+    frameWidth: 70,
+    frameHeight: 70,
+    walkFrameRate: 6,
+    baselineY: 67,
+  },
+  villager_21: { // 広場の屋台の女性
+    key: "char.villager.21.walk",
+    path: new URL("../../assets/characters/npc/villager_21_walk.png", import.meta.url).toString(),
+    frameWidth: 70,
+    frameHeight: 70,
+    walkFrameRate: 6,
+    baselineY: 67,
+  },
+  villager_22: { // 波止場の漁師
+    key: "char.villager.22.walk",
+    path: new URL("../../assets/characters/npc/villager_22_walk.png", import.meta.url).toString(),
+    frameWidth: 70,
+    frameHeight: 70,
+    walkFrameRate: 6,
+    baselineY: 67,
+  },
+  villager_23: { // 桟橋を歩く少年
+    key: "char.villager.23.walk",
+    path: new URL("../../assets/characters/npc/villager_23_walk.png", import.meta.url).toString(),
+    frameWidth: 70,
+    frameHeight: 70,
+    walkFrameRate: 6,
+    baselineY: 67,
+  },
+  villager_24: { // 広場を歩く船乗り
+    key: "char.villager.24.walk",
+    path: new URL("../../assets/characters/npc/villager_24_walk.png", import.meta.url).toString(),
+    frameWidth: 70,
+    frameHeight: 70,
+    walkFrameRate: 6,
+    baselineY: 67,
+  },
 } as const satisfies Record<string, WalkSpriteGeometry>;
 
 export type VillagerSpriteId = keyof typeof VILLAGER_SPRITES;

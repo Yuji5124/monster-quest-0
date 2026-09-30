@@ -52,12 +52,24 @@ export interface BattleFortressPlan {
   readonly entrance: FortressPoint;
   readonly boss: FortressPoint;
   readonly poisonHint: FortressPoint;
+  /** 既存のタロサ「どくやの弓」攻略を環境で示す、必ず主経路上にある部屋。 */
+  readonly poisonGuideRoomId: string;
   readonly treasures: readonly FortressTreasure[];
+  /** 毎seedで必ず一つずつ配置する、砦が組み替わって見える印象的な部屋。 */
+  readonly specialRoomIds: readonly string[];
   readonly mainPathRoomIds: readonly string[];
   readonly reachable: boolean;
 }
 
 export interface FortressRect {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+/** Runtime world extents shared by Camera and Arcade Physics for the generated fortress. */
+export interface FortressWorldBounds {
   readonly x: number;
   readonly y: number;
   readonly width: number;
@@ -138,10 +150,11 @@ export function generateBattleFortress(seedInput?: string | number): BattleFortr
   };
 
   const entranceRoom = addRoom("entrance", 2, MAIN_Y, MAIN_ROOM_WIDTH, MAIN_ROOM_HEIGHT, 0);
-  const variableKinds: readonly FortressRoomKind[] = ["combat", "branch", "prison", "assembly", "misprint", "reconfigure"];
-  // Three shuffled module selections ensure the same seed rebuilds identically while
-  // the first traversal stays authored: normal → strange → reconstruction.
-  const selected = Array.from({ length: 5 }, (_, index) => variableKinds[(index + Math.floor(random() * variableKinds.length)) % variableKinds.length]);
+  // 入口直後は砦らしい通常部屋、後半は必ず「生成途中」「誤生成」「再構成」を通す。
+  // これにより、毎seedの差分を残しつつ、特殊部屋が抽選外になって印象が薄れることを防ぐ。
+  const earlyRoom = random() < 0.5 ? "combat" : "prison";
+  const branchRoom = random() < 0.5 ? "branch" : "combat";
+  const selected: readonly FortressRoomKind[] = [earlyRoom, branchRoom, "assembly", "misprint", "reconfigure"];
   const mainRooms = [entranceRoom];
   for (let index = 0; index < selected.length; index += 1) {
     const x = 2 + ROOM_STEP * (index + 1);
@@ -182,6 +195,9 @@ export function generateBattleFortress(seedInput?: string | number): BattleFortr
   const entrance = roomCenter(entranceRoom);
   const boss = roomCenter(bossRoom);
   const poisonHint = { x: checkpoint.x + 3, y: checkpoint.y + 3 };
+  const specialRoomIds = mainRooms
+    .filter((room) => room.kind === "assembly" || room.kind === "misprint" || room.kind === "reconfigure")
+    .map((room) => room.id);
   const treasures: FortressTreasure[] = [
     { id: "dokukeshi", tile: { x: checkpoint.x + 8, y: checkpoint.y + 6 }, label: "どくけし" },
     { id: "kaifukuyaku", tile: { x: direct.x + 8, y: direct.y + 3 }, label: "かいふくやく" },
@@ -189,8 +205,25 @@ export function generateBattleFortress(seedInput?: string | number): BattleFortr
   const reachable = verifyBattleFortressPath(tiles, entrance, boss);
   if (!reachable) throw new Error("BattleFortressGenerator produced an unreachable main path");
   return {
-    seed, width: GRID_WIDTH, height: GRID_HEIGHT, tiles, rooms, entrance, boss, poisonHint, treasures,
+    seed, width: GRID_WIDTH, height: GRID_HEIGHT, tiles, rooms, entrance, boss, poisonHint,
+    poisonGuideRoomId: checkpoint.id, treasures, specialRoomIds,
     mainPathRoomIds: mainRooms.map((room) => room.id), reachable,
+  };
+}
+
+/**
+ * The fortress is much wider than the 960×720 display. Keep its physical world
+ * boundary data-derived so a generated room chain never inherits the viewport as
+ * an invisible movement wall.
+ */
+export function getBattleFortressWorldBounds(
+  plan: Pick<BattleFortressPlan, "width" | "height">,
+): FortressWorldBounds {
+  return {
+    x: 0,
+    y: 0,
+    width: plan.width * BATTLE_FORTRESS_TILE_SIZE,
+    height: plan.height * BATTLE_FORTRESS_TILE_SIZE,
   };
 }
 

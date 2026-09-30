@@ -1,20 +1,21 @@
 import Phaser from "phaser";
 import { MIREI_SPRITE } from "../config/mireiSprite.ts";
 import { PROTAGONIST_SPRITE } from "../config/protagonistSprite.ts";
-import { SWAMP_CAVE_ACTION } from "../config/swampCaveAction.ts";
+import { isPointOnSwampCaveActionRoute, isPointOnSwampCaveRoot, SWAMP_CAVE_ACTION } from "../config/swampCaveAction.ts";
 import type { SwampCaveAbilityId, SwampCavePoint } from "../config/swampCaveAction.ts";
 import { TAROSA_SPRITE } from "../config/tarosaSprite.ts";
 import { idleFrame } from "../config/characterWalkSprite.ts";
 import { ensureWalkAnimations, preloadWalkSprite, walkAnimKey } from "../systems/CharacterWalkSprite.ts";
 import { GameStateRepository } from "../systems/GameStateRepository.ts";
 import { InputSystem } from "../systems/InputSystem.ts";
-import { Inventory, inventory } from "../systems/Inventory.ts";
 import { beginMapTransition } from "../systems/MapTransition.ts";
 import {
   advanceSwampCaveActionRun,
   areAllSwampCaveEnemiesDefeated,
+  canEnterSwampCaveFinalRoom,
   canOpenSwampCaveChest,
   createSwampCaveActionRun,
+  enterSwampCaveFinalRoom,
   openSwampCaveChest,
   restoreSwampCaveActionRun,
   useSwampCaveAbility,
@@ -40,7 +41,9 @@ export class SwampCaveActionScene extends Phaser.Scene {
   private actions!: InputSystem;
   private run!: SwampCaveActionRun;
   private readonly gameState = new GameStateRepository();
-  private caveInventory: Inventory = inventory;
+  private blockStage!: Phaser.GameObjects.Graphics;
+  private terrainHints!: Phaser.GameObjects.Graphics;
+  private finalBackground!: Phaser.GameObjects.Image;
   private hero!: Phaser.GameObjects.Sprite;
   private tarosa!: Phaser.GameObjects.Sprite;
   private mirei!: Phaser.GameObjects.Sprite;
@@ -67,7 +70,7 @@ export class SwampCaveActionScene extends Phaser.Scene {
   }
 
   preload(): void {
-    if (!this.textures.exists(SWAMP_CAVE_ACTION.backgroundKey)) this.load.image(SWAMP_CAVE_ACTION.backgroundKey, SWAMP_CAVE_ACTION.backgroundPath);
+    if (!this.textures.exists(SWAMP_CAVE_ACTION.finalBackgroundKey)) this.load.image(SWAMP_CAVE_ACTION.finalBackgroundKey, SWAMP_CAVE_ACTION.finalBackgroundPath);
     preloadWalkSprite(this, PROTAGONIST_SPRITE);
     preloadWalkSprite(this, TAROSA_SPRITE);
     preloadWalkSprite(this, MIREI_SPRITE);
@@ -76,8 +79,9 @@ export class SwampCaveActionScene extends Phaser.Scene {
   create(): void {
     this.isDevMapTest = import.meta.env.DEV && new URLSearchParams(window.location.search).get("mapTest") === "swamp-cave";
     this.cameras.main.setBackgroundColor("#07131a");
-    this.textures.get(SWAMP_CAVE_ACTION.backgroundKey).setFilter(Phaser.Textures.FilterMode.LINEAR);
-    this.add.image(0, 0, SWAMP_CAVE_ACTION.backgroundKey).setOrigin(0).setDepth(DEPTH.background);
+    this.textures.get(SWAMP_CAVE_ACTION.finalBackgroundKey).setFilter(Phaser.Textures.FilterMode.LINEAR);
+    this.createBlockStage();
+    this.finalBackground = this.add.image(0, 0, SWAMP_CAVE_ACTION.finalBackgroundKey).setOrigin(0).setDepth(DEPTH.background + 1).setVisible(false);
     this.createTerrainHints();
     this.createEnemyTexture();
     ensureWalkAnimations(this, PROTAGONIST_SPRITE);
@@ -90,14 +94,13 @@ export class SwampCaveActionScene extends Phaser.Scene {
         cleared: this.gameState.hasFlag(SWAMP_CAVE_ACTION.flags.cleared),
         chestOpened: this.gameState.hasFlag(SWAMP_CAVE_ACTION.flags.chestOpened),
       });
-    } else {
-      this.caveInventory = new Inventory();
     }
 
     this.createParty();
     this.createEnemies();
     this.createTreasureAndExit();
     this.createHud();
+    if (this.run.phase === "final") this.showFinalRoom(false);
 
     this.actions = new InputSystem(window, document);
     if (this.sys.game.device.input.touch) this.createTouchControls();
@@ -133,8 +136,47 @@ export class SwampCaveActionScene extends Phaser.Scene {
     if (this.run.endurance === 0) this.restartAfterDefeat();
     if (areAllSwampCaveEnemiesDefeated(this.run) && !this.showedChestHint && !this.run.chestOpened) {
       this.showedChestHint = true;
-      this.setMessage("群れを退けた！　中央の宝箱を調べよう。", "#fff2a6");
+      this.setMessage(this.run.phase === "final" ? "最奥の宝箱を調べよう。" : "群れを退けた！　奥の区画の入口を調べよう。", "#fff2a6");
     }
+  }
+
+  /**
+   * 主区画は背景画像ではなく、単一Graphicsに描くブロック地形。
+   * オブジェクトを大量に増やさず、iPhoneでも軽く保つ。
+   */
+  private createBlockStage(): void {
+    const graphics = this.add.graphics().setDepth(DEPTH.background);
+    graphics.fillStyle(0x071018, 1).fillRect(0, 0, SWAMP_CAVE_ACTION.world.width, SWAMP_CAVE_ACTION.world.height);
+
+    const blockSize = 58;
+    for (let y = 0; y < SWAMP_CAVE_ACTION.world.height; y += blockSize) {
+      for (let x = 0; x < SWAMP_CAVE_ACTION.world.width; x += blockSize) {
+        const shade = ((x / blockSize) + (y / blockSize)) % 2 === 0 ? 0x102128 : 0x0c1b23;
+        graphics.fillStyle(shade, 1).fillRoundedRect(x + 3, y + 3, blockSize - 6, blockSize - 6, 9);
+      }
+    }
+
+    const platformColors = [0x1d302b, 0x263b30, 0x2b4030, 0x263b30, 0x263b30, 0x304633] as const;
+    for (const [index, platform] of SWAMP_CAVE_ACTION.terrain.platforms.entries()) {
+      graphics.fillStyle(platformColors[index] ?? 0x263b30, 1).fillRoundedRect(platform.x, platform.y, platform.width, platform.height, 24);
+    }
+
+    for (const zone of SWAMP_CAVE_ACTION.terrain.swamp) {
+      graphics.fillStyle(0x153f42, 0.96).fillRoundedRect(zone.x, zone.y, zone.width, zone.height, 28);
+      graphics.lineStyle(2, 0x477a70, 0.62).strokeRoundedRect(zone.x, zone.y, zone.width, zone.height, 28);
+    }
+    for (const zone of SWAMP_CAVE_ACTION.terrain.fast) {
+      graphics.fillStyle(0x405333, 0.92).fillRoundedRect(zone.x, zone.y, zone.width, zone.height, 18);
+      graphics.lineStyle(3, 0xa3bd78, 0.66).strokeRoundedRect(zone.x, zone.y, zone.width, zone.height, 18);
+    }
+
+    for (const root of SWAMP_CAVE_ACTION.terrain.roots) {
+      graphics.lineStyle(root.width, 0x3e2a1c, 1).lineBetween(root.from.x, root.from.y, root.to.x, root.to.y);
+      graphics.lineStyle(7, 0xb28a4e, 0.78).lineBetween(root.from.x, root.from.y, root.to.x, root.to.y);
+    }
+    const exitPlatform = SWAMP_CAVE_ACTION.terrain.platforms.at(-1);
+    if (exitPlatform) graphics.lineStyle(4, 0x60714a, 0.8).strokeRoundedRect(exitPlatform.x, exitPlatform.y, exitPlatform.width, exitPlatform.height, 22);
+    this.blockStage = graphics;
   }
 
   private createTerrainHints(): void {
@@ -145,9 +187,11 @@ export class SwampCaveActionScene extends Phaser.Scene {
     for (const zone of SWAMP_CAVE_ACTION.terrain.fast) {
       graphics.lineStyle(2, 0xc1df9d, 0.22).strokeRoundedRect(zone.x, zone.y, zone.width, zone.height, 18);
     }
-    // 背景上の橋・高台を補助する根道。見た目だけで、地形の速さはconfigの矩形で判定する。
-    graphics.lineStyle(13, 0x4e3822, 0.3).lineBetween(758, 752, 790, 586).lineBetween(926, 548, 1040, 396);
-    graphics.lineStyle(4, 0x9d7d48, 0.36).lineBetween(758, 752, 790, 586).lineBetween(926, 548, 1040, 396);
+    // 根道と高台の速い導線はconfigで判定し、輪郭だけを重ねる。
+    for (const root of SWAMP_CAVE_ACTION.terrain.roots) {
+      graphics.lineStyle(2, 0xe7e1a9, 0.4).lineBetween(root.from.x, root.from.y, root.to.x, root.to.y);
+    }
+    this.terrainHints = graphics;
   }
 
   private createEnemyTexture(): void {
@@ -186,22 +230,24 @@ export class SwampCaveActionScene extends Phaser.Scene {
     const lid = this.add.rectangle(chest.x, chest.y - 11, 39, 8, 0xa6682d).setStrokeStyle(2, 0xffd984).setDepth(DEPTH.enemy + 1);
     const lock = this.add.rectangle(chest.x, chest.y + 1, 6, 8, 0xffdc6b).setDepth(DEPTH.enemy + 2);
     this.chest = this.add.container(0, 0, [glow, box, lid, lock]);
-    this.chest.setVisible(!this.run.chestOpened);
+    this.chest.setVisible(this.run.phase === "final" && !this.run.chestOpened);
     this.tweens.add({ targets: glow, alpha: { from: 0.08, to: 0.3 }, scale: { from: 0.9, to: 1.1 }, yoyo: true, repeat: -1, duration: 800 });
 
     this.exitGlow = this.add.circle(exit.x, exit.y, 34, 0x91eddf, 0.1).setStrokeStyle(2, 0xbfffe8, 0.65).setDepth(DEPTH.terrain + 2);
-    this.exitGlow.setVisible(this.run.chestOpened);
+    this.exitGlow.setVisible(this.run.phase === "final" && this.run.chestOpened);
     this.tweens.add({ targets: this.exitGlow, alpha: { from: 0.12, to: 0.58 }, scale: { from: 0.88, to: 1.18 }, yoyo: true, repeat: -1, duration: 900 });
   }
 
   private createHud(): void {
+    const isTouchDevice = this.sys.game.device.input.touch;
     const panel = this.add.rectangle(480, 42, 940, 76, 0x071018, 0.84).setStrokeStyle(1, 0x9ac5bf, 0.7).setDepth(DEPTH.hud).setScrollFactor(0);
     this.enduranceText = this.add.text(22, 15, "", { color: "#ffe4d8", fontFamily: "monospace", fontSize: "19px", stroke: "#071018", strokeThickness: 4 }).setDepth(DEPTH.hud + 1).setScrollFactor(0);
     this.progressText = this.add.text(22, 43, "", { color: "#d8f5ed", fontFamily: "monospace", fontSize: "16px", stroke: "#071018", strokeThickness: 4 }).setDepth(DEPTH.hud + 1).setScrollFactor(0);
     this.terrainText = this.add.text(680, 22, "", { color: "#dff8b9", fontFamily: "monospace", fontSize: "16px", stroke: "#071018", strokeThickness: 4 }).setDepth(DEPTH.hud + 1).setScrollFactor(0);
-    this.add.text(480, 82, "Z: 主人公の剣　X: タロサの弓　C: ミレイの足止め魔法", { color: "#eafaff", fontFamily: "monospace", fontSize: "15px", stroke: "#071018", strokeThickness: 4 })
+    const controlGuide = isTouchDevice ? "剣: 主人公　弓: タロサ　魔: ミレイの足止め魔法" : "Z: 主人公の剣　X: タロサの弓　C: ミレイの足止め魔法";
+    this.add.text(480, 82, controlGuide, { color: "#eafaff", fontFamily: "monospace", fontSize: "15px", stroke: "#071018", strokeThickness: 4 })
       .setOrigin(0.5, 1).setDepth(DEPTH.hud + 1).setScrollFactor(0);
-    this.messageText = this.add.text(480, 684, "", { color: "#ffffff", fontFamily: "monospace", fontSize: "17px", stroke: "#071018", strokeThickness: 4, wordWrap: { width: 600 }, align: "center" })
+    this.messageText = this.add.text(480, isTouchDevice ? 548 : 684, "", { color: "#ffffff", fontFamily: "monospace", fontSize: "17px", stroke: "#071018", strokeThickness: 4, wordWrap: { width: 600 }, align: "center" })
       .setOrigin(0.5).setDepth(DEPTH.hud + 1).setScrollFactor(0);
     panel.setData("swamp-cave-hud", true);
   }
@@ -217,22 +263,22 @@ export class SwampCaveActionScene extends Phaser.Scene {
       button.on("pointerup", () => { if (this.touchDirection === direction) this.touchDirection = null; });
       button.on("pointerout", () => { if (this.touchDirection === direction) this.touchDirection = null; });
     }
-    this.createTouchActionButton(744, 654, "剣", 0x5a3024, "hero_sword");
-    this.createTouchActionButton(824, 620, "弓", 0x294458, "tarosa_bow");
-    this.createTouchActionButton(892, 670, "魔", 0x3d2b5b, "mirei_magic");
+    this.createTouchActionButton(744, 654, "剣", 0x5a3024, "confirm");
+    this.createTouchActionButton(824, 620, "弓", 0x294458, "cancel");
+    this.createTouchActionButton(892, 670, "魔", 0x3d2b5b, "menu");
     this.input.on(Phaser.Input.Events.POINTER_UP, () => { this.touchDirection = null; });
     this.input.on(Phaser.Input.Events.GAME_OUT, () => { this.touchDirection = null; });
   }
 
-  private createTouchActionButton(x: number, y: number, label: string, color: number, abilityId: SwampCaveAbilityId): void {
+  private createTouchActionButton(x: number, y: number, label: string, color: number, action: "confirm" | "cancel" | "menu"): void {
     const button = this.add.circle(x, y, 34, color, 0.86).setStrokeStyle(2, 0xf5e7c4, 0.78).setDepth(DEPTH.touch).setScrollFactor(0).setInteractive();
     this.add.text(x, y, label, { color: "#ffffff", fontFamily: "monospace", fontSize: "23px" }).setOrigin(0.5).setDepth(DEPTH.touch + 1).setScrollFactor(0);
-    button.on("pointerdown", () => this.tryUseAbility(abilityId, this.time.now));
+    button.on("pointerdown", () => this.actions.queuePressed(action));
   }
 
   private handleActions(time: number): void {
     if (this.actions.consumePressed("confirm")) {
-      if (this.tryOpenChest() || this.tryLeaveCave()) return;
+      if (this.tryOpenChest() || this.tryLeaveCave() || this.tryEnterFinalRoom()) return;
       this.tryUseAbility("hero_sword", time);
     }
     if (this.actions.consumePressed("cancel")) this.tryUseAbility("tarosa_bow", time);
@@ -253,8 +299,7 @@ export class SwampCaveActionScene extends Phaser.Scene {
       dy /= length;
       this.facing = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? "left" : "right") : (dy < 0 ? "up" : "down");
       const distance = SWAMP_CAVE_ACTION.player.moveSpeed * this.terrainMultiplier() * Math.min(delta, 50) / 1000;
-      this.hero.x = Phaser.Math.Clamp(this.hero.x + dx * distance, 46, SWAMP_CAVE_ACTION.world.width - 46);
-      this.hero.y = Phaser.Math.Clamp(this.hero.y + dy * distance, 54, SWAMP_CAVE_ACTION.world.height - 54);
+      this.moveHeroAlongRoute(dx * distance, dy * distance);
     }
     this.placeParty(moving);
   }
@@ -279,11 +324,33 @@ export class SwampCaveActionScene extends Phaser.Scene {
   }
 
   private terrainMultiplier(): number {
+    if (this.run.phase === "final") return 1;
     const point = this.hero as unknown as SwampCavePoint;
-    const inFast = SWAMP_CAVE_ACTION.terrain.fast.some((zone) => point.x >= zone.x && point.x <= zone.x + zone.width && point.y >= zone.y && point.y <= zone.y + zone.height);
+    const inFast = SWAMP_CAVE_ACTION.terrain.fast.some((zone) => point.x >= zone.x && point.x <= zone.x + zone.width && point.y >= zone.y && point.y <= zone.y + zone.height)
+      || SWAMP_CAVE_ACTION.terrain.roots.some((root) => isPointOnSwampCaveRoot(point, root));
     if (inFast) return SWAMP_CAVE_ACTION.terrain.fastMultiplier;
     const inSwamp = SWAMP_CAVE_ACTION.terrain.swamp.some((zone) => point.x >= zone.x && point.x <= zone.x + zone.width && point.y >= zone.y && point.y <= zone.y + zone.height);
     return inSwamp ? SWAMP_CAVE_ACTION.terrain.swampMultiplier : 1;
+  }
+
+  /** Try the requested move first, then slide along a platform edge instead of crossing cave darkness. */
+  private moveHeroAlongRoute(dx: number, dy: number): void {
+    const clamp = (x: number, y: number): SwampCavePoint => ({
+      x: Phaser.Math.Clamp(x, 46, SWAMP_CAVE_ACTION.world.width - 46),
+      y: Phaser.Math.Clamp(y, 54, SWAMP_CAVE_ACTION.world.height - 54),
+    });
+    const attempt = clamp(this.hero.x + dx, this.hero.y + dy);
+    if (isPointOnSwampCaveActionRoute(attempt)) {
+      this.hero.setPosition(attempt.x, attempt.y);
+      return;
+    }
+    const horizontal = clamp(this.hero.x + dx, this.hero.y);
+    if (isPointOnSwampCaveActionRoute(horizontal)) {
+      this.hero.setPosition(horizontal.x, horizontal.y);
+      return;
+    }
+    const vertical = clamp(this.hero.x, this.hero.y + dy);
+    if (isPointOnSwampCaveActionRoute(vertical)) this.hero.setPosition(vertical.x, vertical.y);
   }
 
   private tryUseAbility(abilityId: SwampCaveAbilityId, time: number): void {
@@ -340,17 +407,43 @@ export class SwampCaveActionScene extends Phaser.Scene {
     this.setMessage("小さな魔物にぶつかった！　ぬまでは足が遅い。", "#ffd2d2");
   }
 
+  private tryEnterFinalRoom(): boolean {
+    if (!canEnterSwampCaveFinalRoom(this.run, this.hero)) return false;
+    if (!enterSwampCaveFinalRoom(this.run, this.hero)) return false;
+    this.showFinalRoom(true);
+    return true;
+  }
+
+  /** 最奥だけ、提供された俯瞰背景を用いる短い宝箱区画へ切り替える。 */
+  private showFinalRoom(announce: boolean): void {
+    this.blockStage.setVisible(false);
+    this.terrainHints.setVisible(false);
+    this.finalBackground.setVisible(true);
+    for (const visual of this.enemyVisuals.values()) {
+      visual.body.setVisible(false);
+      visual.hp.setVisible(false);
+    }
+    this.chest.setVisible(!this.run.chestOpened);
+    this.exitGlow.setVisible(this.run.chestOpened);
+    this.hero.setPosition(840, 524);
+    this.placeParty(false);
+    if (announce) {
+      this.cameras.main.flash(120, 183, 238, 222, false);
+      this.setMessage("最奥の水辺へ出た。宝箱を調べよう。", "#e8fff3");
+    }
+  }
+
   private tryOpenChest(): boolean {
     if (!canOpenSwampCaveChest(this.run, this.hero)) return false;
     if (!openSwampCaveChest(this.run, this.hero)) return false;
     this.chest.setVisible(false);
     this.exitGlow.setVisible(true);
     if (!this.isDevMapTest) {
-      this.caveInventory.add(SWAMP_CAVE_ACTION.reward.itemId, SWAMP_CAVE_ACTION.reward.quantity);
       this.gameState.setFlag(SWAMP_CAVE_ACTION.flags.cleared);
       this.gameState.setFlag(SWAMP_CAVE_ACTION.flags.chestOpened);
+      this.gameState.setFlag(SWAMP_CAVE_ACTION.reward.unlockFlag);
     }
-    this.setMessage("奥の宝箱から かいふくやくを 1こ手に入れた！　出口の光へ。", "#fff0a8");
+    this.setMessage(`奥の宝箱から ${SWAMP_CAVE_ACTION.reward.displayName} を手に入れた！　出口の光へ。`, "#fff0a8");
     return true;
   }
 
@@ -367,6 +460,11 @@ export class SwampCaveActionScene extends Phaser.Scene {
     this.time.delayedCall(900, () => {
       this.run = createSwampCaveActionRun();
       this.hero.setPosition(SWAMP_CAVE_ACTION.playerStart.x, SWAMP_CAVE_ACTION.playerStart.y);
+      this.blockStage.setVisible(true);
+      this.terrainHints.setVisible(true);
+      this.finalBackground.setVisible(false);
+      this.chest.setVisible(false);
+      this.exitGlow.setVisible(false);
       this.showedChestHint = false;
       this.recovering = false;
       this.refreshEnemyVisuals(this.time.now);
@@ -377,9 +475,15 @@ export class SwampCaveActionScene extends Phaser.Scene {
   private refreshHud(): void {
     const defeated = this.run.enemies.filter((enemy) => !enemy.alive).length;
     this.enduranceText.setText(`隊列耐久　${"♥".repeat(this.run.endurance)}${"♡".repeat(SWAMP_CAVE_ACTION.player.endurance - this.run.endurance)}`);
-    this.progressText.setText(this.run.chestOpened ? "最奥の宝箱：取得済み　出口へ" : `小さな魔物　${defeated}/${this.run.enemies.length}`);
+    this.progressText.setText(
+      this.run.chestOpened
+        ? "最奥の宝箱：取得済み　出口へ"
+        : this.run.phase === "final"
+          ? "最奥の宝箱：調べる"
+          : `小さな魔物　${defeated}/${this.run.enemies.length}`,
+    );
     const multiplier = this.terrainMultiplier();
-    this.terrainText.setText(multiplier < 1 ? "ぬま：移動が遅い" : multiplier > 1 ? "高い足場・根道：素早く移動" : "乾いた足場");
+    this.terrainText.setText(this.run.phase === "final" ? "最奥の水辺" : multiplier < 1 ? "ぬま：移動が遅い" : multiplier > 1 ? "高い足場・根道：素早く移動" : "乾いた足場");
   }
 
   private setMessage(message: string, color = "#ffffff"): void {

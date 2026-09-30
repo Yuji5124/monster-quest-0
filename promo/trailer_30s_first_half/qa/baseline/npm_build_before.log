@@ -1,0 +1,187 @@
+
+> monster-quest-0@0.0.0 build
+> npm run typecheck && vite build
+
+
+> monster-quest-0@0.0.0 typecheck
+> tsc --noEmit
+
+[36mvite v8.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+✓ 157 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                                                                            0.61 kB │ gzip:   0.43 kB
+dist/assets/collision-CiovOLWZ.png                                                                         5.96 kB
+dist/assets/collision-Dabl0Oyx.png                                                                         6.14 kB
+dist/assets/collision-D0_8x7S9.png                                                                         6.30 kB
+dist/assets/collision-nrB7mMeO.png                                                                         6.37 kB
+dist/assets/collision-DvkrNDtA.png                                                                         6.59 kB
+dist/assets/collision-D5WeuA14.png                                                                         6.62 kB
+dist/assets/collision-CMNuOhp-.png                                                                         6.62 kB
+dist/assets/collision-C_vefXmv.png                                                                         7.27 kB
+dist/assets/collision-Bingrw-T.png                                                                         7.51 kB
+dist/assets/collision-C0j__7Xe.png                                                                         8.08 kB
+dist/assets/destinations-OIM1XbDE.json                                                                     8.26 kB │ gzip:   1.23 kB
+dist/assets/collision-m8tquwD5.png                                                                         8.29 kB
+dist/assets/collision-BD8cDBrF.png                                                                         8.65 kB
+dist/assets/tileset-BH6OCfDo.json                                                                          8.89 kB │ gzip:   1.03 kB
+dist/assets/collision-DIbgoXec.png                                                                         8.98 kB
+dist/assets/collision-DN6Ctvid.png                                                                         8.98 kB
+dist/assets/collision-B5kKNVvB.png                                                                         9.03 kB
+dist/assets/collision-CzdThmWy.png                                                                        10.21 kB
+dist/assets/background-JGgNZLP1.png                                                                       11.30 kB
+dist/assets/collision-D3UuKWbY.png                                                                        11.38 kB
+dist/assets/collision-D1XhlJY7.png                                                                        12.30 kB
+dist/assets/collision-CrN1v0io.png                                                                        14.15 kB
+dist/assets/collision-Bf2mZvgv.png                                                                        16.18 kB
+dist/assets/collision-BWU2kPLM.png                                                                        18.48 kB
+dist/assets/collision-7iRn5Or0.png                                                                        18.82 kB
+dist/assets/mq0_bridge_forest_v2-CtmzXp7v.png                                                             19.88 kB
+dist/assets/collision-D4ZPDlOj.png                                                                        22.49 kB
+dist/assets/monster_purin-DAAN1xOU.png                                                                    47.75 kB
+dist/assets/villager_04_walk-CsZXeeLz.png                                                                 58.61 kB
+dist/assets/villager_06_walk-9Zb63BEh.png                                                                 59.85 kB
+dist/assets/villager_07_walk-CGRO27v1.png                                                                 60.76 kB
+dist/assets/villager_03_walk-Cx4al4Bg.png                                                                 60.91 kB
+dist/assets/villager_05_walk-C4pnM05g.png                                                                 62.83 kB
+dist/assets/villager_09_walk-CU7tGzJT.png                                                                 66.65 kB
+dist/assets/villager_08_walk-Cekw2ELL.png                                                                 66.81 kB
+dist/assets/villager_01_walk-BC92vTHJ.png                                                                 67.09 kB
+dist/assets/monster_snow_bomb-CQ8wocfc.png                                                                70.80 kB
+dist/assets/tarosa_walk-biqAcCQc.png                                                                      71.85 kB
+dist/assets/villager_15_walk-HAev8FW2.png                                                                 73.57 kB
+dist/assets/villager_17_walk-RMSbfwAV.png                                                                 76.07 kB
+dist/assets/villager_16_walk-C-xga9eH.png                                                                 76.10 kB
+dist/assets/villager_10_walk-BcRz8kyr.png                                                                 76.28 kB
+dist/assets/villager_13_walk-BEbJq8zO.png                                                                 77.33 kB
+dist/assets/monster_fancy_duck-pjnbZnYz.png                                                               78.73 kB
+dist/assets/villager_12_walk-lZRMRzsS.png                                                                 79.15 kB
+dist/assets/mirei_walk-Clzgt2ue.png                                                                       80.22 kB
+dist/assets/monster_koakuma-C8_zoa9N.png                                                                  80.95 kB
+dist/assets/villager_02_walk-0cTANcw2.png                                                                 81.48 kB
+dist/assets/tileset-Dfza519Y.png                                                                          82.41 kB
+dist/assets/villager_14_walk-N4yl11VC.png                                                                 84.67 kB
+dist/assets/villager_11_walk-LpC5hIo2.png                                                                 84.99 kB
+dist/assets/protagonist_walk-CmJRQmso.png                                                                 85.16 kB
+dist/assets/monster_obake_tsumuri-Dw0PjM23.png                                                            88.15 kB
+dist/assets/monster_tamago_ghost-EncDwqZp.png                                                             89.01 kB
+dist/assets/monster_daija-DNoELGEd.png                                                                    93.45 kB
+dist/assets/mq0_props_forest_v2-B0IYdPjV.png                                                             106.52 kB
+dist/assets/monster_erimaki_hebi-DhfNeTG0.png                                                            109.31 kB
+dist/assets/mq0_trees_forest_v2-BrjVwfCR.png                                                             110.72 kB
+dist/assets/mq0_terrain_forest_v2-CGPTMoa9.png                                                           122.36 kB
+dist/assets/mq0_monster_card_038_46219916c1-CSO4Jixx.jpeg                                                286.41 kB
+dist/assets/mq0_monster_006_7c8f45a8e1-DUqKznJw.jpeg                                                     302.93 kB
+dist/assets/mq0_monster_card_076_4c90d7e8cd-CrzG7Aj8.jpeg                                                311.38 kB
+dist/assets/mq0_monster_card_006_7e4f4add89-BymRbRck.jpeg                                                313.98 kB
+dist/assets/mq0_monster_card_063_df17a6bc38-D6kQYdSx.jpeg                                                315.04 kB
+dist/assets/mq0_monster_card_001_c9d442a728-BL7HpzJ3.jpeg                                                321.50 kB
+dist/assets/mq0_monster_card_039_6f43c43df9-DTuYecIU.jpeg                                                330.19 kB
+dist/assets/mq0_monster_card_050_92ba95dc90-DkoRfS4S.jpeg                                                331.86 kB
+dist/assets/mq0_monster_card_040_d0ef93338e-BFMZFfzS.jpeg                                                335.46 kB
+dist/assets/mq0_skill_card_033_e6707051ce-BeYzRHV2.jpeg                                                  339.70 kB
+dist/assets/mq0_monster_card_051_a32fa66c1c-CvXIXxx-.jpeg                                                343.05 kB
+dist/assets/mq0_monster_card_030_e0a6225e55-1FJcfW3J.jpeg                                                345.84 kB
+dist/assets/mq0_monster_card_044_c265ac7dd0-Bg6k0Wml.jpeg                                                350.07 kB
+dist/assets/mq0_monster_card_010_28a8a1a26e-Byc60X0K.jpeg                                                350.92 kB
+dist/assets/mq0_skill_card_003_b7da75751a-CzvShWWt.jpeg                                                  351.03 kB
+dist/assets/monster_03_obake_tsumuri-Chs10QtE.png                                                        361.97 kB
+dist/assets/mq0_monster_card_066_3c80e81b83-CAO280qT.jpeg                                                370.65 kB
+dist/assets/mq0_monster_card_020_c26e18b928-B7eykI_T.jpeg                                                378.96 kB
+dist/assets/mq0_skill_card_023_aeacf7fc72-DmpeorST.png                                                   379.57 kB
+dist/assets/mq0_monster_card_071_5b70506c06-DR1JTcN7.jpeg                                                381.72 kB
+dist/assets/mq0_monster_card_022_60ae3292c1-j-kFN3sN.jpeg                                                399.04 kB
+dist/assets/mq0_monster_card_065_d00b8e711b-DhAYBh-d.jpeg                                                400.88 kB
+dist/assets/mq0_skill_card_025_1a7feb0ef7-DQMjjtZt.png                                                   422.64 kB
+dist/assets/mq0_monster_card_033_9950ef59b5-DvpYRkR_.jpeg                                                423.38 kB
+dist/assets/mq0_monster_card_055_765fefd06a-CDeu7Qyu.jpeg                                                446.71 kB
+dist/assets/mq0_monster_card_023_4e242eb988-DxxfyzO5.jpeg                                                473.51 kB
+dist/assets/mq0_monster_card_002_09296255f3-DpjmaqYk.jpeg                                                479.25 kB
+dist/assets/mq0_monster_card_036_426eb472e4-BNal_FB2.jpeg                                                513.83 kB
+dist/assets/mq0_monster_028_72713e1026-ihgLVVs7.png                                                      560.12 kB
+dist/assets/mq0_monster_027_74e342f3ed-IUolHrdA.png                                                      648.48 kB
+dist/assets/mq0_monster_011_1e59d48bf6-BrhsSk8l.png                                                      807.21 kB
+dist/assets/mq0_monster_039_09ac6a99aa-DkqCVJmH.png                                                      877.40 kB
+dist/assets/mq0_monster_012_6e2fb0c1ac-Btw7ImNL.png                                                      884.14 kB
+dist/assets/mq0_monster_003_1e2e150bba-Cx7gHJvc.png                                                      884.85 kB
+dist/assets/mq0_monster_001_0d78a307c8-B9EhyjCS.png                                                      885.09 kB
+dist/assets/mq0_monster_030_54c4041dec-DORA1Dvj.png                                                    1,013.35 kB
+dist/assets/mq0_skill_card_009_bdb6f67e2c-B7PYtL2j.png                                                 1,017.81 kB
+dist/assets/mq0_skill_card_049_03bc0d0a0d-CdzZgdgm.png                                                 1,148.78 kB
+dist/assets/memory_04-BIjyVeb2.png                                                                     1,191.60 kB
+dist/assets/memory_06-CfivuG73.png                                                                     1,223.02 kB
+dist/assets/mq0_skill_card_048_119b12b105-BFkno3j6.png                                                 1,231.51 kB
+dist/assets/mq0_monster_046_4ef802b3f2-nKLoM42C.png                                                    1,241.06 kB
+dist/assets/memory_05-BapMIsmv.png                                                                     1,312.19 kB
+dist/assets/I-Bta7OL3v.png                                                                             1,398.69 kB
+dist/assets/mq0_skill_card_054_9e2b2cfc6c-BX70udTH.png                                                 1,460.14 kB
+dist/assets/memory_01-CUGY9qwK.png                                                                     1,477.95 kB
+dist/assets/mq0_skill_card_051_22b8f49985-DX6JwHwa.png                                                 1,480.93 kB
+dist/assets/memory_03-C7qqvBu0.png                                                                     1,494.13 kB
+dist/assets/H-B0cKDZJu.png                                                                             1,560.71 kB
+dist/assets/mq0_skill_card_043_019bfe82f7-73v6EvSv.png                                                 1,689.94 kB
+dist/assets/mq0_skill_card_045_b3a1eba882-BRYi5unl.png                                                 1,710.06 kB
+dist/assets/デマスのモンスターアニメーションスプライトシート (1)-BrhGspv8.png                                                  1,735.76 kB
+dist/assets/background-ShpzWoyE.png                                                                    1,738.30 kB
+dist/assets/mq0_skill_card_044_39f4e072b8-DskqcfhI.png                                                 1,767.75 kB
+dist/assets/memory_02-DQ2M8GTY.png                                                                     1,775.82 kB
+dist/assets/mq0_skill_card_046_c83956a3e2-EmQuLtyu.png                                                 1,825.55 kB
+dist/assets/mq0_monster_card_117_69ff5c2137-D1QG14VE.png                                               1,839.03 kB
+dist/assets/background-BigMXIFd.png                                                                    1,858.53 kB
+dist/assets/mq0_skill_card_015_3735df9d53-DsRVhATk.png                                                 1,909.14 kB
+dist/assets/mq0_skill_card_042_0020a50500-y-G88Twi.png                                                 1,932.03 kB
+dist/assets/mq0_monster_card_107_3c94b88861-Bd-EgIi7.png                                               1,970.29 kB
+dist/assets/monster_majin_dungeon-BugzFa1d.png                                                         1,982.84 kB
+dist/assets/mq0_monster_card_012_a7a8416163-BjZbkO1O.png                                               2,070.48 kB
+dist/assets/background-BNUUopRE.png                                                                    2,269.19 kB
+dist/assets/mq0_monster_card_115_4fb47deb92-BM7meJxZ.png                                               2,271.12 kB
+dist/assets/mq0_skill_card_034_7f925d816f-BFfd8NY0.png                                                 2,316.80 kB
+dist/assets/mq0_monster_card_084_86fff94571-FDZ3X2mr.png                                               2,370.35 kB
+dist/assets/mq0_gacha_005_0c06dc5303-d2Ifr81h.png                                                      2,383.35 kB
+dist/assets/background-s-W1hqJW.png                                                                    2,479.43 kB
+dist/assets/mq0_battle_bg_008_c44a414baf-CuA7MaKl.png                                                  2,555.17 kB
+dist/assets/mq0_monster_card_122_c3c58ad002-uDwCANE5.png                                               2,559.78 kB
+dist/assets/entry_splash-BRxNEXop.png                                                                  2,661.81 kB
+dist/assets/mq0_battle_bg_009_9264defc52-4nhzDbf1.png                                                  2,719.95 kB
+dist/assets/background-j4jL3zkl.png                                                                    2,792.56 kB
+dist/assets/tarosa_standing-D2iJb5KB.png                                                               2,888.21 kB
+dist/assets/mq0_world_map_001_4813475e07-XTVTGS5P.png                                                  2,927.56 kB
+dist/assets/entry_splash-1rLI2EtQ.png                                                                  2,995.48 kB
+dist/assets/entry_splash-CU1G1-FA.png                                                                  3,065.94 kB
+dist/assets/entry_splash-duO-8YV9.png                                                                  3,134.41 kB
+dist/assets/background-svsJKKvG.png                                                                    3,142.05 kB
+dist/assets/entry_splash-CaWR0sZ4.png                                                                  3,183.52 kB
+dist/assets/mq0_battle_bg_013_5ecb71635c-C0o2LqtU.png                                                  3,253.67 kB
+dist/assets/background-dpMONmni.png                                                                    3,277.17 kB
+dist/assets/background-D9CmWno0.png                                                                    3,284.10 kB
+dist/assets/みずうみの古城_イメージ-acpOZ2lx.png                                                                  3,290.74 kB
+dist/assets/background-Bwz9rNLd.png                                                                    3,295.10 kB
+dist/assets/background-BGzRNuCB.png                                                                    3,299.49 kB
+dist/assets/entry_splash-CaYuJRwF.png                                                                  3,378.77 kB
+dist/assets/background-BfUDUo7y.png                                                                    3,384.09 kB
+dist/assets/background-KsWgKoho.png                                                                    3,411.43 kB
+dist/assets/background-DiZxGBYt.png                                                                    3,412.47 kB
+dist/assets/background-QFKazGGt.png                                                                    3,460.64 kB
+dist/assets/entry_splash-BVdpRWS4.png                                                                  3,475.03 kB
+dist/assets/background-CplKUnVV.png                                                                    3,491.40 kB
+dist/assets/entry_splash-Dksqwm-q.png                                                                  3,495.70 kB
+dist/assets/background-DoMaPt_9.png                                                                    3,504.12 kB
+dist/assets/background-BchTJc4Q.png                                                                    3,586.32 kB
+dist/assets/background-B-4axw2e.png                                                                    3,658.76 kB
+dist/assets/background-Dwh-zCle.png                                                                    3,665.29 kB
+dist/assets/background-CvQaVwPL.png                                                                    3,666.86 kB
+dist/assets/background-BuTryaar.png                                                                    3,978.26 kB
+dist/assets/background-Bsey20vn.png                                                                    4,160.20 kB
+dist/assets/background_tower_level_1-Cy0sA95r.png                                                      4,288.99 kB
+dist/assets/index-uvSvD9iT.css                                                                             0.39 kB │ gzip:   0.23 kB
+dist/assets/three.module-4gI5Z-_B.js                                                                     736.58 kB │ gzip: 186.86 kB
+dist/assets/index-CCzDRFPg.js                                                                          1,718.89 kB │ gzip: 476.46 kB
+
+[32m✓ built in 2.38s[39m
+[33m[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
+build exit 0

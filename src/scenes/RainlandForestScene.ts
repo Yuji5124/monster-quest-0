@@ -1,9 +1,9 @@
 import Phaser from "phaser";
 import { DEV_BATTLE_MONSTER_IDS } from "../config/battle.ts";
 import type { DevBattleMonsterId } from "../config/battle.ts";
-import { DISPLAY } from "../config/display.ts";
+import { DISPLAY, SCALE_FACTOR } from "../config/display.ts";
 import { INTERACTION_REACH, INTERACTION_SPAN } from "../config/interaction.ts";
-import { MAPS, MAP_TRANSITION_FADE_MS } from "../config/maps.ts";
+import { MAPS, MAP_TRANSITION_FADE_MS, isNpcPresent } from "../config/maps.ts";
 import type { MapId } from "../config/maps.ts";
 import { getDialogue } from "../data/dialogues.ts";
 import { ITEM_DEFINITIONS } from "../data/items.ts";
@@ -24,6 +24,8 @@ import { inventory } from "../systems/Inventory.ts";
 import { IWAYAMA_SHOOTING_TEXT } from "../config/iwayamaShooting.ts";
 import { configureMapCamera } from "../systems/MapCamera.ts";
 import { startFieldAmbience } from "../systems/FieldAmbience.ts";
+import { RainlandWeatherController } from "../systems/RainlandWeatherController.ts";
+import { RainlandWeatherLayer } from "../systems/RainlandWeatherPresentation.ts";
 import { canInteract } from "../systems/Interaction.ts";
 import { beginMapTransition } from "../systems/MapTransition.ts";
 import { PROTAGONIST_SPRITE } from "../config/protagonistSprite.ts";
@@ -31,22 +33,31 @@ import { TAROSA_SPRITE } from "../config/tarosaSprite.ts";
 import { MIREI_SPRITE } from "../config/mireiSprite.ts";
 import { VILLAGER_SPRITES } from "../config/villagerSprites.ts";
 import { ensureWalkAnimations, preloadWalkSprite } from "../systems/CharacterWalkSprite.ts";
+import { getShop } from "../config/shops.ts";
 import { DialogueBox } from "../ui/DialogueBox.ts";
+import { ShopWindow } from "../ui/ShopWindow.ts";
 import { RAINLAND_FOREST_RANDOM_ENCOUNTER } from "../config/encounter.ts";
 import type { RandomEncounterConfig } from "../config/encounter.ts";
 import { ENCOUNTER_TABLES, rollEncounterMonster } from "../data/encounterTables.ts";
 import type { EncounterTable } from "../data/encounterTables.ts";
-import { isStoryFlagsDialogueEvent } from "../events/BattleEventData.ts";
-import type { BattleDialogueEvent } from "../events/BattleEventData.ts";
+import { isNpcDepartDialogueEvent, isPartyJoinDialogueEvent, isPortraitInterludeDialogueEvent, isStoryFlagsDialogueEvent } from "../events/BattleEventData.ts";
+import type { BattleDialogueEvent, DialogueAfterEvent, NpcDepartDialogueEvent, PortraitInterludeDialogueEvent } from "../events/BattleEventData.ts";
 import { beginBattleEntrance } from "../events/BattleEntrance.ts";
 import type { Facing } from "../systems/PlayerMovement.ts";
 import { advanceRandomEncounter, createRandomEncounterState } from "../systems/RandomEncounter.ts";
 import type { RandomEncounterState } from "../systems/RandomEncounter.ts";
+import { partySystem } from "../systems/PartySystem.ts";
+import type { PartyMemberId } from "../systems/PartySystem.ts";
 import { FieldMenu } from "../ui/FieldMenu.ts";
 import { RAINLAND_CASTLE_3D } from "../config/rainlandCastle3D.ts";
 import type { ViewToggleData } from "../systems/CastleViewToggle.ts";
+import { getJumpCardBattle } from "../config/jumpCardBattles.ts";
+import { canStartJumpCardBattle } from "../systems/JumpCardBattle.ts";
 
 const isDevMode = typeof import.meta.env !== "undefined" && import.meta.env.DEV;
+// StartingTownSceneのNPC退場演出と同じ長さ(§不思議なとうのおじいさん)。
+const NPC_DEPART_FADE_MS = 500;
+const NPC_DEPART_HOLD_MS = 700;
 
 /** One map package under assets/maps/. Paths are written as literals so Vite can bundle each asset. */
 export interface RainlandMapPackage {
@@ -68,9 +79,21 @@ export interface RainlandMapPackage {
   /** 初回到達だけに使う短い制御演出。セーブ破損や長い待機を起こさない。 */
   readonly firstEntryGlitch?: { readonly entryFlag: string; readonly discoveryFlag: string };
   /** 初回入場後に一度だけ会話ウィンドウで出す語り(いしのまち)。閉じたときに`flag`を保存する。 */
-  readonly entryNarration?: { readonly flag: string; readonly pages: readonly string[]; readonly delayMs: number };
+  readonly entryNarration?: {
+    readonly flag: string;
+    readonly pages: readonly string[];
+    readonly delayMs: number;
+    /** Leave the narration dormant until the preceding story beat has been completed. */
+    readonly requiredFlag?: string;
+    /** Additional state committed only after the player reads every page. */
+    readonly thenFlags?: readonly string[];
+    /** A companion can arrive as the final beat of this one-time field event. */
+    readonly joinsPartyAs?: PartyMemberId;
+  };
   /** OBJECT boss field sprites stay separate from BattleScene portraits. */
   readonly bossSprites?: Readonly<Partial<Record<DevBattleMonsterId, ImageMapBossSprite>>>;
+  /** No.05 only: a saved weather state that is carried into encounters. */
+  readonly weather?: "rainland-forest";
 }
 
 export interface ImageMapBossSprite {
@@ -99,6 +122,7 @@ const FOREST_1: RainlandMapPackage = {
   eventsPath: new URL("../../assets/maps/rainland_forest_1/events.json", import.meta.url).toString(),
   objectsPath: new URL("../../assets/maps/rainland_forest_1/objects.json", import.meta.url).toString(),
   encounter: RAINLAND_FOREST_ENCOUNTER,
+  weather: "rainland-forest",
 };
 
 const FOREST_2: RainlandMapPackage = {
@@ -112,6 +136,7 @@ const FOREST_2: RainlandMapPackage = {
   eventsPath: new URL("../../assets/maps/rainland_forest_2/events.json", import.meta.url).toString(),
   objectsPath: new URL("../../assets/maps/rainland_forest_2/objects.json", import.meta.url).toString(),
   encounter: RAINLAND_FOREST_ENCOUNTER,
+  weather: "rainland-forest",
 };
 
 export interface RainlandMapSceneData {
@@ -160,8 +185,11 @@ export class RainlandImageMapScene extends Phaser.Scene {
   private player!: Player;
   private collisionRuntime!: ImageMapCollisionRuntime;
   private fieldMenu!: FieldMenu;
+  private partyFollowers!: PartyFollowers;
   private npcs: Npc[] = [];
   private dialogueBox?: DialogueBox;
+  /** 店を兼業する住民(role: "shopkeeper"、config/shops.ts)がいるマップだけ作る(かくれざと・ビーエのむらと同じ)。 */
+  private shopWindow?: ShopWindow;
   private notice?: Phaser.GameObjects.Text;
   private consumedEventIds = new Set<string>();
   private transitioning = false;
@@ -169,6 +197,9 @@ export class RainlandImageMapScene extends Phaser.Scene {
   private lastY = 0;
   private encounterState: RandomEncounterState = createRandomEncounterState();
   private readonly gameState = new GameStateRepository();
+  /** No.05 only. The controller is game state; this layer is a disposable Phaser view. */
+  private weatherController?: RainlandWeatherController;
+  private weatherLayer?: RainlandWeatherLayer;
   private shootingTriggers: ShootingTriggerRuntime[] = [];
   private interactableObjects: InteractableRuntime[] = [];
   private bossTriggers: BossTriggerRuntime[] = [];
@@ -214,6 +245,9 @@ export class RainlandImageMapScene extends Phaser.Scene {
     this.bossTriggers = [];
     this.chests = [];
     this.storyLayer = undefined;
+    this.weatherLayer?.dispose();
+    this.weatherController = undefined;
+    this.weatherLayer = undefined;
     const storyObjects: ImageMapObject[] = [];
     this.consumedEventIds.clear();
     const manifest = readImageMapManifest(this.cache.json.get(`${keyPrefix}.manifest`));
@@ -248,6 +282,7 @@ export class RainlandImageMapScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, manifest.width * worldScale, manifest.height * worldScale);
 
     const mapConfig = MAPS[mapId];
+    const savedFlags = this.gameState.load().flags;
     const native = mapConfig.spawns[data?.spawnId ?? this.pkg.defaultSpawnId] ?? mapConfig.spawns[this.pkg.defaultSpawnId];
     // 戦闘から戻ったときはBattleSceneが渡す戦闘直前のランタイム座標へそのまま戻す(再スケールしない)。
     const hasExactSpawn = typeof data?.spawnX === "number" && typeof data?.spawnY === "number";
@@ -259,11 +294,12 @@ export class RainlandImageMapScene extends Phaser.Scene {
     this.lastX = spawn.x;
     this.lastY = spawn.y;
     this.player.setDepth(1000);
-    new PartyFollowers(this, this.player);
+    this.partyFollowers = new PartyFollowers(this, this.player);
     for (const body of this.collisionRuntime.bodies) this.physics.add.collider(this.player.body, body);
 
     // NPC定義はmaps.tsのネイティブ背景ピクセル座標なのでworldScaleを掛けてから配置する(No.02と同じ)。
-    this.npcs = mapConfig.npcs.map((definition) => new Npc(this, {
+    const savedFlagSet = new Set(Object.keys(savedFlags).filter((flag) => savedFlags[flag]));
+    this.npcs = mapConfig.npcs.filter((definition) => isNpcPresent(definition, savedFlagSet)).map((definition) => new Npc(this, {
       ...definition,
       position: { x: definition.position.x * worldScale, y: definition.position.y * worldScale },
       movement: definition.movement && {
@@ -285,7 +321,6 @@ export class RainlandImageMapScene extends Phaser.Scene {
     }
 
     // Objectの判定は背景と別レイヤーに保つ(No.01と同じ)。もり その2は遺跡の宝箱(chest)をここで置く。
-    const savedFlags = this.gameState.load().flags;
     for (const object of objects) {
       const bounds = scaleRect(object, worldScale);
       if (isStoryObject(object)) {
@@ -339,6 +374,10 @@ export class RainlandImageMapScene extends Phaser.Scene {
     configureMapCamera(this, this.player.visual, { x: 0, y: 0, width: manifest.width * worldScale, height: manifest.height * worldScale });
     // 雲の影・漂う粒などの環境エフェクト(config/fieldAmbience.ts)。割り当ての無いマップ(洞窟・塔)では何もしない。
     startFieldAmbience(this, mapId);
+    if (this.pkg.weather === "rainland-forest") {
+      this.weatherController = new RainlandWeatherController(this.gameState);
+      this.weatherLayer = new RainlandWeatherLayer(this, this.weatherController.current, "field");
+    }
     this.cameras.main.setBackgroundColor("#101018");
     this.cameras.main.fadeIn(MAP_TRANSITION_FADE_MS, 0, 0, 0);
 
@@ -354,7 +393,14 @@ export class RainlandImageMapScene extends Phaser.Scene {
     }
 
     if (this.pkg.alternateViewSceneKey) this.createViewToggleButton();
-    this.fieldMenu = new FieldMenu(this);
+    this.fieldMenu = new FieldMenu(this, {
+      onOpen: () => this.player.body.setVelocity(0, 0),
+      onRecord: () => this.gameState.saveAdventureRecord({
+        mapId: this.pkg.mapId,
+        sceneKey: MAPS[this.pkg.mapId].sceneKey,
+        resume: { kind: "2d", x: this.player.visual.x, y: this.player.visual.y, facing: this.player.facing },
+      }),
+    });
     // 会話ウィンドウは他の表示物の後に作る(depthで常に最前面)。NPC・宝箱・調べる物のないマップでは作らない。
     this.dialogueBox = this.npcs.length > 0 || this.shootingTriggers.length > 0 || this.interactableObjects.length > 0 || this.chests.length > 0 || storyObjects.length > 0 || this.pkg.entryNarration || data?.shootingReturn ? new DialogueBox(this) : undefined;
     if (this.dialogueBox && storyObjects.length > 0) {
@@ -368,6 +414,17 @@ export class RainlandImageMapScene extends Phaser.Scene {
         setAfterDialogue: (next) => { this.afterDialogue = next; },
       }, storyObjects);
     }
+    // 店を兼業する住民がいるマップだけ、はじまりのまち・ビーエのむらと同じShopWindowを作る。「はなす」を選ぶと
+    // このNPCのdialogueIdをそのまま会話ウィンドウで読む(店を持たないマップの挙動は変わらない)。
+    this.shopWindow = mapConfig.npcs.some((npc) => getShop(npc.id))
+      ? new ShopWindow(this, (npcId) => {
+          const dialogue = getDialogue(mapConfig.npcs.find((candidate) => candidate.id === npcId)?.dialogueId ?? "");
+          if (!dialogue) return;
+          const after = dialogue.afterDialogue;
+          this.afterDialogue = after ? () => this.handleAfterDialogue(after) : undefined;
+          this.dialogueBox?.open(dialogue.pages);
+        })
+      : undefined;
     this.actions = new InputSystem(window, document);
     const movePlayer = (): void => {
       // 会話中は主人公を動かさず、決定入力はページ送り専用にする。決定はフレームごとに1回だけ消費するため、
@@ -380,6 +437,11 @@ export class RainlandImageMapScene extends Phaser.Scene {
           this.afterDialogue = undefined;
           next();
         }
+        return;
+      }
+      if (this.shopWindow?.isOpen) {
+        this.actions.consumePressed("view");
+        this.shopWindow.handleInput(this.actions, this.actions.consumePressed("confirm"));
         return;
       }
       if (this.scripted) {
@@ -476,6 +538,7 @@ export class RainlandImageMapScene extends Phaser.Scene {
     const movedDistance = Phaser.Math.Distance.Between(this.lastX, this.lastY, this.player.visual.x, this.player.visual.y);
     this.lastX = this.player.visual.x;
     this.lastY = this.player.visual.y;
+    if (this.weatherController) this.weatherLayer?.setWeather(this.weatherController.advanceExploration(movedDistance));
     if (!advanceRandomEncounter(this.encounterState, movedDistance, encounter.config)) return false;
     this.transitioning = true;
     const event: BattleDialogueEvent = {
@@ -487,6 +550,7 @@ export class RainlandImageMapScene extends Phaser.Scene {
       returnSpawnX: this.player.visual.x,
       returnSpawnY: this.player.visual.y,
       returnFacing: this.player.facing,
+      ...(this.weatherController ? { weather: this.weatherController.toBattleWeather() } : {}),
     };
     this.player.body.setVelocity(0, 0);
     beginBattleEntrance(this, this.actions, event);
@@ -560,6 +624,7 @@ export class RainlandImageMapScene extends Phaser.Scene {
       returnFacing: this.player.facing,
       victoryFlag: definition.victoryFlag,
       victoryFlags: [definition.unlockFlag],
+      ...(this.weatherController ? { weather: this.weatherController.toBattleWeather() } : {}),
     };
     beginBattleEntrance(this, this.actions, event);
   }
@@ -614,17 +679,27 @@ export class RainlandImageMapScene extends Phaser.Scene {
       return canInteract(center, this.player.facing, { x: body.x, y: body.y, width: body.width, height: body.height }, INTERACTION_REACH, INTERACTION_SPAN);
     });
     if (!chest) return false;
-    if (!Object.hasOwn(ITEM_DEFINITIONS, chest.definition.itemId)) {
-      throw new Error(`${this.pkg.mapId} chest ${chest.definition.id} references an unknown item ${chest.definition.itemId}`);
-    }
-    const itemId = chest.definition.itemId as ItemId;
-    if (!inventory.add(itemId)) throw new Error(`${this.pkg.mapId} chest ${chest.definition.id} could not add ${itemId}`);
+    const rewardMessage = chest.definition.itemId === undefined
+      ? (() => {
+          const jumpCoinCount = chest.definition.jumpCoinCount;
+          if (jumpCoinCount === undefined) throw new Error(`${this.pkg.mapId} chest ${chest.definition.id} has no reward`);
+          this.gameState.addJumpCoins(jumpCoinCount);
+          return `ジャンコインを\n${jumpCoinCount}まい てにいれた！`;
+        })()
+      : (() => {
+          const itemId = chest.definition.itemId;
+          if (!Object.hasOwn(ITEM_DEFINITIONS, itemId)) {
+            throw new Error(`${this.pkg.mapId} chest ${chest.definition.id} references an unknown item ${itemId}`);
+          }
+          if (!inventory.add(itemId as ItemId)) throw new Error(`${this.pkg.mapId} chest ${chest.definition.id} could not add ${itemId}`);
+          return `${ITEM_DEFINITIONS[itemId as ItemId].name}を\nてにいれた！`;
+        })();
     this.gameState.setFlag(chest.definition.openedFlag);
     chest.bodyMarker.destroy();
     chest.visual.destroy();
     this.chests = this.chests.filter((candidate) => candidate !== chest);
     this.player.body.setVelocity(0, 0);
-    this.dialogueBox.open(["たからばこを　あけた！", `${ITEM_DEFINITIONS[itemId].name}を\nてにいれた！`]);
+    this.dialogueBox.open(["たからばこを　あけた！", rewardMessage]);
     return true;
   }
 
@@ -694,18 +769,36 @@ export class RainlandImageMapScene extends Phaser.Scene {
       )
     );
     if (npc) {
-      // 会話後イベントのうち、このSceneが扱うのは進行フラグの保存(story-flags)だけ。戦闘・加入・退場は必要になったら
-      // StartingTownSceneのhandleAfterDialogueと同じ形で足す。
+      const cardBattle = npc.definition.jumpCardBattleId ? getJumpCardBattle(npc.definition.jumpCardBattleId) : undefined;
+      if (cardBattle) {
+        this.player.body.setVelocity(0, 0);
+        npc.stop();
+        if (!canStartJumpCardBattle(cardBattle, this.gameState.load().cards.obtainedJumpCards)) {
+          this.dialogueBox.open(["プリンのカードを\nもっていないようだ。"]);
+          return;
+        }
+        // The field keeps its exact position and all runtime state while the dedicated card screen is visible.
+        // Lock first so inputs intended for the card screen cannot move the field on the resume frame.
+        this.actions.setLocked(true);
+        this.events.once(Phaser.Scenes.Events.RESUME, () => this.actions.setLocked(false));
+        this.scene.launch("JumpCardBattleScene", { battleId: cardBattle.id, returnSceneKey: this.scene.key });
+        this.scene.pause(this.scene.key);
+        return;
+      }
+      const shop = getShop(npc.definition.id);
+      if (shop && this.shopWindow) {
+        this.player.body.setVelocity(0, 0);
+        npc.stop();
+        this.shopWindow.open(npc.definition.id, shop);
+        return;
+      }
+      // 進行フラグ・仲間加入・一度きりNPCの退場・一枚絵・戦闘は、共通の会話後イベントとして処理する。
       const dialogue = getDialogue(npc.definition.dialogueId);
       if (!dialogue) return;
       // 会話開始時点の残存速度を確実に止める(次の物理stepを待たない)。
       this.player.body.setVelocity(0, 0);
       const after = dialogue.afterDialogue;
-      if (isStoryFlagsDialogueEvent(after)) {
-        this.afterDialogue = () => {
-          for (const flag of after.flags) this.gameState.setFlag(flag);
-        };
-      }
+      this.afterDialogue = after ? () => this.handleAfterDialogue(after) : undefined;
       this.dialogueBox.open(dialogue.pages);
       return;
     }
@@ -722,7 +815,8 @@ export class RainlandImageMapScene extends Phaser.Scene {
   /** 初回入場の語り(いしのまち)。フェードインを待ってから会話ウィンドウで出し、閉じたときに一度きりのフラグを保存する。 */
   private playEntryNarration(): void {
     const narration = this.pkg.entryNarration;
-    if (!narration || !this.dialogueBox || this.gameState.hasFlag(narration.flag)) return;
+    if (!narration || !this.dialogueBox || this.gameState.hasFlag(narration.flag)
+      || (narration.requiredFlag && !this.gameState.hasFlag(narration.requiredFlag))) return;
     this.scripted = true;
     this.player.body.setVelocity(0, 0);
     this.time.delayedCall(narration.delayMs, () => {
@@ -730,7 +824,58 @@ export class RainlandImageMapScene extends Phaser.Scene {
       this.dialogueBox?.open(narration.pages);
       this.afterDialogue = () => {
         this.gameState.setFlag(narration.flag);
+        for (const flag of narration.thenFlags ?? []) this.gameState.setFlag(flag);
+        if (narration.joinsPartyAs && partySystem.addMember(narration.joinsPartyAs)) this.partyFollowers.syncMembers();
       };
+    });
+  }
+
+  /** Executes the shared, data-owned result of an NPC conversation. */
+  private handleAfterDialogue(event: DialogueAfterEvent): void {
+    if (isPartyJoinDialogueEvent(event)) {
+      if (partySystem.addMember(event.memberId)) this.partyFollowers.syncMembers();
+      return;
+    }
+    if (isStoryFlagsDialogueEvent(event)) {
+      for (const flag of event.flags) this.gameState.setFlag(flag);
+      return;
+    }
+    if (isNpcDepartDialogueEvent(event)) {
+      this.beginNpcDeparture(event);
+      return;
+    }
+    if (isPortraitInterludeDialogueEvent(event)) {
+      this.playPortraitInterlude(event);
+      return;
+    }
+    if (this.transitioning) return;
+    this.transitioning = true;
+    this.player.body.setVelocity(0, 0);
+    beginBattleEntrance(this, this.actions, event);
+  }
+
+  /** The dialogue-completion departure used by story NPCs such as Mirei. */
+  private beginNpcDeparture(event: NpcDepartDialogueEvent): void {
+    if (this.transitioning) return;
+    this.transitioning = true;
+    this.actions.setLocked(true);
+    const camera = this.cameras.main;
+    camera.fadeOut(NPC_DEPART_FADE_MS, 0, 0, 0);
+    camera.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+      const npc = this.npcs.find((candidate) => candidate.definition.id === event.npcId);
+      if (npc) {
+        this.npcs = this.npcs.filter((candidate) => candidate !== npc);
+        npc.destroy();
+      }
+      for (const flag of event.flags) this.gameState.setFlag(flag);
+      if (event.joinsPartyAs && partySystem.addMember(event.joinsPartyAs)) this.partyFollowers.syncMembers();
+      this.time.delayedCall(NPC_DEPART_HOLD_MS, () => {
+        camera.fadeIn(NPC_DEPART_FADE_MS, 0, 0, 0);
+        camera.once(Phaser.Cameras.Scene2D.Events.FADE_IN_COMPLETE, () => {
+          this.actions.setLocked(false);
+          this.transitioning = false;
+        });
+      });
     });
   }
 
@@ -762,11 +907,22 @@ export class RainlandImageMapScene extends Phaser.Scene {
   }
 
   private handleEvent(event: ImageMapEvent): void {
-    if (event.once && this.consumedEventIds.has(event.id)) return;
+    if ((event.once && this.consumedEventIds.has(event.id)) || (event.consumedFlag && this.gameState.hasFlag(event.consumedFlag))) return;
     this.consumedEventIds.add(event.id);
     const command = event.commands[0];
     if (command.type === "message") {
-      this.setNotice(command.text);
+      const commit = (): void => {
+        for (const flag of command.setFlags ?? []) this.gameState.setFlag(flag);
+        if (event.consumedFlag) this.gameState.setFlag(event.consumedFlag);
+        this.setNotice(command.text);
+      };
+      if (command.pages && this.dialogueBox) {
+        this.player.body.setVelocity(0, 0);
+        this.dialogueBox.open(command.pages);
+        this.afterDialogue = commit;
+      } else {
+        commit();
+      }
       if (isDevMode) {
         // eslint-disable-next-line no-console
         console.log(`[IMAGE_MAP] ${this.pkg.mapId} entered ${event.id}`);
@@ -789,6 +945,66 @@ export class RainlandImageMapScene extends Phaser.Scene {
 
   private setNotice(message: string): void {
     this.notice?.setText(message);
+  }
+
+  /**
+   * 会話の区切りに、額縁つきの一枚絵を挟んでから続きの会話を開く(王がタロサの話をする場面など)。
+   * 画像は初回だけ読み込み、以後はキャッシュ済みのテクスチャを使い回す。
+   */
+  private playPortraitInterlude(event: PortraitInterludeDialogueEvent): void {
+    const openContinuation = (): void => {
+      this.scripted = false;
+      const portrait = this.showPortrait(event.portrait);
+      this.dialogueBox?.open(event.continuationPages);
+      this.afterDialogue = () => {
+        this.hidePortrait(portrait);
+        if (event.thenFlags) for (const flag of event.thenFlags) this.gameState.setFlag(flag);
+      };
+    };
+    if (this.textures.exists(event.portrait.key)) {
+      openContinuation();
+      return;
+    }
+    this.scripted = true;
+    this.load.image(event.portrait.key, event.portrait.path);
+    this.load.once(Phaser.Loader.Events.COMPLETE, openContinuation);
+    this.load.start();
+  }
+
+  private showPortrait(spec: PortraitInterludeDialogueEvent["portrait"]): Phaser.GameObjects.Container {
+    const frameName = `${spec.key}.frame`;
+    const texture = this.textures.get(spec.key);
+    if (!texture.has(frameName)) {
+      texture.add(frameName, 0, spec.crop.x, spec.crop.y, spec.crop.width, spec.crop.height);
+    }
+    texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+    const height = spec.displayHeight;
+    const width = height * (spec.crop.width / spec.crop.height);
+    const border = 2 * SCALE_FACTOR;
+    const margin = 8 * SCALE_FACTOR;
+    // DialogueBoxの上端より少し上に、額縁つきで置く(会話の邪魔をしない位置)。
+    const bottom = DISPLAY.height - margin - 64 * SCALE_FACTOR - 4 * SCALE_FACTOR;
+    const centerX = DISPLAY.width - margin - width / 2;
+    const centerY = bottom - height / 2;
+    const frame = this.add.rectangle(0, 0, width + border * 2, height + border * 2, 0x0a0a14, 1)
+      .setStrokeStyle(border, 0xeeeeee);
+    const image = this.add.image(0, 0, spec.key, frameName).setDisplaySize(width, height);
+    const container = this.add.container(centerX + 12 * SCALE_FACTOR, centerY, [frame, image])
+      .setScrollFactor(0)
+      .setDepth(2400)
+      .setAlpha(0);
+    this.tweens.add({ targets: container, alpha: 1, x: centerX, duration: 240, ease: "Sine.easeOut" });
+    return container;
+  }
+
+  private hidePortrait(container: Phaser.GameObjects.Container): void {
+    this.tweens.add({
+      targets: container,
+      alpha: 0,
+      duration: 240,
+      ease: "Sine.easeIn",
+      onComplete: () => container.destroy(),
+    });
   }
 }
 

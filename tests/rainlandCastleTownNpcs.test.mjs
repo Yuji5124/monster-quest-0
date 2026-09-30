@@ -10,6 +10,8 @@ import { INTERACTION_REACH } from "../src/config/interaction.ts";
 import { VILLAGER_SPRITES } from "../src/config/villagerSprites.ts";
 import { bodyOffset } from "../src/config/characterWalkSprite.ts";
 import { getDialogue } from "../src/data/dialogues.ts";
+import { getJumpCardBattle } from "../src/config/jumpCardBattles.ts";
+import { canStartJumpCardBattle } from "../src/systems/JumpCardBattle.ts";
 import { buildCollisionRects } from "../src/systems/ImageMapCollisionData.ts";
 import { readImageMapManifest } from "../src/systems/ImageMapData.ts";
 
@@ -26,10 +28,10 @@ function runtimeCollision() {
   return { scale, rects };
 }
 
-test("rainland-castle-town has eight data-driven villagers: five fixed at doors/stalls and three local walkers", () => {
+test("rainland-castle-town has its eight residents plus the fixed Pudding card challenger", () => {
   const npcs = MAPS.map_rainland_castle_town.npcs;
-  assert.equal(npcs.length, 8, "NPC_SPEC.md: 目安8人");
-  assert.equal(npcs.filter((npc) => !npc.movement).length, 5);
+  assert.equal(npcs.length, 9, "the user-added card challenger is separate from the compact resident set");
+  assert.equal(npcs.filter((npc) => !npc.movement).length, 6);
   assert.equal(npcs.filter((npc) => npc.movement?.kind === "wander").length, 3);
   assert.equal(new Set(npcs.map((npc) => npc.spriteId)).size, npcs.length, "each villager looks different within the town");
   let kingMentions = 0;
@@ -38,6 +40,16 @@ test("rainland-castle-town has eight data-driven villagers: five fixed at doors/
     assert.ok(npc.spriteId && VILLAGER_SPRITES[npc.spriteId], `${npc.id} uses a user-supplied villager sheet`);
     const dialogue = getDialogue(npc.dialogueId);
     assert.ok(dialogue && dialogue.pages.length > 0, `${npc.id} has dialogue`);
+    if (npc.jumpCardBattleId) {
+      const battle = getJumpCardBattle(npc.jumpCardBattleId);
+      assert.ok(battle, `${npc.id} resolves a reusable card battle`);
+      assert.equal(battle.rounds, 1);
+      assert.equal(battle.requiredPlayerCardId, "card_01");
+      assert.equal(battle.opponentCardId, "card_01");
+      assert.equal(canStartJumpCardBattle(battle, []), false, "the challenger never invents a player card");
+      assert.equal(canStartJumpCardBattle(battle, ["card_01"]), true);
+      continue;
+    }
     // 2026-09-27ユーザー依頼「もっと密度の高い情報がいきかっています」: 城下町は情報が集まる町なので、1人4ページ以上。
     assert.ok(dialogue.pages.length >= 4, `${npc.id} carries a dense conversation (${dialogue.pages.length} pages)`);
     for (const page of dialogue.pages) {

@@ -142,6 +142,14 @@ event.iwayama_cave_shooting_cleared
 
 No.18いしのまち（2026-09-27）は、すべて`event.*`の一度きり／進行フラグで、本編の`story.*`（解放）には触れない。`event.stone_town_entered`だけがコードから直接読み書きされる（`src/config/storyFlags.ts`の`STORY_FLAGS.stoneTownEntered`）。他は`assets/maps/stone_town/objects.json`が参照する。
 
+No.17ぬまちのどうくつ（2026-09-27）の短いアクション区画は、群れを突破して最奥の宝箱を開けた時に次の3キーを保存する。進行アイテムの正式名称・`ItemId`はTBDのため、既存の通常アイテムへ流用しない。`story.stone_town_unlocked`は`src/config/storyFlags.ts`の`STORY_FLAGS.stoneTownUnlocked`が正本であり、世界地図のNo.18 `unlockFlag`と同じ値を使う。
+
+```text
+event.swamp_cave_action_cleared
+chest.swamp_cave_inner_stone_town_item_opened
+story.stone_town_unlocked
+```
+
 ```text
 event.stone_town_entered            # 初回入場の語りを見た（会話を閉じたときに保存）
 event.stone_town_gate_examined      # 入口の門番の石像を調べた
@@ -163,7 +171,38 @@ story.mysterious_tower_discovered
 event.mysterious_tower_first_entry_seen
 ```
 
+No.06レインランドじょう 王の間の会話強化（2026-09-27）は次の2キーを使う。`boss.majin_cave_boss_defeated`はNo.07まじんのどうくつでまじんを倒し（`descent`から`ascent`へ切り替わった状態で）どうくつを出た時点（通常の脱出でもリレロープ脱出でも）に保存し、王の間の会話を「討伐依頼」から「討伐報告」へ切り替える。`event.rainland_throne_majin_reported`は、その報告会話を最後のページまで読み終えた時点で保存し、以後は短い後日談だけになる。DEVの`?mapTest=majin-cave`確認では、他の戦利品・EXPと同じく実セーブへ書かない。
+
+```text
+boss.majin_cave_boss_defeated
+event.rainland_throne_majin_reported
+```
+
+コードから読み書きする上記2キーの定数は`src/config/storyFlags.ts`（`STORY_FLAGS.majinCaveBossDefeated` / `STORY_FLAGS.majinCaveReportedToKing`）が正本。
+
 同フラグは`world_map/map.json`の`developmentUnlockedFlags`には含めない（この会話だけが解放源）。
+
+No.07討伐報告後のNo.08〜No.11本編導線（2026-09-29ユーザー確定）は、次のキーだけで一方向に管理する。全キーは最後の会話ページまたは最奥イベントを閉じた時点で保存する。`destination_zabon_village` → `destination_iwayama_cave` → `destination_hidden_village` → `destination_lake_old_castle`の`unlockFlag`はこの順に対応し、開発用の常時解放フラグには含めない。
+
+```text
+event.zabon_tarosa_refused
+event.iwayama_cave_tarosa_rescued
+story.iwayama_cave_cleared
+event.hidden_village_visited
+event.lake_castle_inscription_needs_mage
+event.hidden_village_mirei_joined
+event.lake_castle_mirei_joined
+event.lake_castle_demas_clue_found
+```
+
+- `event.zabon_tarosa_refused`: 王の依頼を伝えた主人公へ、ザボンのタロサが一度断った。
+- `event.iwayama_cave_tarosa_rescued`: いわやまへ先に入った主人公が単独では抜けられず、タロサが救援に来て一時同行を始めた。
+- `story.iwayama_cave_cleared`: 2F最奥の通過後。かくれざとを選べる。
+- `event.hidden_village_visited`: かくれざと初回到着の語りを読了後。みずうみの古城を選べる。
+- `event.lake_castle_inscription_needs_mage`: 古城1Fの水流または2Fの古代文字で、魔法を使える人が必要だと分かった。かくれざとにミレイを出現させる。
+- `event.hidden_village_mirei_joined`: ミレイが古城までの仮同行を引き受け、かくれざとから去った。
+- `event.lake_castle_mirei_joined`: 古城最奥でミレイが旅を続けると決めた。
+- `event.lake_castle_demas_clue_found`: 古城最奥の壁のしるしから、デーマスの存在へつながる手がかりを得た。
 
 No.03ビーエのもり（2026-09-27）は`unlockFlag`に次のフラグを使う。No.02のぶきやの店主の「はなす」を初めて最後まで読み終えた時に保存する（最後のページ「ビーエのもりへ　いけるように　なった！」を閉じた後）。同義キーを別名で増やさない。
 
@@ -190,6 +229,8 @@ chest.rainland_forest_2_ruin_opened
 ```
 
 コードから読み書きする上記5キー（`story.bie_forest_unlocked` / `story.rainland_forest_unlocked` / `story.rainland_castle_town_unlocked` / `story.mysterious_tower_revealed` / `event.starting_town_tower_elder_talked`）の定数は`src/config/storyFlags.ts`が正本。
+
+No.11みずうみの古城では、同じ`STORY_FLAGS`に次の一度きり状態を置く。`event.lake_castle_stairs_unsealed`はミレイの魔法後に1F→2Fの石段を恒久解放する。`event.lake_castle_ancient_inscription`は2Fの古代文字を読んだ状態、`event.lake_castle_sanctuary`は3F祭壇の初回閲覧、`story.lake_castle_sanctuary_cleared`はNo.12導線用の進行フックである。表示用の3Dメッシュはこれらの正本ではなく、遷移とセーブフラグで判定する。
 
 `story.mysterious_tower_revealed`なしはWorldMapでHIDDEN、同フラグだけはUNKNOWN（`？？？`だが移動可能）、初回外観マップの短い演出完了時に`story.mysterious_tower_discovered`と`event.mysterious_tower_first_entry_seen`を保存してDISCOVERED（不思議なとう）へ移る。塔の成長開始値はフラグではなく`GameState.tower.towerLevel = 1`として保存する。
 
@@ -243,8 +284,14 @@ chest.rainland_forest_2_ruin_opened
 - オロチゾンビ1回目の異常遷移と通常全滅を別処理にする。
 
 ## 10. オートセーブ / 手動セーブ
-正式なUI方式はTBD。
-ただし以下を守る:
+### 手動セーブ（実装済み、2026-09-27）
+- フィールドメニュー（`menu` action / C）に「ぼうけんのきろく」を置く。選択した時点の現在地・向きだけを、共有`GameStateRepository`の`map.adventureRecord`へ保存する。
+- 保存可能な通常2Dフィールドはランタイム座標（画像マップの`worldScale`適用後）と向きを保存し、再開時はその座標へそのまま戻す。レインランド城の3D表示とみずうみの古城は、それぞれ必要な向き角／階も保存する。
+- タイトルの「つづきから」は有効な`map.adventureRecord`がある場合だけ有効にする。ガチャ、所持金、フラグだけが保存された状態は手動記録ではないため有効化しない。
+- タイトルからの復帰時は、保存された`mapId`とSceneの対応を検証する。不正・旧形式・壊れた記録は無効として扱い、任意Sceneへの遷移を許可しない。
+- 「はじめから」は`createDefaultGameState()`で`map.adventureRecord`を持たない状態へ戻す。「もういちど」にはこの初期化を使わない。
+
+オートセーブのタイミングは引き続きTBD。ただし以下を守る:
 - ボス戦直前などで不意に長時間巻き戻らない。
 - セーブ中断でデータが中途半端になりにくい方式にする。
 - iPhone SafariのLocalStorage制約をQAで確認する。

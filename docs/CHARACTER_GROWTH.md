@@ -161,7 +161,7 @@
 - オロチまおう: Lv23前後
 - 通常クリア帯: Lv23 / 寄り道あり: Lv24 / かなり育成: Lv25
 - **Lv25を実質的な成長上限とする。Lv25以降を前提にバランスを組まない。**
-- 例外（DEBUG_ONLY、2026-09-27）: `DEBUG_MODE`の戦闘だけは、確認用に3人をLv30で始める。これは通常のEXP・レベルテーブル・セーブへは接続せず、`getCharacterBaseStatsAtLevel`の`maxLevel`引数でカーブを延長するだけ（既定はLv25で頭打ち）。詳細: `BATTLE_SPEC.md` §12。
+- 例外（DEBUG_ONLY、2026-09-27）: `DEBUG_MODE`の戦闘だけは、確認用に主人公一人をLv30で始める（2026-09-29に3人から主人公一人へ戻した）。これは通常のEXP・レベルテーブル・セーブへは接続せず、`getCharacterBaseStatsAtLevel`の`maxLevel`引数でカーブを延長するだけ（既定はLv25で頭打ち）。詳細: `BATTLE_SPEC.md` §12。
 
 ### 11.2 Lv1〜25累積EXPテーブル（確定）
 `src/data/expTable.ts`の`EXP_TABLE`が正本。
@@ -183,7 +183,7 @@
 （旧`{ level, exp }`形式からは一度だけ安全に移行する）。
 
 **2026-09-23追記（ユーザー指示）**: 冒険は主人公1人で始まる（タロサ・ミレイの加入位置・設定は変更なし）。
-「はじめから」は`GameStateRepository.startNewGame()`でパーティを主人公のみ・全員EXP0へ戻す（ジャンカード取得枚数も初期値へリセット）。現行コードのジャンコイン初期化は旧実装であり、20円仕様への移行対象。
+「はじめから」は`GameStateRepository.startNewGame()`でパーティを主人公のみ・全員EXP0へ戻す（ジャンカード取得枚数も初期値へリセット）。ジャンコイン初期化（`initialJumpCoinCount`）は現行仕様どおりで、本番は0枚・DEVビルドのみ45枚を確認用に付与する。
 通常戦闘の勝利後、レベルが上がったメンバーがいればレベルアップ演出つきのページ、戦闘の最後に能力増加の説明
 （`CharacterLevelUp.statGains`）、魔法習得の順に表示する（2026-09-24、詳細は`BATTLE_SPEC.md`）。No.07まじんのどうくつでも同じ累積EXPを引き継ぎ・加算する（既存`map_08_majin_cave`は旧番号由来の互換ID、`PHASE_MAJIN_CAVE_DUNGEON_RPG.md`）。
 

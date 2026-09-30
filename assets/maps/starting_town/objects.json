@@ -1,4 +1,17 @@
 {
   "formatVersion": 1,
-  "objects": []
+  "objects": [
+    {
+      "id": "chest_starting_town_waterfall_kaifukuyaku",
+      "type": "chest",
+      "label": "たからばこ",
+      "x": 1176,
+      "y": 188,
+      "width": 44,
+      "height": 36,
+      "blocking": true,
+      "itemId": "kaifukuyaku",
+      "openedFlag": "chest.starting_town_waterfall_kaifukuyaku_opened"
+    }
+  ]
 }

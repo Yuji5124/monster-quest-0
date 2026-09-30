@@ -1,5 +1,6 @@
 import { IWAYAMA_CAVE_RANDOM_ENCOUNTER } from "../config/encounter.ts";
 import { ENCOUNTER_TABLES } from "../data/encounterTables.ts";
+import { STORY_FLAGS } from "../config/storyFlags.ts";
 import { RainlandImageMapScene } from "./RainlandForestScene.ts";
 import type { RainlandMapPackage } from "./RainlandForestScene.ts";
 
@@ -19,6 +20,22 @@ const IWAYAMA_CAVE_1: RainlandMapPackage = {
   eventsPath: new URL("../../assets/maps/iwayama_cave_1/events.json", import.meta.url).toString(),
   objectsPath: new URL("../../assets/maps/iwayama_cave_1/objects.json", import.meta.url).toString(),
   encounter: IWAYAMA_CAVE_ENCOUNTER,
+  // タロサに断られたあと、主人公が先へ進もうとして一人では越えられないと知る。
+  // 会話を読み終えた瞬間だけ正式素材のタロサが隊列に現れ、崩落区間を共闘できる。
+  entryNarration: {
+    flag: STORY_FLAGS.tarosaJoinedAtIwayama,
+    requiredFlag: STORY_FLAGS.tarosaRefusedRequest,
+    joinsPartyAs: "tarosa",
+    delayMs: 260,
+    pages: [
+      "いわやまの　おくから\\n地ひびきが　ひびいている。",
+      "主人公は　せまい　いわのすきまへ\\nすすもうとした。",
+      "だが　がれきが　みちをふさぎ、\\nひとりでは　ぬけられそうにない。",
+      "タロサ「そこまでだ。\\nひとりで　いくな。」",
+      "タロサが　かけつけた！",
+      "タロサ「今だけだ。\\nおれも　いっしょに　いく。」",
+    ],
+  },
 };
 
 const IWAYAMA_CAVE_2: RainlandMapPackage = {
