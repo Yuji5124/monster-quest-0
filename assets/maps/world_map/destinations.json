@@ -50,6 +50,7 @@
       "y": 620,
       "labelOffset": { "x": 50, "y": 23 },
       "visible": true,
+      "revealFlag": "story.bie_village_unlocked",
       "unlockFlag": "story.bie_village_unlocked",
       "positionStatus": "FINAL_POSITION"
     },

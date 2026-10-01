@@ -95,6 +95,7 @@ test("implementation status separates real destinations from blue planned geogra
   assert.equal(bieForest?.unlocked, false, "the forest stays locked until the weapon shopkeeper tells the player where it is");
   assert.equal(bieForest?.displayName, "？？？");
   assert.equal(isWorldMapDestinationTravelReady(bieForest), false);
+  assert.equal(resolved.some((destination) => destination.id === "destination_bie_village"), false, "Bie Village stays hidden until the player leaves Bie Forest");
   assert.equal(resolved.some((destination) => destination.id === "destination_mysterious_tower"), false, "the interim state must not reveal the tower before the elder event");
   const afterWeaponShop = resolveWorldMapDestinations(definitions, new Set([...readInterimUnlockedFlags(manifest), "story.bie_forest_unlocked"]));
   const unlockedForest = afterWeaponShop.find((destination) => destination.id === "destination_starting_forest");
@@ -211,7 +212,7 @@ test("mysterious tower is a special HIDDEN → UNKNOWN → DISCOVERED route with
 
 test("story-locked implemented destinations retain the existing unknown non-travel state", () => {
   const { definitions } = loadWorldMap();
-  const lockedView = resolveWorldMapDestinations([{ ...definitions[3], unlockFlag: "story.bie_village_unlocked" }], new Set());
+  const lockedView = resolveWorldMapDestinations([{ ...definitions[3], revealFlag: null, unlockFlag: "story.bie_village_unlocked" }], new Set());
   assert.equal(lockedView[0].implementationStatus, "implemented");
   assert.equal(lockedView[0].unlocked, false);
   assert.equal(lockedView[0].displayName, "？？？");

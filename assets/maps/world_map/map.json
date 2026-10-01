@@ -30,6 +30,6 @@
     "from_stone_town": "destination_stone_town",
     "from_batorasu_fortress": "destination_batras_fortress"
   },
-  "developmentUnlockedFlags": ["story.bie_village_unlocked"],
+  "developmentUnlockedFlags": [],
   "assetStatus": "CURRENT"
 }
