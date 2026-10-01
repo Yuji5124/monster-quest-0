@@ -4,6 +4,18 @@ import { STORY_FLAGS } from "../config/storyFlags.ts";
 import { RainlandImageMapScene } from "./RainlandForestScene.ts";
 import type { RainlandMapPackage } from "./RainlandForestScene.ts";
 
+/** デモ終点用。No.16本実装と同じ正式デーマス素材・戦闘を流用する。 */
+const DEMO_DEMAS_FIELD_SPRITE = {
+  key: "image-map.iwayama-demo-demas",
+  path: new URL("../../assets/monsters/battle/デマスのモンスターアニメーションスプライトシート (1).png", import.meta.url).toString(),
+  frameWidth: 313,
+  frameHeight: 418,
+  idleFrames: [0, 1, 2, 3],
+  frameRate: 4,
+  displayWidth: 180,
+  displayHeight: 240,
+} as const;
+
 // 1F・2F共通の距離ベースのランダムエンカウント(こあくま・エリマキヘビ・ダイジャ、TEMP_TEST_VALUE)。
 const IWAYAMA_CAVE_ENCOUNTER = { table: ENCOUNTER_TABLES.iwayama_cave, config: IWAYAMA_CAVE_RANDOM_ENCOUNTER } as const;
 
@@ -49,6 +61,7 @@ const IWAYAMA_CAVE_2: RainlandMapPackage = {
   eventsPath: new URL("../../assets/maps/iwayama_cave_2/events.json", import.meta.url).toString(),
   objectsPath: new URL("../../assets/maps/iwayama_cave_2/objects.json", import.meta.url).toString(),
   encounter: IWAYAMA_CAVE_ENCOUNTER,
+  bossSprites: { demas: DEMO_DEMAS_FIELD_SPRITE },
 };
 
 /**

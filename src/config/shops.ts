@@ -95,6 +95,24 @@ export const SHOPS: Readonly<Record<string, ShopDefinition>> = {
       { memberId: "hero", weaponId: "hero_tetsu_no_ken", price: 300 },
     ],
   },
+  // No.08ザボンのむら(2026-10-01ユーザー指定)。新しい店専用NPCは増やさず、既存の固定住民が
+  // 大きな集会所=やどや、かやぶきの家=ぶきや、東の日よけ家=どうぐやを兼業する。
+  // 品揃え・価格は他の初期村と同じTEMP_TEST_VALUE。
+  npc_zabon_village_elder: { kind: "inn", price: 8 },
+  npc_zabon_village_roof_mender: {
+    kind: "weapon",
+    stock: [
+      { memberId: "hero", weaponId: "hero_konbo", price: 50 },
+      { memberId: "hero", weaponId: "hero_tetsu_no_ken", price: 300 },
+    ],
+  },
+  npc_zabon_village_tanner: {
+    kind: "item",
+    stock: [
+      { itemId: "kaifukuyaku", price: 8 },
+      { itemId: "dokukeshi", price: 10 },
+    ],
+  },
 };
 
 export function getShop(npcId: string): ShopDefinition | undefined {

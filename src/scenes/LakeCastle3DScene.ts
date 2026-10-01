@@ -131,13 +131,7 @@ export class LakeCastle3DScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(HUD_DEPTH);
     this.createHud();
     this.dialogueBox = new DialogueBox(this);
-    this.fieldMenu = new FieldMenu(this, {
-      onRecord: () => this.gameState.saveAdventureRecord({
-        mapId: `map_lake_castle_${this.floorId}`,
-        sceneKey: LAKE_CASTLE_3D_SCENE_KEY,
-        resume: { kind: "lake3d", floor: this.floorId, x: this.position.x, y: this.position.z, yaw: this.yaw },
-      }),
-    });
+    this.fieldMenu = new FieldMenu(this);
     this.actions = new InputSystem(window, document);
     this.actions.setLocked(true);
     this.installPointerLock();

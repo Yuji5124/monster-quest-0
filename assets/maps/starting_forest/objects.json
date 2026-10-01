@@ -12,7 +12,7 @@
       "blocking": false,
       "monsterId": "erimaki_hebi",
       "victoryFlag": "boss.starting_forest_erimaki_tokage_defeated",
-      "unlockFlag": "story.rainland_castle_town_unlocked"
+        "unlockFlag": "boss.starting_forest_erimaki_tokage_defeated"
     },
     {
       "id": "chest_starting_forest_kaifukuyaku",

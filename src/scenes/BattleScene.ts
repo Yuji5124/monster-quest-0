@@ -5,8 +5,7 @@ import { getDevBattleMonster } from "../data/monsters.ts";
 import type { BattleSceneStartData } from "../events/BattleEventData.ts";
 import { BattleSystem } from "../battle/BattleSystem.ts";
 import type { BattleCombatant, BattleCombatantDefinition, BattleSnapshot } from "../battle/BattleSystem.ts";
-import { buildDebugParty, buildPartyCombatant } from "../battle/PartyCombatants.ts";
-import { DEBUG_PARTY_LEVEL, isDebugMode } from "../config/debugMode.ts";
+import { buildPartyCombatant } from "../battle/PartyCombatants.ts";
 import { ITEM_DEFINITIONS } from "../data/items.ts";
 import type { InventorySlot } from "../systems/Inventory.ts";
 import { InputSystem } from "../systems/InputSystem.ts";
@@ -16,12 +15,13 @@ import { GameStateRepository } from "../systems/GameStateRepository.ts";
 import { inventory } from "../systems/Inventory.ts";
 import { partySystem } from "../systems/PartySystem.ts";
 import { DemasBossController } from "../battle/DemasBossController.ts";
-import { DEMAS_BATTLE_PARTY_IDS, DEMAS_BATTLE_PRESENTATION } from "../data/demasBattlePresentation.ts";
+import { DEMAS_BATTLE_PARTY_IDS, DEMAS_BATTLE_PRESENTATION, DEMAS_SPRITE_SAFE_INSET_PX } from "../data/demasBattlePresentation.ts";
 import { BattleEffectManager } from "../battle/presentation/BattleEffectManager.ts";
 import { BattlePhaseController } from "../battle/presentation/BattlePhaseController.ts";
 import { getEnemyTelegraph, getBattlePresentationProfile } from "../battle/presentation/BattlePresentationProfile.ts";
 import { resolveBattleEffectQuality } from "../battle/presentation/EffectQuality.ts";
 import { RainlandBattleWeatherPresentation } from "../systems/RainlandWeatherPresentation.ts";
+import { getPriestRecoveryDestination } from "../systems/PriestService.ts";
 
 const WINDOW_COLOR = 0x090c18;
 const TEXT_COLOR = "#eeeeee";
@@ -76,6 +76,7 @@ export class BattleScene extends Phaser.Scene {
   private transitioning = false;
   private rewardGranted = false;
   private vitalsSaved = false;
+  private defeatRecoveryScheduled = false;
   /** 勝利メッセージの後に送るレベルアップ／能力増加／魔法習得ページ。 */
   private victoryPages: VictoryPage[] = [];
   /** -1 = まだ勝利メッセージを表示中。 */
@@ -133,6 +134,7 @@ export class BattleScene extends Phaser.Scene {
     this.transitioning = false;
     this.rewardGranted = false;
     this.vitalsSaved = false;
+    this.defeatRecoveryScheduled = false;
     this.victoryPages = [];
     this.victoryPageIndex = -1;
     this.victoryReadyAt = 0;
@@ -158,13 +160,10 @@ export class BattleScene extends Phaser.Scene {
       ? { ...resolvedEnemy, displayName: this.eventData.monsterDisplayName }
       : resolvedEnemy;
     this.victoryPresentation = enemy.victoryPresentation;
-    // デーマス本戦は主人公・タロサ・ミレイの3人固定。開発クエリだけは、実セーブを
-    // 汚さずMirrorを確認できるTEMP_TEST_VALUEの同じ3人編成を使う。
+    // デーマス本戦は主人公・タロサの2人固定。開発クエリだけは、実セーブを
+    // 汚さない同じ2人の検証用編成を使う。
     const directDemasTest = !this.eventData && enemy.id === "demas";
-    // DEBUG_MODEは敵・入口を問わず、加入状況もセーブも見ずに主人公一人Lv30で始める。
-    const party = isDebugMode()
-      ? buildDebugParty()
-      : directDemasTest
+    const party = directDemasTest
         ? enemy.devParty ?? enemy.devPlayer ?? this.buildLivePartyCombatants()
         : enemy.id === "demas"
           ? this.buildDemasPartyCombatants(enemy.devParty)
@@ -182,7 +181,10 @@ export class BattleScene extends Phaser.Scene {
       : undefined;
     const animatedDemas = animatedSheet ? this.add.sprite(layout.enemy.x, enemyY, animatedSheet.key, 0).setDepth(1) : undefined;
     this.portrait = animatedDemas ?? this.add.image(layout.enemy.x, enemyY, key).setDepth(1);
-    this.portrait.setScale(Math.min(layout.enemy.maxWidth * scale / this.portrait.width, layout.enemy.maxHeight * scale / this.portrait.height, 1));
+    const isAnimatedDemas = animatedDemas !== undefined;
+    const portraitWidth = this.portrait.width + (isAnimatedDemas ? DEMAS_SPRITE_SAFE_INSET_PX * 2 : 0);
+    const portraitHeight = this.portrait.height + (isAnimatedDemas ? DEMAS_SPRITE_SAFE_INSET_PX * 2 : 0);
+    this.portrait.setScale(Math.min(layout.enemy.maxWidth * scale / portraitWidth, layout.enemy.maxHeight * scale / portraitHeight, 1));
     // 全ての敵に共通する接地影。画像固有の描き足しを避け、透明ポートレートでも背景から浮かないようにする。
     this.groundShadow = this.createGroundShadow(this.portrait);
     this.portraitOriginX = this.portrait.x;
@@ -199,13 +201,6 @@ export class BattleScene extends Phaser.Scene {
     }
     this.createWindow(layout.commandWindow);
     this.createWindow(layout.messageWindow);
-    // 状態窓にはレベルが出ないため、DEBUG_MODE中だけ編成が固定であることを小さく示す(本番ビルドには出ない)。
-    if (isDebugMode()) {
-      const bounds = layout.statusWindow;
-      this.add.text(bounds.x, bounds.y + bounds.height + 2, `DEBUG　Lv${DEBUG_PARTY_LEVEL}`, {
-        ...style, fontSize: `${layout.fontSize * 0.85}px`, color: "#ffd75e", stroke: "#05070b", strokeThickness: 4,
-      }).setDepth(11);
-    }
     this.commandText =this.add.text(layout.commandWindow.x + layout.padding, layout.commandWindow.y + layout.padding, "", {
       ...style, lineSpacing: layout.commandLineHeight - layout.fontSize,
     }).setDepth(11);
@@ -246,8 +241,6 @@ export class BattleScene extends Phaser.Scene {
       this.weatherPresentation = undefined;
       this.demasController?.dispose();
       this.demasController = undefined;
-      this.weatherPresentation?.dispose();
-      this.weatherPresentation = undefined;
       this.presentationLocked = false;
       this.actions.destroy();
       this.input.off("pointerdown", this.handlePointer, this);
@@ -273,9 +266,8 @@ export class BattleScene extends Phaser.Scene {
   }
 
   /**
-   * Authored Demas party order. The story path has already introduced all three
-   * members; the temporary in-town debug event falls back to the same 3-person
-   * query fixture until that progression is present.
+   * Authored Demas party order. The story path has introduced both members;
+   * any incomplete development shortcut falls back to its query fixture.
    */
   private buildDemasPartyCombatants(fallback?: readonly BattleCombatantDefinition[]) {
     if (!DEMAS_BATTLE_PARTY_IDS.every((memberId) => partySystem.hasMember(memberId))) {
@@ -304,7 +296,7 @@ export class BattleScene extends Phaser.Scene {
     const down = this.actions.consumePressed("moveDown");
     if (cancel) {
       if (this.magicMenu || this.itemMenu) { this.magicMenu = false; this.itemMenu = false; this.render(); }
-      else if (this.battle.getSnapshot().state === "DEFEAT" && this.eventData) this.returnToEventMap();
+      else if (this.battle.getSnapshot().state === "DEFEAT" && this.hasPriestRecovery()) this.returnToNearestPriest();
       return;
     }
     const snapshot = this.battle.getSnapshot();
@@ -340,7 +332,7 @@ export class BattleScene extends Phaser.Scene {
       const count = this.magicMenu ? actor.learnedMagic?.length ?? 0 : this.itemMenu ? this.usableItemSlots().length : DEV_BATTLE_COMMANDS.length;
       if (index < 0 || index >= count) return;
       if (this.magicMenu) this.magicIndex = index; else if (this.itemMenu) this.itemIndex = index; else this.commandIndex = index;
-    } else if (state === "DEFEAT" && this.eventData && pointer.x < bounds.x + bounds.width) {
+    } else if (state === "DEFEAT" && this.hasPriestRecovery() && pointer.x < bounds.x + bounds.width) {
       this.actions.queuePressed("cancel");
       return;
     }
@@ -377,7 +369,9 @@ export class BattleScene extends Phaser.Scene {
       return;
     }
     if (before.state === "DEFEAT") {
-      if (this.eventData) this.scene.restart(this.eventData); else this.scene.restart();
+      if (this.hasPriestRecovery()) this.returnToNearestPriest();
+      else if (this.eventData) this.scene.restart(this.eventData);
+      else this.scene.restart();
       return;
     }
     const actor = before.party[before.actingIndex];
@@ -404,24 +398,24 @@ export class BattleScene extends Phaser.Scene {
     if (before.state === "COMMAND" && after.lastAction !== before.lastAction) this.weatherPresentation?.onActionResolved();
     this.grantVictoryReward(after);
     this.savePartyVitals(after);
+    if (after.state === "DEFEAT") this.schedulePriestRecovery();
     const deferRenderUntilDaidainEnds = this.applyVisualFeedback(before, after);
     if (!deferRenderUntilDaidainEnds) this.render();
   }
 
   /**
    * 戦闘の結果HP/MPを持ち越す(やどやで回復する前提)。勝利・逃走はその時点の値を保存する。
-   * 全滅時の正式なペナルティ・復帰地点はBATTLE_SPEC.md §7でTBDのため、従来どおり全快へ戻して
-   * 「もういちど」／マップ復帰で詰まないようにする。?battleTest単体確認はセーブへ触れない。
+   * 全滅時は体力を戻した上で、BattleSceneが地域の僧侶へ遷移する。
+   * ?battleTest単体確認はセーブへ触れない。
    */
   private savePartyVitals(snapshot: BattleSnapshot): void {
-    // DEBUG_MODEの編成は毎回Lv30・全快で始まる固定値のため、セーブのHP/MPへ触れない。
-    if (this.vitalsSaved || !this.eventData || isDebugMode()) return;
+    if (this.vitalsSaved || !this.eventData) return;
     if (snapshot.state === "VICTORY" || snapshot.state === "ESCAPED") {
       this.vitalsSaved = true;
       // A development shortcut may render the three-person fixture before the
       // companions have joined. Do not write those temporary vitals into saves.
       characterProgression.saveVitals(snapshot.party.filter((member) => partySystem.hasMember(member.id)));
-    } else if (snapshot.state === "DEFEAT") {
+    } else if (snapshot.state === "DEFEAT" && this.hasPriestRecovery()) {
       this.vitalsSaved = true;
       characterProgression.restoreVitals();
     }
@@ -431,13 +425,13 @@ export class BattleScene extends Phaser.Scene {
   private grantVictoryReward(snapshot: BattleSnapshot): void {
     if (this.rewardGranted || !this.eventData || snapshot.state !== "VICTORY" || !snapshot.reward) return;
     this.rewardGranted = true;
-    // DEBUG_MODEの編成はLv30固定(成長上限Lv25の外側)。実セーブのEXPを進めず、レベルアップ表示も出さない。
-    const levelUps = isDebugMode() ? [] : characterProgression.awardExperience(partySystem.getPartyOrder(), snapshot.reward.experience).levelUps;
+    const levelUps = characterProgression.awardExperience(partySystem.getPartyOrder(), snapshot.reward.experience).levelUps;
     this.victoryPages = buildLevelUpPages(levelUps);
     this.gameState.addMoney(snapshot.reward.money);
     if (snapshot.reward.itemId && Object.hasOwn(ITEM_DEFINITIONS, snapshot.reward.itemId)) {
       inventory.add(snapshot.reward.itemId as keyof typeof ITEM_DEFINITIONS);
     }
+    if (snapshot.reward.jumpCoinCount) this.gameState.addJumpCoins(snapshot.reward.jumpCoinCount);
   }
 
   /**
@@ -719,6 +713,32 @@ export class BattleScene extends Phaser.Scene {
     });
   }
 
+  private hasPriestRecovery(): boolean {
+    return Boolean(this.eventData && this.eventData.defeatRoute !== "special");
+  }
+
+  /** 全滅画面を長く残さず、通常戦闘は僧侶の前へ自動で戻す。 */
+  private schedulePriestRecovery(): void {
+    if (!this.hasPriestRecovery() || this.defeatRecoveryScheduled) return;
+    this.defeatRecoveryScheduled = true;
+    this.time.delayedCall(900, () => this.returnToNearestPriest());
+  }
+
+  private returnToNearestPriest(): void {
+    if (!this.eventData || this.transitioning) return;
+    this.transitioning = true;
+    this.actions.setLocked(true);
+    characterProgression.restoreVitals();
+    const destination = getPriestRecoveryDestination(this.eventData.returnSceneKey);
+    this.cameras.main.fadeOut(DEV_BATTLE_EVENT_FADE_MS, 0, 0, 0);
+    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+      this.scene.start(destination.sceneKey, {
+        spawnId: destination.spawnId,
+        priestRecovery: true,
+      });
+    });
+  }
+
   private statusLine(member: BattleCombatant, isActing: boolean): string {
     const marker = member.status.mirror ? " ◇" : member.status.poisoned ? " ☠" : "";
     const cursor = isActing && member.hp > 0 ? "▷" : "　";
@@ -748,9 +768,9 @@ export class BattleScene extends Phaser.Scene {
       } else {
         this.commandText.setText(BATTLE_COMMAND_LABELS.map((label, i) => `${i === this.commandIndex ? "▶" : "　"} ${label}`).join("\n"));
       }
-    } else if (snapshot.state === "DEFEAT" && this.eventData) {
-      this.commandText.setText("X: もどる\n\nここをタップ");
-      this.hintText.setText("再戦: Z / Enter / メッセージをタップ");
+    } else if (snapshot.state === "DEFEAT" && this.hasPriestRecovery()) {
+      this.commandText.setText("まちへ　もどる……");
+      this.hintText.setText("僧侶の　もとへ　もどります");
     } else {
       const hasPendingLevelUp = snapshot.state === "VICTORY" && this.victoryPageIndex < this.victoryPages.length - 1;
       this.commandText.setText(hasPendingLevelUp ? "▶ つづける" : snapshot.state === "VICTORY" || snapshot.state === "ESCAPED" ? (this.eventData ? "▶ もどる" : "▶ もういちど") : "▶ つづける");

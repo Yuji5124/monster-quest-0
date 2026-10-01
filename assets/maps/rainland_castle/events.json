@@ -20,7 +20,7 @@
       "trigger": "enter",
       "once": true,
       "bounds": { "x": 120, "y": 216, "width": 112, "height": 40 },
-      "commands": [{ "type": "message", "text": "[DEV] 上階への階段（現在は進めない）" }]
+      "commands": [{ "type": "message", "text": "このさきには　まだ　いけないようだ。" }]
     },
     {
       "id": "event_rainland_castle_east_room",

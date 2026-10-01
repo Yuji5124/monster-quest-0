@@ -100,11 +100,12 @@
 - `WorldMapScene`の目的地の1つとして、No.01/No.02と同じ形式のデータ（`assets/maps/world_map/destinations.json`）で追加する。
 - ローカルマップの実装方式はNo.01と同じBACKGROUND/COLLISION/EVENT/OBJECT（`MAP_SYSTEM.md`）を流用し、距離ベースのランダムエンカウント（`BATTLE_SPEC.md`§11）を持つ最初の地域である。
 - 正式No.03として扱う。旧「番号なし追加フィールド」方針はSUPERSEDEDであり、既存内部IDのみを互換として残す。
-- 2026-09-24: ユーザー注釈の緑ポイントに`objects.json`の`boss_starting_forest_erimaki_tokage`を配置する。既存のエリマキヘビ戦闘素材／BattleSceneを使い、撃破時だけ`boss.starting_forest_erimaki_tokage_defeated`と`story.rainland_castle_town_unlocked`を保存する。後者により`destination_rainland_castle_town`（No.06）が世界地図で選択可能になる。No.05レインランドのもりの解放条件は`story.rainland_forest_unlocked`（2026-09-27、No.04ビーエのむらの会話。§4.5）で、この撃破とは独立している。
+- 2026-10-02: エリマキヘビ撃破は`boss.starting_forest_erimaki_tokage_defeated`だけを保存する。レインランドじょうかまち（No.06）はNo.05レインランドのもりで人を助けた後にのみ解放する。
 - 青ポイントの`chest_starting_forest_kaifukuyaku`はジャンコインを1枚渡し、`chest.starting_forest_kaifukuyaku_opened`で再取得を防ぐ。2026-10-01ユーザー指示により、同地域の通常戦闘経験値は80%（端数切り捨て）とする。北の石アーチ（オレンジポイント）は既存の世界地図出口を維持する。
 - 撃破後の帰還時だけ、北側ワープ領域に収まる`arrival_starting_forest_tarosa`からタロサが現れ「おれも　えりまきとかげを追っていた」と短く話す。会話後は同じワープ領域から去る。`event.starting_forest_tarosa_hunt_talked`で一度限りにし、この会話は加入イベントではない。
 - 2026-09-26 タロサ登場演出の強化: 登場・退場は主人公の歩行速度(`PLAYER.moveSpeed`、距離÷速度で所要時間を算出)で歩き、ワープ領域でフェードイン/アウトする。会話中は画面右側に額縁つきの立ち姿(`assets/characters/portraits/tarosa_standing.png`)を表示し、会話は4ページ（「……倒したのは　おまえか。」「おれも　えりまきとかげを　追っていた。」「……先を　こされたな。」「つぎの　えものは　おれが　しとめる。」）。4ページ目の台詞は初稿でTBD。表示位置・大きさ・フェード時間はTEMP_TEST_VALUE。
 - 2026-09-27 南端の出口追加: ユーザー指示で、道の最下端（南の木戸の外、画像下端）も出口にした。`events.json`の`event_starting_forest_south_exit`（背景座標 x684〜868 / y1000〜1024、最下端の歩行可能な道幅いっぱい）が北の石アーチと同じ`world-map`（`worldMapEntryId: from_starting_forest`）へ戻る。世界地図から入るspawn（770,970）は出口ゾーンの外にあり、到着直後には退場しない。出口ゾーンの位置・大きさはTEMP_TEST_VALUE。
+- 2026-10-02: 北の石アーチ・南の木戸のどちらから出ても、世界地図へ遷移する直前に`story.bie_village_unlocked`を保存する。初回はビーエのむらが`？？？`で選べず、森を一度出た後にだけ選択可能になる。
 
 ## 4.8 No.04 ビーエのむら（旧No.03実装との互換、2026-09-18）
 - 正式No.は04。既存`map_03_bie_village`、`destination_bie_village`、Scene名・テスト名は旧No.03由来の互換IDとして残す。
@@ -136,7 +137,7 @@
   - 注釈画像(867×544)は`rainland_forest_2/background.png`(1448×1086)の上端908px分を縮小したもの。背景へ重ねて縮尺1.6701・ずれ0で一致することを確認し、ポイントの中心をネイティブ背景pxで測った: **オレンジ (651, 299)**＝木こり、**赤 (133.5, 195)**＝宝箱。
   - **木こり**: オレンジポイント（北の橋の北東、道の左端）に`npc_rainland_forest_woodcutter`（`role: "story"`、`villager_03`、下向き、その場に立つ）を置く。足元Bodyの中心がポイントに一致し、道幅の残り（約45px）で北へ抜けられる。話しかけると5ページの会話（レインランドじょうへはじょうかまち経由で行くと教える）→初回だけ末尾に「レインランドじょうへ　いけるように　なった！」→閉じた時点で`story.rainland_castle_town_unlocked`を保存し、世界地図でレインランドじょうかまち（§4.12）が選べるようになる。2回目以降は通常の5ページのみ。会話本文は`DIALOGUE_DRAFT`（`data/dialogues.ts`の`FIRST_TALK_UNLOCKS`）。ビーエのむらで「戻らない」と言われている木こりと同一人物かは示さない（TBD）。
   - **宝箱**: 青丸ポイント（北西の遺跡のアーチの根元）に`objects.json`の`chest_rainland_forest_2_ruin`（`blocking: true`）。前（南）から調べると`かいふくやく`1個を得て、`chest.rainland_forest_2_ruin_opened`を保存して消える。中身は2026-10-01ユーザー指定。見た目はNo.03と同じコード描画の共通宝箱（`systems/ChestTexture.ts`の`createChestVisual`）。
-  - **注意**: No.03ビーエのもりのえりまきとかげ撃破（§4.7）も同じ`story.rainland_castle_town_unlocked`を保存するため、木こりが唯一の解放条件にはなっていない。唯一の条件にするかはユーザー確認待ち（`TBD_REGISTRY.md`）。
+  - 木こりを助けて会話を読み終えることが、レインランドじょうかまちの唯一の解放条件である。
 
 ## 4.11 No.07 まじんのどうくつ（旧No.08実装との互換、特殊ターン制Dungeon RPG、2026-09-20）
 

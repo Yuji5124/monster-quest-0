@@ -411,7 +411,7 @@ test("No.08 is a normal world-map destination without a key-art splash", () => {
   assert.ok(cave);
   assert.equal(cave.targetMapId, "map_08_majin_cave");
   assert.equal(cave.targetSpawnId, "fromWorldMap");
-  assert.equal(cave.unlockFlag, null);
+  assert.equal(cave.unlockFlag, "story.majin_cave_unlocked");
   assert.equal(manifest.entryDestinationIds.from_majin_cave, "destination_majin_cave");
   assert.ok(MAPS.map_08_majin_cave.spawns.fromWorldMap);
   assert.equal(MAP_ENTRY_SPLASHES.map_08_majin_cave, undefined);

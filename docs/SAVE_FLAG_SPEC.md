@@ -1,6 +1,6 @@
 # モンスタークエスト0 セーブ・進行フラグ仕様
 
-最終更新: 2026-09-27 JST
+最終更新: 2026-10-01 JST
 
 このファイルはセーブデータとストーリー進行フラグの責務を整理する正本。JSONの基本構造は `DATA_CONTRACTS.md` に従う。
 
@@ -123,7 +123,7 @@ story.true_ending_reached
 ```text
 story.bie_village_unlocked
 ```
-このフラグを実際にtrueへ立てるSaveSystem本体・進行イベントは未実装（TBD_REGISTRY.md参照）。同義のフラグを別名で増やさない。
+No.03ビーエのもりの北の石アーチまたは南の木戸から世界地図へ出る時、共有`GameStateRepository`へ保存する。世界地図へ戻った直後からビーエのむらを選択できる。同義のフラグを別名で増やさない。
 
 2026-09-23から、共有`GameStateRepository`の`flags`（true値だけを保存）を一度きりの進行状態に使用する。旧v1セーブに`flags`が無い場合は空として安全に移行する。No.03ビーエのもりでこの境界に初めて保存するキーは次の4つ。
 
@@ -216,10 +216,16 @@ No.05レインランドのもり（2026-09-27）は`unlockFlag`に次のフラ�
 story.rainland_forest_unlocked
 ```
 
-レインランドじょうかまち（No.06）の`story.rainland_castle_town_unlocked`は、No.03えりまきとかげ撃破（2026-09-24）に加え、2026-09-27からNo.05レインランドのもり（その2）の奥の木こり（`npc_rainland_forest_woodcutter`）の「はなす」を初めて最後まで読み終えた時（最後のページ「レインランドじょうへ　いけるように　なった！」を閉じた後）にも保存する。同じキーを2か所が立てるだけで、別名キーは作らない。
+レインランドじょうかまち（No.06）の`story.rainland_castle_town_unlocked`は、No.05レインランドのもり（その2）の奥の木こり（`npc_rainland_forest_woodcutter`）を助けて「はなす」を初めて最後まで読み終えた時だけ保存する（最後のページ「レインランドじょうへ　いけるように　なった！」を閉じた後）。
 
 ```text
 story.rainland_castle_town_unlocked
+```
+
+No.07まじんのどうくつは、No.06レインランドじょうの王との初回会話を最後まで読み終えた時だけ解放する。
+
+```text
+story.majin_cave_unlocked
 ```
 
 No.05レインランドのもり（その2）の遺跡の宝箱`chest_rainland_forest_2_ruin`は、開けた時に次のフラグを保存する（`chest.*`、再取得防止）。フラグ名は中身（現在は`かいふくやく`のTEMP_TEST_VALUE）に依存しない場所ベースの名前にしてあり、中身を変えてもセーブ互換を保つ。
@@ -228,7 +234,7 @@ No.05レインランドのもり（その2）の遺跡の宝箱`chest_rainland_f
 chest.rainland_forest_2_ruin_opened
 ```
 
-コードから読み書きする上記5キー（`story.bie_forest_unlocked` / `story.rainland_forest_unlocked` / `story.rainland_castle_town_unlocked` / `story.mysterious_tower_revealed` / `event.starting_town_tower_elder_talked`）の定数は`src/config/storyFlags.ts`が正本。
+コードから読み書きする上記6キー（`story.bie_forest_unlocked` / `story.rainland_forest_unlocked` / `story.rainland_castle_town_unlocked` / `story.majin_cave_unlocked` / `story.mysterious_tower_revealed` / `event.starting_town_tower_elder_talked`）の定数は`src/config/storyFlags.ts`が正本。
 
 No.11みずうみの古城では、同じ`STORY_FLAGS`に次の一度きり状態を置く。`event.lake_castle_stairs_unsealed`はミレイの魔法後に1F→2Fの石段を恒久解放する。`event.lake_castle_ancient_inscription`は2Fの古代文字を読んだ状態、`event.lake_castle_sanctuary`は3F祭壇の初回閲覧、`story.lake_castle_sanctuary_cleared`はNo.12導線用の進行フックである。表示用の3Dメッシュはこれらの正本ではなく、遷移とセーブフラグで判定する。
 
@@ -284,11 +290,11 @@ No.11みずうみの古城では、同じ`STORY_FLAGS`に次の一度きり状�
 - オロチゾンビ1回目の異常遷移と通常全滅を別処理にする。
 
 ## 10. オートセーブ / 手動セーブ
-### 手動セーブ（実装済み、2026-09-27）
-- フィールドメニュー（`menu` action / C）に「ぼうけんのきろく」を置く。選択した時点の現在地・向きだけを、共有`GameStateRepository`の`map.adventureRecord`へ保存する。
-- 保存可能な通常2Dフィールドはランタイム座標（画像マップの`worldScale`適用後）と向きを保存し、再開時はその座標へそのまま戻す。レインランド城の3D表示とみずうみの古城は、それぞれ必要な向き角／階も保存する。
+### 僧侶による旅の記録（実装済み、2026-10-01）
+- 旅の記録を付けられるのは町の僧侶だけ。現在はNo.02はじまりのまち、No.04ビーエのむら、No.06レインランドじょうかまち、No.08ザボンのむらに1人ずつ配置する。フィールドメニュー（`menu` action / C）には記録項目を置かない。
+- 僧侶へ話しかけると、その時点の通常2Dフィールドのランタイム座標（画像マップの`worldScale`適用後）と向きを、共有`GameStateRepository`の`map.adventureRecord`へ保存する。新規の3Dマップ内記録は行わないが、旧記録の3D復帰形式は互換性のため読み込み続ける。
 - タイトルの「つづきから」は有効な`map.adventureRecord`がある場合だけ有効にする。ガチャ、所持金、フラグだけが保存された状態は手動記録ではないため有効化しない。
-- タイトルからの復帰時は、保存された`mapId`とSceneの対応を検証する。不正・旧形式・壊れた記録は無効として扱い、任意Sceneへの遷移を許可しない。
+- タイトルからの復帰時は、保存された`mapId`とSceneの対応を検証する。不正・壊れた記録は無効として扱い、任意Sceneへの遷移を許可しない。
 - 「はじめから」は`createDefaultGameState()`で`map.adventureRecord`を持たない状態へ戻す。「もういちど」にはこの初期化を使わない。
 
 オートセーブのタイミングは引き続きTBD。ただし以下を守る:

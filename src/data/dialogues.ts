@@ -77,7 +77,7 @@ export const DIALOGUES: Record<string, Dialogue> = {
   // カードの秘密・頭文字・たびのあいことばには触れず、単独の遊びとして扱う。
   npc_rainland_town_purin_card_battler: {
     id: "npc_rainland_town_purin_card_battler",
-    pages: ["プリンのカードを　もっていたら\n1かいしょうぶだ！"],
+    pages: ["ジャンカードで　対戦ができるように\n準備しています。"],
   },
   // 2026-09-26 user-provided setup: 不思議なとうの更地を将来自由に使える場所として案内する。
   // 移住条件、建築、AI、ストーリー進行をここで決めない。
@@ -156,12 +156,11 @@ export const DIALOGUES: Record<string, Dialogue> = {
       "モンスター？　さあねえ。\nあたしは　きょうの　ばんごはんの\nほうが　しんぱいだよ。",
     ],
   },
-  npc_start_town_church_walker: {
-    id: "npc_start_town_church_walker",
+  // 実際の旅の記録メッセージはPriestServiceで統一する。ここはNPCデータ参照の既定形。
+  npc_start_town_priest: {
+    id: "npc_start_town_priest",
     pages: [
-      "きょうかいの　かねが　なると\nまちの　みんなが　そらを\nみあげるんだ。",
-      "このごろは　まちを　でていく\nひとの　ぶじを　いのりに\nくる　ひとが　ふえたみたい。",
-      "ぼくは　かねの　おとが　すきだよ。\nなんだか　ここに　いても　いいって\nいわれてる　きが　するから。",
+      "たびの　きろくは\nここで　あずかっている。",
     ],
   },
   npc_start_town_plaza_walker: {
@@ -237,6 +236,10 @@ export const DIALOGUES: Record<string, Dialogue> = {
       "それと　やまの　どうくつには\nちかづくなよ。\nむかしから　そう　いわれてるんだ。",
     ],
   },
+  npc_bie_village_priest: {
+    id: "npc_bie_village_priest",
+    pages: ["たびの　きろくは\nここで　あずかっている。"],
+  },
   // No.05レインランドのもり(その2)の奥に立つ木こり(2026-09-27ユーザー指示)。初めて最後まで読むと、
   // レインランドじょうへの道を聞いて世界地図でレインランドじょうかまちが選べるようになる(FIRST_TALK_UNLOCKS)。
   // ビーエのむらで戻らないと言われている木こりとの関係・救出イベントは未確定(TBD)のため、同一人物だと示さない。
@@ -277,6 +280,10 @@ export const DIALOGUES: Record<string, Dialogue> = {
       "あめが　おおいのは　こまるが、\nかわの　みずが　きれいに\nなるのは　いいこと　かもな。",
       "あめの　ひの　なべの　おとも\nなれれば　たいこみたいで\nむすめは　わらって　きくんだ。",
     ],
+  },
+  npc_zabon_village_priest: {
+    id: "npc_zabon_village_priest",
+    pages: ["まもりがみの　まえで\nたびの　きろくを\nあずかって　いる。"],
   },
   npc_zabon_village_tanner: {
     id: "npc_zabon_village_tanner",
@@ -406,6 +413,10 @@ export const DIALOGUES: Record<string, Dialogue> = {
       "ただ　そとから　もどった　ひとは\nかいふくやくを　たくさん\nもっていた　わね。",
       "たびびとさんも\nまちの　そとでは　きをつけてね。",
     ],
+  },
+  npc_rainland_town_priest: {
+    id: "npc_rainland_town_priest",
+    pages: ["たびの　きろくは\nここで　あずかっている。"],
   },
   // No.10かくれざと: source folder has no dialogue manuscript. These first-pass local lines follow NPC_SPEC.md:
   // the village's closed atmosphere is implied through daily life, and neither Mirei's identity nor later events are disclosed.
@@ -697,6 +708,7 @@ export function getDialogue(
         type: "portrait-interlude",
         portrait: RAINLAND_KING_TAROSA_PORTRAIT,
         continuationPages: RAINLAND_KING_QUEST_CONTINUATION_PAGES,
+        thenFlags: [STORY_FLAGS.majinCaveUnlocked],
       },
     };
   }

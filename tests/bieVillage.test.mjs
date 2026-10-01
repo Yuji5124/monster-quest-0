@@ -100,10 +100,10 @@ test("the fromWorldMap spawn's full Player body clears the north-gate event zone
 
 // Minimal PNG reader (8-bit RGBA/RGB, non-interlaced), mirrors tests/startingForest.test.mjs so this
 // file stays Node/Phaser-independent instead of depending on the browser Canvas the runtime uses.
-test("bie-village has six data-driven villagers: four fixed at doors and two local walkers", () => {
+test("bie-village has a fixed priest, four fixed villagers, and two local walkers", () => {
   const npcs = MAPS.map_03_bie_village.npcs;
-  assert.equal(npcs.length, 6, "docs/NPC/02_bie_no_mura.md: 目安6人");
-  assert.equal(npcs.filter((npc) => !npc.movement).length, 4);
+  assert.equal(npcs.length, 7);
+  assert.equal(npcs.filter((npc) => !npc.movement).length, 5);
   assert.equal(npcs.filter((npc) => npc.movement?.kind === "wander").length, 2);
   for (const npc of npcs) {
     assert.equal(npc.mapId, "map_03_bie_village");
@@ -118,8 +118,10 @@ test("2026-09-27: three fixed villagers double as the weapon shop, inn and item 
   const npcs = MAPS.map_03_bie_village.npcs;
   const shopkeepers = npcs.filter((npc) => npc.role === "shopkeeper");
   const residents = npcs.filter((npc) => npc.role === "resident");
+  const priests = npcs.filter((npc) => npc.role === "priest");
   assert.equal(shopkeepers.length, 3);
   assert.equal(residents.length, 3, "the neighbour plus the two walkers stay plain residents");
+  assert.deepEqual(priests.map((npc) => npc.id), ["npc_bie_village_priest"]);
   assert.deepEqual(shopkeepers.map((npc) => npc.id).sort(), ["npc_bie_village_farmer", "npc_bie_village_herb_drier", "npc_bie_village_miller"]);
   assert.equal(shopkeepers.every((npc) => !npc.movement), true, "shopkeepers must stay at their storefronts");
   assert.equal(getShop("npc_bie_village_miller")?.kind, "weapon");
@@ -131,7 +133,7 @@ test("2026-09-27: three fixed villagers double as the weapon shop, inn and item 
   assert.match(first.pages.at(-1), /レインランドのもり/);
 });
 
-test("bie-village fixed villagers can be talked to from the walkable path right below them", () => {
+test("bie-village fixed NPCs can be talked to from the walkable path right below them", () => {
   const manifest = readImageMapManifest(JSON.parse(readFileSync(path.join(MAP_DIR, "map.json"), "utf-8")));
   const scale = manifest.worldScale;
   const collisionRects = buildCollisionRects(readPngAsMask(path.join(MAP_DIR, "collision.png")), manifest.collisionCellSize)

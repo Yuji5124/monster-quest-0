@@ -285,13 +285,11 @@ export const DEV_BATTLE_MONSTERS: Record<DevBattleMonsterId, DevBattleMonsterDef
     // The supplied animated sheet is used only by BattleScene's Demas presentation controller.
     battleSpriteSheet: DEMAS_BATTLE_SPRITE_SHEET,
     isBoss: true,
-    // TEMP_TEST_VALUE / DEV_BATTLE_BALANCE, not the source card's 1000/500/300.
-    // 2026-09-23確定のMONSTER_ROSTER正本(HP1100/攻撃54/防御46/素早さ38)とはまだ異なる。
-    // このHP/MP/攻撃/防御は、下のdevPlayer(CHARACTER_GROWTH.md指定でTEMP_TEST_VALUEのまま
-    // 変更しない)と1対1で調整されたミラー攻略ギミック検証専用の組であり、どちらか一方だけを
-    // 正本値へ差し替えるとdemasBattle.test.mjsの逐次アサーションが破綻する。今回は対象外とし、
-    // 実際のパーティで戦う本戦バランスはbossBalance.test.mjsのbuildPartyCombatant経由で別途検証する。
-    maxHp: 360, maxMp: 60, attack: 42, defense: 12,
+    // TEMP_TEST_VALUE / DEV_BATTLE_BALANCE. 2026-10-02 user direction:
+    // a protagonist + Tarosa party around Lv22 must be able to win, while the
+    // encounter lasts through multiple enemy turns instead of ending immediately.
+    // The 100-seed Lv22 check lives in tests/bossBalance.test.mjs.
+    maxHp: 1550, maxMp: 60, attack: 62, defense: 54,
     // EXP/ゴールドはこのDEV NPC経由でも実セーブへ加算されるため、MONSTER_ROSTERの確定値を反映する。
     reward: { experience: MONSTER_ROSTER_BY_ID.demas.exp, money: MONSTER_ROSTER_BY_ID.demas.gold },
     enemyActions: [NORMAL_ATTACK, DEV_MIRROR, DEV_DAIDAIN],
@@ -301,13 +299,12 @@ export const DEV_BATTLE_MONSTERS: Record<DevBattleMonsterId, DevBattleMonsterDef
       url: new URL("../../assets/battle/backgrounds/reference/mq0_battle_bg_008_c44a414baf.png", import.meta.url).href,
     },
     // The old one-person fixture remains for pure BattleSystem regression tests.
-    // BattleScene's ?battleTest=demas now uses devParty so the actual UI and turn
-    // rotation exercise the required hero / Tarosa / Mirei boss formation.
+    // BattleScene's ?battleTest=demas uses the same two-member formation as the
+    // authored encounter, without reading or mutating a player's save.
     devPlayer: { ...DEV_BOSS_TEST_PLAYER, learnedMagic: [DEV_MIRROR] },
     devParty: [
       { ...DEV_BOSS_TEST_PLAYER, id: "hero", displayName: "主人公", learnedMagic: [] },
       { ...DEV_BOSS_TEST_PLAYER, id: "tarosa", displayName: "タロサ", learnedMagic: [] },
-      { ...DEV_BOSS_TEST_PLAYER, id: "mirei", displayName: "ミレイ", learnedMagic: [DEV_MIRROR] },
     ],
   },
   batorasu: {

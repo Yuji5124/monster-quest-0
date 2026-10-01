@@ -20,14 +20,17 @@ export const DEMAS_BATTLE_SPRITE_SHEET: DemasBattleSpriteSheetDefinition = {
   frameHeight: 418,
 };
 
+/** Keep edge-touching source poses inside the battle layout through frame changes and camera zoom. */
+export const DEMAS_SPRITE_SAFE_INSET_PX = 6;
+
 export type DemasAnimationState = "idle" | "chant" | "cast" | "damaged" | "weak";
 
 /**
- * 2026-09-26 user direction: the Demas encounter is a fixed three-person boss
- * battle.  BattleScene reads this in the authored order for the map event;
- * the development query uses the matching test party in monsters.ts.
+ * 2026-10-02 user direction: the Demas encounter is a two-person boss battle
+ * for the protagonist and Tarosa around Lv22. BattleScene reads this authored
+ * order for map events; the development query uses the matching fixture.
  */
-export const DEMAS_BATTLE_PARTY_IDS = ["hero", "tarosa", "mirei"] as const;
+export const DEMAS_BATTLE_PARTY_IDS = ["hero", "tarosa"] as const;
 
 export const DEMAS_BATTLE_PRESENTATION = {
   animations: {

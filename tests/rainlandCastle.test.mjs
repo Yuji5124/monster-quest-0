@@ -114,6 +114,9 @@ test("castle: event points exist for the entrance, throne room door, stairs, the
     const transfers = ["event_rainland_castle_exit", "event_rainland_castle_throne_room_entrance"];
     assert.equal(event.commands[0].type, transfers.includes(event.id) ? "transfer" : "message", `${event.id} has the wrong command type`);
   }
+  const stairs = byId.event_rainland_castle_stairs;
+  assert.equal(stairs.commands[0].type, "message");
+  assert.equal(stairs.commands[0].text, "このさきには　まだ　いけないようだ。");
 });
 
 test("castle: the spawned body clears the exit zone (no instant re-trigger)", () => {

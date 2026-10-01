@@ -26,6 +26,7 @@ import { getShop } from "../config/shops.ts";
 import { isStoryFlagsDialogueEvent } from "../events/BattleEventData.ts";
 import type { DialogueAfterEvent } from "../events/BattleEventData.ts";
 import { GameStateRepository } from "../systems/GameStateRepository.ts";
+import { PRIEST_RECORD_PAGES, PRIEST_RECOVERY_PAGES, recordAdventureAtPriest } from "../systems/PriestService.ts";
 import { canInteract } from "../systems/Interaction.ts";
 import { startVillagerGlitch } from "../systems/VillagerGlitch.ts";
 import { DialogueBox } from "../ui/DialogueBox.ts";
@@ -52,13 +53,15 @@ export interface BieVillageSceneData {
   readonly spawnX?: number;
   readonly spawnY?: number;
   readonly spawnFacing?: Facing;
+  /** 通常戦闘で全滅した後、僧侶の前で回復会話を始める。 */
+  readonly priestRecovery?: boolean;
 }
 
 /**
  * No.04「ビーエのむら」(内部IDは旧No.03由来)。背景はビーエのむら更新.png、collision.pngはtools/build_bie_village_collision.pyが生成する。
  * ビーエのもりから続く地域の異変として、背景の一部が一瞬だけ乱れる小さな異変(config/bieVillageAnomaly.ts)を常時重ねる。
  * StartingPlaceScene(No.01)と同じBACKGROUND/COLLISION/EVENT/OBJECT
- * 画像マップ方式をそのまま再利用する。村人6人(MAPS.npcs、No.02と同じ「固定はドアの真ん前＋周辺を歩く人」)と
+ * 画像マップ方式をそのまま再利用する。村人6人と、旅の記録を受け持つ僧侶1人（MAPS.npcs）を持つ。
  * 会話初稿、村人の小さなバグり(config/bieVillageAnomaly.tsのBIE_VILLAGER_GLITCH)を持つ。固定4人のうち3人は
  * config/shops.tsのやどや・ぶきや・どうぐや(No.02と同じShopWindow)を兼業し、残り1人(となりの人)は
  * 木こり失踪の手掛かりを持つため通常会話のまま(2026-09-27)。
@@ -213,15 +216,14 @@ export class BieVillageScene extends Phaser.Scene {
       this.afterDialogueEvent = dialogue.afterDialogue;
       this.dialogueBox.open(dialogue.pages);
     });
-    this.fieldMenu = new FieldMenu(this, {
-      onOpen: () => this.player.body.setVelocity(0, 0),
-      onRecord: () => this.gameState.saveAdventureRecord({
-        mapId: MAP_ID,
-        sceneKey: MAPS[MAP_ID].sceneKey,
-        resume: { kind: "2d", x: this.player.visual.x, y: this.player.visual.y, facing: this.player.facing },
-      }),
-    });
+    this.fieldMenu = new FieldMenu(this, { onOpen: () => this.player.body.setVelocity(0, 0) });
     this.actions = new InputSystem(window, document);
+    if (data?.priestRecovery) {
+      this.time.delayedCall(MAP_TRANSITION_FADE_MS + 50, () => {
+        this.player.body.setVelocity(0, 0);
+        this.dialogueBox.open(PRIEST_RECOVERY_PAGES);
+      });
+    }
     const movePlayer = (): void => {
       const confirmPressed = this.actions.consumePressed("confirm");
       if (this.dialogueBox.isOpen) {
@@ -289,6 +291,17 @@ export class BieVillageScene extends Phaser.Scene {
       )
     );
     if (!npc) return;
+    if (npc.definition.role === "priest") {
+      this.player.body.setVelocity(0, 0);
+      npc.stop();
+      recordAdventureAtPriest(this.gameState, {
+        mapId: MAP_ID,
+        sceneKey: MAPS[MAP_ID].sceneKey,
+        resume: { kind: "2d", x: this.player.visual.x, y: this.player.visual.y, facing: this.player.facing },
+      });
+      this.dialogueBox.open(PRIEST_RECORD_PAGES);
+      return;
+    }
     const shop = getShop(npc.definition.id);
     if (shop) {
       this.player.body.setVelocity(0, 0);

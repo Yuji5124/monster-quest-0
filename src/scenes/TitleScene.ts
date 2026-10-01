@@ -76,6 +76,7 @@ export class TitleScene extends Phaser.Scene {
     this.createBackgroundLayers();
 
     const { menuTop, menuHeight } = this.createLogo();
+    this.createDemoBadge(menuTop);
     this.createMenu(menuTop);
     this.createPrompt(menuTop, menuHeight);
     // オープニングをスキップして来たときは、ロゴ登場を待たず「はじめから／つづきから」のメニューから始める。
@@ -257,6 +258,14 @@ export class TitleScene extends Phaser.Scene {
       strokeThickness: TEXT_STROKE_THICKNESS,
     }).setOrigin(1, 0).setVisible(false);
     this.renderMenu();
+  }
+
+  private createDemoBadge(menuTop: number): void {
+    this.add.text(DISPLAY.width / 2, menuTop - 14 * SCALE_FACTOR, "デモ版！", {
+      fontFamily: "monospace", fontSize: `${16 * SCALE_FACTOR}px`, fontStyle: "bold",
+      color: "#fff5a8", stroke: "#7b1717", strokeThickness: 6, backgroundColor: "#b52121",
+      padding: { x: 14, y: 5 },
+    }).setOrigin(0.5, 1).setDepth(100);
   }
 
   private createPrompt(menuTop: number, menuHeight: number): void {

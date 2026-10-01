@@ -7,6 +7,7 @@ import { InputSystem } from "../systems/InputSystem.ts";
 import { GameStateRepository } from "../systems/GameStateRepository.ts";
 import { beginMapTransition } from "../systems/MapTransition.ts";
 import { startWorldMapClouds } from "../systems/WorldMapClouds.ts";
+import { getDemoUnlockFlag, isDemoWorldMapDestination } from "../config/demoEdition.ts";
 import {
   isWorldMapDestinationTravelReady,
   readInterimUnlockedFlags,
@@ -70,7 +71,9 @@ export class WorldMapScene extends Phaser.Scene {
     this.selectedDestinationId = null;
     this.markers = [];
     const manifest = readWorldMapManifest(this.cache.json.get(MANIFEST_KEY));
-    const definitions = readWorldMapDestinations(this.cache.json.get(DESTINATIONS_KEY), manifest);
+    const definitions = readWorldMapDestinations(this.cache.json.get(DESTINATIONS_KEY), manifest)
+      .filter((destination) => isDemoWorldMapDestination(destination.id))
+      .map((destination) => ({ ...destination, unlockFlag: getDemoUnlockFlag(destination.id, destination.unlockFlag) }));
     this.destinations = resolveWorldMapDestinations(definitions, this.readUnlockedFlags(manifest));
     const currentDestination = this.resolveCurrentDestination(data?.worldMapEntryId, manifest, definitions);
     this.defaultNotice = currentDestination

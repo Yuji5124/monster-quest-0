@@ -17,6 +17,7 @@ import type { ImageMapCollisionRuntime } from "../systems/ImageMapCollision.ts";
 import { readImageMapEvents, readImageMapManifest, readImageMapObjects, scaleRect } from "../systems/ImageMapData.ts";
 import type { ImageMapBossObject, ImageMapChestObject, ImageMapEvent, ImageMapInteractableObject, ImageMapShootingObject } from "../systems/ImageMapData.ts";
 import { GameStateRepository } from "../systems/GameStateRepository.ts";
+import { PRIEST_RECORD_PAGES, PRIEST_RECOVERY_PAGES, recordAdventureAtPriest } from "../systems/PriestService.ts";
 import type { ImageMapObject } from "../systems/ImageMapData.ts";
 import { ImageMapStoryLayer, isStoryObject } from "../systems/ImageMapStoryLayer.ts";
 import { createChestVisual } from "../systems/ChestTexture.ts";
@@ -146,6 +147,8 @@ export interface RainlandMapSceneData {
   readonly spawnY?: number;
   readonly spawnFacing?: Facing;
   readonly battleEventReturn?: boolean;
+  /** 通常戦闘で全滅した後、僧侶の前で回復会話を始める。 */
+  readonly priestRecovery?: boolean;
   /** いわやまのどうくつの崩落シューティングから戻った直後。説明はせず短い沈黙だけを見せる。 */
   readonly shootingReturn?: boolean;
 }
@@ -393,14 +396,7 @@ export class RainlandImageMapScene extends Phaser.Scene {
     }
 
     if (this.pkg.alternateViewSceneKey) this.createViewToggleButton();
-    this.fieldMenu = new FieldMenu(this, {
-      onOpen: () => this.player.body.setVelocity(0, 0),
-      onRecord: () => this.gameState.saveAdventureRecord({
-        mapId: this.pkg.mapId,
-        sceneKey: MAPS[this.pkg.mapId].sceneKey,
-        resume: { kind: "2d", x: this.player.visual.x, y: this.player.visual.y, facing: this.player.facing },
-      }),
-    });
+    this.fieldMenu = new FieldMenu(this, { onOpen: () => this.player.body.setVelocity(0, 0) });
     // 会話ウィンドウは他の表示物の後に作る(depthで常に最前面)。NPC・宝箱・調べる物のないマップでは作らない。
     this.dialogueBox = this.npcs.length > 0 || this.shootingTriggers.length > 0 || this.interactableObjects.length > 0 || this.chests.length > 0 || storyObjects.length > 0 || this.pkg.entryNarration || data?.shootingReturn ? new DialogueBox(this) : undefined;
     if (this.dialogueBox && storyObjects.length > 0) {
@@ -426,6 +422,12 @@ export class RainlandImageMapScene extends Phaser.Scene {
         })
       : undefined;
     this.actions = new InputSystem(window, document);
+    if (data?.priestRecovery && this.dialogueBox) {
+      this.time.delayedCall(MAP_TRANSITION_FADE_MS + 50, () => {
+        this.player.body.setVelocity(0, 0);
+        this.dialogueBox?.open(PRIEST_RECOVERY_PAGES);
+      });
+    }
     const movePlayer = (): void => {
       // 会話中は主人公を動かさず、決定入力はページ送り専用にする。決定はフレームごとに1回だけ消費するため、
       // 話しかけたZが1ページ目を飛ばす／最終ページを閉じたZが即座に再開する、という二重消費は起きない。
@@ -769,6 +771,17 @@ export class RainlandImageMapScene extends Phaser.Scene {
       )
     );
     if (npc) {
+      if (npc.definition.role === "priest") {
+        this.player.body.setVelocity(0, 0);
+        npc.stop();
+        recordAdventureAtPriest(this.gameState, {
+          mapId: this.pkg.mapId,
+          sceneKey: MAPS[this.pkg.mapId].sceneKey,
+          resume: { kind: "2d", x: this.player.visual.x, y: this.player.visual.y, facing: this.player.facing },
+        });
+        this.dialogueBox.open(PRIEST_RECORD_PAGES);
+        return;
+      }
       const cardBattle = npc.definition.jumpCardBattleId ? getJumpCardBattle(npc.definition.jumpCardBattleId) : undefined;
       if (cardBattle) {
         this.player.body.setVelocity(0, 0);

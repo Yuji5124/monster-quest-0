@@ -8,9 +8,9 @@ import { CharacterProgression, getExperienceToNextLevel } from "../src/systems/C
 import { GameStateRepository } from "../src/systems/GameStateRepository.ts";
 import { PARTY_MEMBER_IDS } from "../src/systems/PartySystem.ts";
 
-test("field menu includes status, items, and the manual adventure record", () => {
-  assert.deepEqual(FIELD_MENU_ITEMS.map((item) => item.id), ["status", "items", "record"]);
-  assert.deepEqual(FIELD_MENU_ITEMS.map((item) => item.label), ["ステータス", "どうぐ", "ぼうけんのきろく"]);
+test("field menu includes status, items, the manual adventure record, and a confirmed return to the title", () => {
+  assert.deepEqual(FIELD_MENU_ITEMS.map((item) => item.id), ["status", "items", "record", "return-title"]);
+  assert.deepEqual(FIELD_MENU_ITEMS.map((item) => item.label), ["ステータス", "どうぐ", "ぼうけんのきろく", "タイトル画面へ"]);
 });
 
 test("every party member has a TEMP_TEST_VALUE stats entry with a positive, consistent shape", () => {

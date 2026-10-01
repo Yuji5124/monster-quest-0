@@ -65,16 +65,18 @@ test("the 1F and 2F stairs lead to each other's spawn", () => {
   assert.ok(MAPS.map_iwayama_cave_1.spawns.fromCaveFloor2);
 });
 
-test("after Tarosa refuses in Zabon, the 1F entry narration recruits him and the 2F exit unlocks Hidden Village", () => {
+test("after Tarosa refuses in Zabon, the 1F entry narration recruits him and the 2F demo endpoint contains Demas", () => {
   const source = readFileSync(path.join(REPO_ROOT, "src/scenes/IwayamaCaveScene.ts"), "utf-8");
   assert.match(source, /requiredFlag: STORY_FLAGS\.tarosaRefusedRequest/);
   assert.match(source, /joinsPartyAs: "tarosa"/);
   assert.match(source, /ひとりでは　ぬけられそうにない/);
   assert.match(source, /タロサが　かけつけた/);
-  const completion = eventsOf("iwayama_cave_2").find((event) => event.id === "event_iwayama_cave_2_inner_point");
-  assert.equal(completion?.consumedFlag, STORY_FLAGS.iwayamaCaveCleared);
-  assert.deepEqual(completion?.commands[0].setFlags, [STORY_FLAGS.iwayamaCaveCleared]);
-  assert.match(completion?.commands[0].pages.join("\n") ?? "", /タロサと　ちからを　あわせ/);
+  const objects = readJson(path.join(REPO_ROOT, "assets/maps/iwayama_cave_2/objects.json")).objects;
+  const demas = objects.find((object) => object.id === "boss_iwayama_demo_demas");
+  assert.deepEqual(
+    { type: demas?.type, monsterId: demas?.monsterId, y: demas?.y, victoryFlag: demas?.victoryFlag },
+    { type: "boss", monsterId: "demas", y: 252, victoryFlag: "boss.demo_iwayama_demas_defeated" },
+  );
 });
 
 test("no spawn's Player body starts inside an event zone (no instant re-trigger)", () => {

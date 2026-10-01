@@ -1,4 +1,4 @@
-export type FieldMenuItemId = "status" | "items" | "record";
+export type FieldMenuItemId = "status" | "items" | "record" | "return-title";
 
 export interface FieldMenuItem {
   readonly id: FieldMenuItemId;
@@ -13,4 +13,5 @@ export const FIELD_MENU_ITEMS: readonly FieldMenuItem[] = [
   { id: "status", label: "ステータス" },
   { id: "items", label: "どうぐ" },
   { id: "record", label: "ぼうけんのきろく" },
+  { id: "return-title", label: "タイトル画面へ" },
 ] as const;

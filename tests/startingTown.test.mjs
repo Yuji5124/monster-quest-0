@@ -120,20 +120,23 @@ test("starting-town collision mask keeps the plaza, west exit and every building
   assert.equal(isBlocked(1350, 200), true, "the river must stay blocked");
 });
 
-test("starting-town red points are seven data-driven villagers: four fixed shopkeepers and three local walkers, plus the one-time tower elder", () => {
+test("starting-town has a fixed priest, four shopkeepers, two local walkers, and the one-time tower elder", () => {
   const town = MAPS.map_02_starting_town;
   const shopkeepers = town.npcs.filter((npc) => npc.role === "shopkeeper");
   const walkers = town.npcs.filter((npc) => npc.role === "resident");
+  const priests = town.npcs.filter((npc) => npc.role === "priest");
   const storyNpcs = town.npcs.filter((npc) => npc.role === "story");
   assert.equal(town.npcs.length, 8);
   assert.equal(shopkeepers.length, 4);
-  assert.equal(walkers.length, 3);
-  assert.deepEqual(storyNpcs.map((npc) => npc.id), ["npc_start_town_tower_elder"], "the tower elder is the only story NPC outside the seven red-point villagers");
+  assert.equal(walkers.length, 2);
+  assert.deepEqual(priests.map((npc) => npc.id), ["npc_start_town_priest"]);
+  assert.deepEqual(storyNpcs.map((npc) => npc.id), ["npc_start_town_tower_elder"]);
   assert.equal(shopkeepers.every((npc) => !npc.movement), true, "shopkeepers must stay at their storefronts");
   assert.equal(walkers.every((npc) => npc.movement?.kind === "wander"), true, "non-shop red points must wander");
   assert.equal(town.npcs.every((npc) => npc.spriteId), true, "every town villager must select an asset-backed sprite");
   assert.deepEqual(town.spawns.fromField, town.spawns.fromWorldMap, "Field and world-map arrivals share the green south entrance");
   assert.deepEqual(town.spawns.fromWorldMap, { x: 690, y: 1030, facing: "up" });
+  assert.equal(town.spawns.priest.facing, "up", "defeated players return facing the priest");
 });
 
 test("starting-town villagers' feet bodies begin on walkable ground", () => {

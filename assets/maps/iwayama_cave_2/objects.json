@@ -1,4 +1,18 @@
 {
   "formatVersion": 1,
-  "objects": []
+  "objects": [
+    {
+      "id": "boss_iwayama_demo_demas",
+      "type": "boss",
+      "label": "デーマス",
+      "x": 438,
+      "y": 252,
+      "width": 148,
+      "height": 100,
+      "blocking": true,
+      "monsterId": "demas",
+      "victoryFlag": "boss.demo_iwayama_demas_defeated",
+      "unlockFlag": "story.demo_iwayama_complete"
+    }
+  ]
 }

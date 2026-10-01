@@ -26,6 +26,7 @@ import { startStartingTownPresentation } from "../systems/StartingTownPresentati
 import { PartyFollowers } from "../systems/PartyFollowers.ts";
 import { partySystem } from "../systems/PartySystem.ts";
 import { GameStateRepository } from "../systems/GameStateRepository.ts";
+import { PRIEST_RECORD_PAGES, PRIEST_RECOVERY_PAGES, recordAdventureAtPriest } from "../systems/PriestService.ts";
 import { inventory } from "../systems/Inventory.ts";
 import { canInteract } from "../systems/Interaction.ts";
 import { beginMapTransition } from "../systems/MapTransition.ts";
@@ -67,6 +68,8 @@ export interface StartingTownSceneData {
   readonly spawnY?: number;
   readonly spawnFacing?: Facing;
   readonly battleEventReturn?: boolean;
+  /** 通常戦闘で全滅した後、僧侶の前で回復会話を始める。 */
+  readonly priestRecovery?: boolean;
 }
 
 /**
@@ -212,14 +215,7 @@ export class StartingTownScene extends Phaser.Scene {
 
     // 会話ウィンドウは他の表示物の後に作り、常に最前面へ描画する。
     this.dialogueBox = new DialogueBox(this);
-    this.fieldMenu = new FieldMenu(this, {
-      onOpen: () => this.player.body.setVelocity(0, 0),
-      onRecord: () => this.gameState.saveAdventureRecord({
-        mapId: MAP_ID,
-        sceneKey: MAPS[MAP_ID].sceneKey,
-        resume: { kind: "2d", x: this.player.visual.x, y: this.player.visual.y, facing: this.player.facing },
-      }),
-    });
+    this.fieldMenu = new FieldMenu(this, { onOpen: () => this.player.body.setVelocity(0, 0) });
     // やどや・ぶきや・どうぐやの店主は、話しかけると店の窓を開く。「はなす」で通常の会話へ移る。
     this.shopWindow = new ShopWindow(this, (npcId) => {
       const dialogue = getDialogue(MAPS[MAP_ID].npcs.find((npc) => npc.id === npcId)?.dialogueId ?? "");
@@ -248,6 +244,12 @@ export class StartingTownScene extends Phaser.Scene {
     }
 
     this.actions = new InputSystem(window, document);
+    if (data?.priestRecovery) {
+      this.time.delayedCall(MAP_TRANSITION_FADE_MS + 50, () => {
+        this.player.body.setVelocity(0, 0);
+        this.dialogueBox.open(PRIEST_RECOVERY_PAGES);
+      });
+    }
     // 会話中は主人公を動かさず、決定入力はページ送り専用にする。
     // consumePressedは1フレームで1回だけ消費するため、「話しかけたZが1ページ目も飛ばす」
     // 「最終ページを閉じたZが即座に再度開始する」といった二重消費は起きない。
@@ -354,6 +356,17 @@ export class StartingTownScene extends Phaser.Scene {
       )
     );
     if (!npc) return;
+    if (npc.definition.role === "priest") {
+      this.player.body.setVelocity(0, 0);
+      npc.stop();
+      recordAdventureAtPriest(this.gameState, {
+        mapId: MAP_ID,
+        sceneKey: MAPS[MAP_ID].sceneKey,
+        resume: { kind: "2d", x: this.player.visual.x, y: this.player.visual.y, facing: this.player.facing },
+      });
+      this.dialogueBox.open(PRIEST_RECORD_PAGES);
+      return;
+    }
     const shop = getShop(npc.definition.id);
     if (shop) {
       this.player.body.setVelocity(0, 0);

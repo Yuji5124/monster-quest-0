@@ -85,9 +85,9 @@ export interface NpcDefinition {
   readonly characterId?: StoryCharacterId;
   /**
    * Shopkeepers stay at their assigned storefront; residents can wander locally;
-   * story NPCs stand still and belong to a one-time event (not one of the red-point villagers).
+   * priests are fixed save/recovery NPCs; story NPCs stand still and belong to a one-time event.
    */
-  readonly role?: "shopkeeper" | "resident" | "story";
+  readonly role?: "shopkeeper" | "resident" | "priest" | "story";
   /** 一度きりの会話イベントで去るNPC。このフラグが保存済みなら、Sceneは最初からこのNPCを生成しない。 */
   readonly departedFlag?: string;
   /** The NPC appears only once this saved story flag is present. */
@@ -215,6 +215,8 @@ export const MAPS: Record<MapId, MapDefinition> = {
       // 全建物の入口が下辺(南向き)にあるため、道側(南)へ出て下向きに立つ。
       // y座標は各建物のdoor zoneの下端+Player半分の高さ(21px)+余裕を確保し、再トリガーを防ぐ。
       spawn_church_front: { x: 725, y: 215, facing: "down" },
+      // 僧侶の正面。全滅後はここへ戻り、上向きで僧侶へ話しかけられる。
+      priest: { x: 718, y: 270, facing: "up" },
       spawn_item_shop_front: { x: 415, y: 425, facing: "down" },
       // 判定を24×24・8pxセルへ細かくした際、旧(1025,445)は壁に1〜2px足りず体が入らなかったため、少し南西へずらした。
       spawn_weapon_shop_front: { x: 1015, y: 455, facing: "down" },
@@ -265,15 +267,14 @@ export const MAPS: Record<MapId, MapDefinition> = {
         role: "shopkeeper",
       },
       {
-        id: "npc_start_town_church_walker",
+        id: "npc_start_town_priest",
         mapId: "map_02_starting_town",
         // Church stairs, just below the doorway so the full feet collider is on the path.
         position: { x: 718, y: 215 },
         facing: "down",
-        dialogueId: "npc_start_town_church_walker",
-        spriteId: "villager_05",
-        role: "resident",
-        movement: { kind: "wander", radius: 16, speed: 34, minPauseMs: 700, maxPauseMs: 1800 },
+        dialogueId: "npc_start_town_priest",
+        spriteId: "villager_17",
+        role: "priest",
       },
       {
         id: "npc_start_town_plaza_walker",
@@ -387,11 +388,14 @@ export const MAPS: Record<MapId, MapDefinition> = {
       // WorldMapSceneから戻る正式spawn。北門(唯一の出入口)を入ってすぐの位置、下向き。
       // y=150: 北門Event zone(y:0-110)とPlayer body(高さ42)が重ならないよう十分離す。
       fromWorldMap: { x: 710, y: 150, facing: "down" },
+      // 村の僧侶の正面。全滅後の回復メッセージはここで表示する。
+      priest: { x: 800, y: 340, facing: "up" },
     },
     // 正式出口は assets/maps/bie_village/events.json の北門Eventで管理する。
     exits: [],
     // 2026-09-26ユーザー指示: No.02と同じルール(固定の村人は家のドアの真ん前、ほかは周辺を歩く)。
-    // docs/NPC/02_bie_no_mura.mdの目安6人。固定4人は、ドア前から道が続いている水車小屋／店先の日よけ／
+    // docs/NPC/02_bie_no_mura.mdの固定4人＋歩く2人に、旅の記録を受け持つ僧侶1人を加える。
+    // 固定4人は、ドア前から道が続いている水車小屋／店先の日よけ／
     // 北東の家／東の家に立たせる。西の家と木こりの家はドア前が通行不可で話しかけられないため置かない。
     // 足元Bodyの下端をドア前の通行可能セルの上端+2pxに合わせる(tests/bieVillage.test.mjs)。
     // 木こり救出イベント・会話の正式本文はTBD(台詞はdata/dialogues.tsの初稿)。
@@ -406,6 +410,8 @@ export const MAPS: Record<MapId, MapDefinition> = {
       { id: "npc_bie_village_neighbor", mapId: "map_03_bie_village", position: { x: 1214, y: 565 }, facing: "down", dialogueId: "npc_bie_village_neighbor", spriteId: "villager_04", role: "resident" },
       { id: "npc_bie_village_tree_walker", mapId: "map_03_bie_village", position: { x: 668, y: 524 }, facing: "right", dialogueId: "npc_bie_village_tree_walker", spriteId: "villager_06", role: "resident", movement: { kind: "wander", radius: 24, speed: 32, minPauseMs: 800, maxPauseMs: 2000 } },
       { id: "npc_bie_village_path_walker", mapId: "map_03_bie_village", position: { x: 1052, y: 540 }, facing: "left", dialogueId: "npc_bie_village_path_walker", spriteId: "villager_07", role: "resident", movement: { kind: "wander", radius: 24, speed: 36, minPauseMs: 600, maxPauseMs: 1700 } },
+      // 村の中央の通路。僧侶は旅の記録と、全滅時の回復を受け持つ固定NPC。
+      { id: "npc_bie_village_priest", mapId: "map_03_bie_village", position: { x: 800, y: 280 }, facing: "down", dialogueId: "npc_bie_village_priest", spriteId: "villager_17", role: "priest" },
     ],
     buildings: [],
   },
@@ -455,6 +461,8 @@ export const MAPS: Record<MapId, MapDefinition> = {
       fromWorldMap: { x: 728, y: 985, facing: "up" },
       // レインランドじょう(No.05)から戻る位置。北の城門前の石段の上、下向き。城門Event zone(y:128-158)と重ならない。
       fromCastle: { x: 727, y: 200, facing: "down" },
+      // 城下町の僧侶の正面。全滅後は城門前ではなくここへ戻る。
+      priest: { x: 240, y: 335, facing: "up" },
     },
     // 正式出口は assets/maps/rainland_castle_town/events.json の南門Event(世界地図へ)と北の城門Event(レインランドじょうへ)で管理する。
     // 西/東の橋の先は接続先未定の行き止まりとして残している。
@@ -462,7 +470,7 @@ export const MAPS: Record<MapId, MapDefinition> = {
     // 2026-09-26ユーザー指示: ほかの村と同じルール(固定の村人は家・店の真ん前、ほかは周辺を歩く)。NPC_SPEC.mdの目安8人。
     // 固定5人: ドア前まで歩いて行ける家3軒(北西・北東・中西)と市場の屋台2つの前。ほかの家はドア前の庭が通行不可のため置かない。
     // 歩く3人: 噴水の北・南の大通り・東の通り。桟橋は通行不可のため置かない。
-    // 足元Bodyの下端をドア前の通行可能セルの上端+2pxに合わせる(tests/rainlandCastleTownNpcs.test.mjs)。台詞はdata/dialogues.tsの初稿。
+    // 僧侶1人とプリンカード対戦者1人は生活NPC8人とは別枠。台詞はdata/dialogues.tsの初稿。
     npcs: [
       { id: "npc_rainland_town_nw_householder", mapId: "map_rainland_castle_town", position: { x: 403, y: 317 }, facing: "down", dialogueId: "npc_rainland_town_nw_householder", spriteId: "villager_09", role: "resident" },
       { id: "npc_rainland_town_ne_householder", mapId: "map_rainland_castle_town", position: { x: 1028, y: 312 }, facing: "down", dialogueId: "npc_rainland_town_ne_householder", spriteId: "villager_03", role: "resident" },
@@ -473,7 +481,9 @@ export const MAPS: Record<MapId, MapDefinition> = {
       { id: "npc_rainland_town_avenue_walker", mapId: "map_rainland_castle_town", position: { x: 730, y: 740 }, facing: "up", dialogueId: "npc_rainland_town_avenue_walker", spriteId: "villager_08", role: "resident", movement: { kind: "wander", radius: 28, speed: 36, minPauseMs: 600, maxPauseMs: 1700 } },
       { id: "npc_rainland_town_east_walker", mapId: "map_rainland_castle_town", position: { x: 1190, y: 360 }, facing: "left", dialogueId: "npc_rainland_town_east_walker", spriteId: "villager_07", role: "resident", movement: { kind: "wander", radius: 20, speed: 32, minPauseMs: 800, maxPauseMs: 2000 } },
       // ユーザー指定: プリンカードを持つ相手との1回勝負。噴水西の広場は固定NPCが安全に話せる石畳。
-      { id: "npc_rainland_town_purin_card_battler", mapId: "map_rainland_castle_town", position: { x: 560, y: 420 }, facing: "down", dialogueId: "npc_rainland_town_purin_card_battler", jumpCardBattleId: "rainland_purin_challenge", spriteId: "villager_04", role: "resident" },
+      { id: "npc_rainland_town_purin_card_battler", mapId: "map_rainland_castle_town", position: { x: 560, y: 420 }, facing: "down", dialogueId: "npc_rainland_town_purin_card_battler", spriteId: "villager_04", role: "resident" },
+      // 城門前の広場にいる僧侶。旅の記録と、この地域の通常戦闘の回復を受け持つ。
+      { id: "npc_rainland_town_priest", mapId: "map_rainland_castle_town", position: { x: 240, y: 280 }, facing: "down", dialogueId: "npc_rainland_town_priest", spriteId: "villager_17", role: "priest" },
     ],
     buildings: [],
   },
@@ -525,21 +535,26 @@ export const MAPS: Record<MapId, MapDefinition> = {
     spawns: {
       // WorldMapSceneから入る正式spawn。北東の山道(北のレインランド方面から来る道)の内側、下向き。北口Event zone(y:0-24)と重ならない。
       fromWorldMap: { x: 1125, y: 72, facing: "down" },
+      // 広場の守り神の柱の南。全滅後も、僧侶の正面で上向きに話しかけられる。
+      priest: { x: 716, y: 650, facing: "up" },
     },
     // 正式出口は assets/maps/zabon_village/events.json の北口Event(世界地図へ)で管理する。
     // 西の吊り橋・南東の道・桟橋の先と北東のどうくつは接続先未定(TBD_REGISTRY.md)。
     exits: [],
     // 2026-09-26ユーザー指示: No.02・ビーエのむらと同じルール(固定の村人は家のドアの真ん前、ほかは周辺を歩く)。
-    // NPC_SPEC.mdの目安6人: 固定4人(あつまりの大きな家・西のかやぶきの家・東の家・南の家)＋歩く2人(広場の柱の南・的場への道)。
+    // NPC_SPEC.mdの生活住民目安6人: 固定4人(あつまりの大きな家・西のかやぶきの家・東の家・南の家)＋歩く2人(広場の柱の南・的場への道)。
+    // 2026-10-01ユーザー指定: 固定住民3人は生業と兼業する形で、あつまりの家=やどや、西のかやぶきの家=ぶきや、
+    // 東の日よけ家=どうぐやを受け持つ。広場の守り神の柱の前には、旅の記録を受け持つ僧侶を別枠で置く。
     // 足元Bodyの下端をドア前の通行可能セルの上端+2pxに合わせる(tests/zabonVillage.test.mjs)。台詞はdata/dialogues.tsの初稿。
     // タロサの話題は1人だけに留める(STORY_FLOW.md「NPC全員がタロサを話題にする構成にはしない」)。
     npcs: [
-      { id: "npc_zabon_village_elder", mapId: "map_zabon_village", position: { x: 693, y: 357 }, facing: "down", dialogueId: "npc_zabon_village_elder", spriteId: "villager_03", role: "resident" },
+      { id: "npc_zabon_village_elder", mapId: "map_zabon_village", position: { x: 693, y: 357 }, facing: "down", dialogueId: "npc_zabon_village_elder", spriteId: "villager_03", role: "shopkeeper" },
       // かやぶきの家は、道側(右)の石段のドア前に立たせる。
-      { id: "npc_zabon_village_roof_mender", mapId: "map_zabon_village", position: { x: 341, y: 421 }, facing: "down", dialogueId: "npc_zabon_village_roof_mender", spriteId: "villager_02", role: "resident" },
-      { id: "npc_zabon_village_tanner", mapId: "map_zabon_village", position: { x: 952, y: 517 }, facing: "down", dialogueId: "npc_zabon_village_tanner", spriteId: "villager_01", role: "resident" },
+      { id: "npc_zabon_village_roof_mender", mapId: "map_zabon_village", position: { x: 341, y: 421 }, facing: "down", dialogueId: "npc_zabon_village_roof_mender", spriteId: "villager_02", role: "shopkeeper" },
+      { id: "npc_zabon_village_tanner", mapId: "map_zabon_village", position: { x: 952, y: 517 }, facing: "down", dialogueId: "npc_zabon_village_tanner", spriteId: "villager_01", role: "shopkeeper" },
       { id: "npc_zabon_village_mother", mapId: "map_zabon_village", position: { x: 512, y: 741 }, facing: "down", dialogueId: "npc_zabon_village_mother", spriteId: "villager_05", role: "resident" },
-      { id: "npc_zabon_village_totem_walker", mapId: "map_zabon_village", position: { x: 716, y: 636 }, facing: "up", dialogueId: "npc_zabon_village_totem_walker", spriteId: "villager_10", role: "resident", movement: { kind: "wander", radius: 28, speed: 32, minPauseMs: 800, maxPauseMs: 2000 } },
+      { id: "npc_zabon_village_priest", mapId: "map_zabon_village", position: { x: 716, y: 590 }, facing: "down", dialogueId: "npc_zabon_village_priest", spriteId: "villager_17", role: "priest" },
+      { id: "npc_zabon_village_totem_walker", mapId: "map_zabon_village", position: { x: 716, y: 636 }, facing: "up", dialogueId: "npc_zabon_village_totem_walker", spriteId: "villager_10", role: "resident", movement: { kind: "wander", radius: 20, speed: 32, minPauseMs: 800, maxPauseMs: 2000 } },
       { id: "npc_zabon_village_range_walker", mapId: "map_zabon_village", position: { x: 1032, y: 372 }, facing: "right", dialogueId: "npc_zabon_village_range_walker", spriteId: "villager_08", role: "resident", movement: { kind: "wander", radius: 28, speed: 36, minPauseMs: 600, maxPauseMs: 1700 } },
       // 王への報告後だけ的場の手前にいる。村人6人とは別の本編NPCで、救援後はパーティにいるため村には残らない。
       { id: "npc_zabon_tarosa", mapId: "map_zabon_village", position: { x: 1188, y: 522 }, facing: "down", dialogueId: "npc_zabon_tarosa", characterId: "tarosa", role: "story", requiredFlag: STORY_FLAGS.majinCaveReportedToKing, departedFlag: STORY_FLAGS.tarosaJoinedAtIwayama },

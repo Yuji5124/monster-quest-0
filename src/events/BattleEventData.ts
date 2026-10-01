@@ -18,6 +18,11 @@ export interface BattleDialogueEvent {
   readonly monsterDisplayName?: string;
   readonly returnSceneKey: string;
   readonly returnSpawnId: string;
+  /**
+   * 通常戦闘は全滅時に地域の僧侶へ戻る。物語上の特殊敗北だけは専用演出側で
+   * "special" を指定し、この共通復帰を使わない。
+   */
+  readonly defeatRoute?: "priest" | "special";
   /** Persistent flag committed by BattleScene only on a victory. */
   readonly victoryFlag?: string;
   /** Additional persistent flags committed with victory only (for a boss's world-state unlock, etc.). */

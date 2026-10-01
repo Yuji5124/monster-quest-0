@@ -18,7 +18,6 @@ import { FieldMenu } from "../ui/FieldMenu.ts";
 import { DISPLAY } from "../config/display.ts";
 import { OPENING_CAMPFIRE, OPENING_CAMPFIRE_NARRATION } from "../config/openingCampfire.ts";
 import { openingCampfireAudio } from "../systems/OpeningCampfireAudio.ts";
-import { GameStateRepository } from "../systems/GameStateRepository.ts";
 import type { Facing } from "../systems/PlayerMovement.ts";
 
 const MAP_ID = "map_01_starting_place";
@@ -66,7 +65,6 @@ export class StartingPlaceScene extends Phaser.Scene {
   private openingInputLocked = false;
   private openingAmbienceActive = false;
   private openingOverlays: Phaser.GameObjects.GameObject[] = [];
-  private readonly gameState = new GameStateRepository();
 
   constructor(sceneKey = "StartingPlaceScene") {
     super({ key: sceneKey, physics: { arcade: { gravity: { x: 0, y: 0 } } } });
@@ -171,14 +169,7 @@ export class StartingPlaceScene extends Phaser.Scene {
       }).setScrollFactor(0).setDepth(2000);
     }
 
-    this.fieldMenu = new FieldMenu(this, {
-      onOpen: () => this.player.body.setVelocity(0, 0),
-      onRecord: () => this.gameState.saveAdventureRecord({
-        mapId: MAP_ID,
-        sceneKey: MAPS[MAP_ID].sceneKey,
-        resume: { kind: "2d", x: this.player.visual.x, y: this.player.visual.y, facing: this.player.facing },
-      }),
-    });
+    this.fieldMenu = new FieldMenu(this, { onOpen: () => this.player.body.setVelocity(0, 0) });
     this.actions = new InputSystem(window, document);
     if (this.openingInputLocked) this.actions.setLocked(true);
     const movePlayer = (): void => {

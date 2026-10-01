@@ -1,7 +1,5 @@
 import type { BattleCombatantDefinition } from "./BattleSystem.ts";
 import { getCharacterBaseStatsAtLevel, getLearnedMagicAtLevel } from "../config/characterGrowth.ts";
-import { DEBUG_PARTY_LEVEL, DEBUG_PARTY_MEMBER_IDS } from "../config/debugMode.ts";
-import { MAX_CHARACTER_LEVEL } from "../data/expTable.ts";
 import { getEquippedWeapon, getWeaponById } from "../data/weapons.ts";
 import type { PartyMemberId } from "../systems/PartySystem.ts";
 
@@ -30,9 +28,8 @@ export function buildPartyCombatant(
   level: number,
   weaponIdOverride?: string,
   live: LivePartyState = {},
-  maxLevel: number = MAX_CHARACTER_LEVEL,
 ): BattleCombatantDefinition {
-  const base = getCharacterBaseStatsAtLevel(memberId, level, maxLevel);
+  const base = getCharacterBaseStatsAtLevel(memberId, level);
   const weapon = (weaponIdOverride && getWeaponById(memberId, weaponIdOverride)) || getEquippedWeapon(memberId, level, live.equippedWeaponId);
   return {
     id: memberId,
@@ -47,15 +44,6 @@ export function buildPartyCombatant(
     initialHp: live.hp,
     initialMp: live.mp,
   };
-}
-
-/**
- * DEBUG_MODE専用の戦闘編成。加入状況・セーブ(レベル/購入装備/持ち越しHP・MP)を一切見ず、
- * 主人公一人をLv30・全快・レベル基準の最強自動装備で組み立てる。
- * Lv30は正式な成長上限Lv25の外側にあるDEBUG_ONLY値(TEMP_TEST_VALUEカーブの直線延長)。
- */
-export function buildDebugParty(level: number = DEBUG_PARTY_LEVEL): BattleCombatantDefinition[] {
-  return DEBUG_PARTY_MEMBER_IDS.map((id) => buildPartyCombatant(id, level, undefined, {}, Math.max(level, MAX_CHARACTER_LEVEL)));
 }
 
 export function buildParty(levels: Readonly<Partial<Record<PartyMemberId, number>>>): BattleCombatantDefinition[] {

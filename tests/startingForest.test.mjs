@@ -65,7 +65,7 @@ test("starting-forest package routes its north archway to the world map and keep
     label: "えりまきとかげ",
     monsterId: "erimaki_hebi",
     victoryFlag: "boss.starting_forest_erimaki_tokage_defeated",
-    unlockFlag: "story.rainland_castle_town_unlocked",
+    unlockFlag: "boss.starting_forest_erimaki_tokage_defeated",
   });
   const chest = objects.find((object) => object.id === "chest_starting_forest_kaifukuyaku");
   assert.deepEqual(chest && {
@@ -119,6 +119,11 @@ test("starting-forest south edge of the trail is a second world-map exit that do
   assert.ok(walkable.length > 0, "the trail must reach the bottom edge of the mask");
   assert.ok(south.bounds.x <= walkable[0] + manifest.collisionCellSize && south.bounds.x + south.bounds.width >= walkable[walkable.length - 1],
     "the south exit zone must span the walkable trail at the bottom edge");
+});
+
+test("leaving Bie Forest unlocks Bie Village regardless of which world-map exit is used", () => {
+  const source = readFileSync(path.join(REPO_ROOT, "src/scenes/StartingForestScene.ts"), "utf-8");
+  assert.match(source, /command\.type === "world-map"[\s\S]*?setFlag\(STORY_FLAGS\.bieVillageUnlocked\)/);
 });
 
 test("starting-forest collision mask keeps the south gate and north archway walkable and reaches both map edges", () => {

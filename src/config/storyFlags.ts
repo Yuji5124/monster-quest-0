@@ -5,10 +5,14 @@
 export const STORY_FLAGS = {
   /** No.02ぶきやの店主からビーエのもりの場所を聞いた。世界地図でビーエのもりが選べるようになる。 */
   bieForestUnlocked: "story.bie_forest_unlocked",
+  /** No.03ビーエのもりから世界地図へ出た。世界地図でビーエのむらが選べるようになる。 */
+  bieVillageUnlocked: "story.bie_village_unlocked",
   /** No.04ビーエのむらで、レインランドじょうへ行くにはレインランドのもりを通ると聞いた。世界地図でレインランドのもりが選べるようになる。 */
   rainlandForestUnlocked: "story.rainland_forest_unlocked",
-  /** No.05レインランドのもりの奥の木こりから、レインランドじょうへの道を聞いた。世界地図でレインランドじょうかまちが選べるようになる(ビーエのもりのボス撃破でも同じフラグが立つ)。 */
+  /** No.05レインランドのもりで人を助け、レインランドじょうへの道を聞いた。世界地図でレインランドじょうかまちが選べるようになる。 */
   rainlandCastleTownUnlocked: "story.rainland_castle_town_unlocked",
+  /** No.06レインランドじょうで王と初めて話した。世界地図でNo.07まじんのどうくつが選べるようになる。 */
+  majinCaveUnlocked: "story.majin_cave_unlocked",
   /** 不思議なとうの存在が世界地図に現れた(？？？として移動可能)。初回到達で story.mysterious_tower_discovered へ進む。 */
   mysteriousTowerRevealed: "story.mysterious_tower_revealed",
   /** No.02で不思議なとうのおじいさんと話した。一度きりで、以後おじいさんは町にいない。 */

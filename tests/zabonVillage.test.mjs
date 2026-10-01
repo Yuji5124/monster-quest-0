@@ -5,6 +5,7 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { PLAYER } from "../src/config/player.ts";
 import { MAPS } from "../src/config/maps.ts";
+import { getShop } from "../src/config/shops.ts";
 import { inflateSync } from "node:zlib";
 import { INTERACTION_REACH } from "../src/config/interaction.ts";
 import { VILLAGER_SPRITES } from "../src/config/villagerSprites.ts";
@@ -62,8 +63,8 @@ test("the fromWorldMap spawn's Player body clears the north exit zone (no instan
   assert.equal(overlaps, false);
 });
 
-test("zabon-village has six data-driven villagers: four fixed at doors and two local walkers", () => {
-  const villagers = MAPS.map_zabon_village.npcs.filter((npc) => !npc.characterId);
+test("zabon-village has six residents: four fixed at doors and two local walkers", () => {
+  const villagers = MAPS.map_zabon_village.npcs.filter((npc) => !npc.characterId && npc.role !== "priest");
   assert.equal(villagers.length, 6, "NPC_SPEC.md: 目安6人");
   assert.equal(villagers.filter((npc) => !npc.movement).length, 4);
   assert.equal(villagers.filter((npc) => npc.movement?.kind === "wander").length, 2);
@@ -79,6 +80,16 @@ test("zabon-village has six data-driven villagers: four fixed at doors and two l
     if (dialogue.pages.some((page) => page.includes("タロサ"))) tarosaMentions += 1;
   }
   assert.ok(tarosaMentions <= 1, "not every villager talks about タロサ");
+});
+
+test("zabon-village has a save priest at the guardian pillar and its three storefront services", () => {
+  const map = MAPS.map_zabon_village;
+  const priest = map.npcs.find((npc) => npc.id === "npc_zabon_village_priest");
+  assert.deepEqual([priest?.role, priest?.facing, priest?.position], ["priest", "down", { x: 716, y: 590 }]);
+  assert.deepEqual(map.spawns.priest, { x: 716, y: 650, facing: "up" });
+  assert.equal(getShop("npc_zabon_village_elder")?.kind, "inn");
+  assert.equal(getShop("npc_zabon_village_roof_mender")?.kind, "weapon");
+  assert.equal(getShop("npc_zabon_village_tanner")?.kind, "item");
 });
 
 test("after the Majin report, Tarosa waits at the range, refuses once, then leaves to rescue the hero", () => {

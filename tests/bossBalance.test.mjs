@@ -56,7 +56,16 @@ test("まじん: periodic ヒート suppresses the regen long enough for melee t
   assert.ok(heatCasts <= Math.floor(DEV_MAJIN_CAVE_BALANCE.maxMp / DEV_MAJIN_CAVE_BALANCE.heatMpCost) + 1, "must stay within a plausible MP budget");
 });
 
-// --- デーマス (No.16, Lv15): ミラーが攻略軸。実Lv15成長カーブでも機能することを確認 -----------
+// --- デーマス (Lv22前後): 主人公・タロサ2人で攻略可能 -----------------------------------------
+
+test("デーマス: Lv22の主人公・タロサは100乱数シードで攻略可能", () => {
+  for (let seed = 1; seed <= 100; seed += 1) {
+    const party = [buildPartyCombatant("hero", 22), buildPartyCombatant("tarosa", 22)];
+    const battle = new BattleSystem(party, DEV_BATTLE_MONSTERS.demas, makeDeterministicRandom(seed));
+    const result = simulateBattle(battle, { maxConfirms: 10_000 });
+    assert.equal(result.outcome, "VICTORY", `seed ${seed} must be winnable at Lv22`);
+  }
+});
 
 test("デーマス: with the real Lv15 growth-curve party, mirei's ミラー reflects ダイダイン instead of hurting her", () => {
   const demas = DEV_BATTLE_MONSTERS.demas;

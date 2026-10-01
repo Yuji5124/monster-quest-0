@@ -10,6 +10,10 @@ import { DIALOGUES } from "../src/data/dialogues.ts";
 import { MAPS } from "../src/config/maps.ts";
 
 const demas = DEV_BATTLE_MONSTERS.demas;
+// Isolated mechanics fixture. Production Demas balance is covered by the Lv22
+// two-person test in bossBalance.test.mjs; these assertions keep the original
+// short Mirror/Daidain sequence readable.
+const demasMechanics = { ...demas, maxHp: 360, attack: 42, defense: 12, maxMp: 60 };
 // これらのテストはだいヒット導入前の正確なHP計算式を検証するため、だいヒットが絶対に
 // 発生しない乱数(1はどのTEMP_TEST_VALUE発生率よりも大きい)を明示的に注入する。
 const NO_DAI_HIT = () => 1;
@@ -30,7 +34,7 @@ test("Demas query and existing asset paths resolve; prototype names are invalid"
 });
 
 test("Demas cycles physical attack, Mirror, Daidain with MP consumption", () => {
-  const battle = new BattleSystem(demas.devPlayer, demas, NO_DAI_HIT);
+  const battle = new BattleSystem(demas.devPlayer, demasMechanics, NO_DAI_HIT);
   let s = turn(battle);
   assert.equal(s.player.hp, 156);
   assert.equal(s.enemy.mp, 60);
@@ -45,7 +49,7 @@ test("Demas cycles physical attack, Mirror, Daidain with MP consumption", () => 
 });
 
 test("player Mirror reflects Daidain back even while enemy Mirror is active", () => {
-  const battle = new BattleSystem(demas.devPlayer, demas, NO_DAI_HIT);
+  const battle = new BattleSystem(demas.devPlayer, demasMechanics, NO_DAI_HIT);
   turn(battle);
   turn(battle);
   const before = battle.getSnapshot();
@@ -60,7 +64,7 @@ test("player Mirror reflects Daidain back even while enemy Mirror is active", ()
 });
 
 test("using the reflection pattern wins with shipped test stats; ordinary attacks can lose", () => {
-  const battle = new BattleSystem(demas.devPlayer, demas, NO_DAI_HIT);
+  const battle = new BattleSystem(demas.devPlayer, demasMechanics, NO_DAI_HIT);
   let s;
   for (let i = 0; i < 10; i++) {
     s = turn(battle, i % 3 === 2 ? "magic" : "fight", DEV_MIRROR.id);
@@ -70,14 +74,14 @@ test("using the reflection pattern wins with shipped test stats; ordinary attack
   assert.ok(s.player.hp > 0);
   assert.equal(s.enemy.hp, 0);
   assert.match(s.message, /デーマスを　たおした/);
-  const defeat = new BattleSystem(demas.devPlayer, demas, NO_DAI_HIT);
+  const defeat = new BattleSystem(demas.devPlayer, demasMechanics, NO_DAI_HIT);
   for (let i = 0; i < 10; i++) turn(defeat);
   assert.equal(defeat.getSnapshot().state, "DEFEAT");
   assert.equal(defeat.getSnapshot().player.hp, 0);
 });
 
 test("lethal reflection waits for acknowledgement then wins without another attack", () => {
-  const battle = new BattleSystem(demas.devPlayer, { ...demas, maxHp: 100, enemyActions: [DEV_DAIDAIN] }, NO_DAI_HIT);
+  const battle = new BattleSystem(demas.devPlayer, { ...demasMechanics, maxHp: 100, enemyActions: [DEV_DAIDAIN] }, NO_DAI_HIT);
   battle.confirm("magic", DEV_MIRROR.id);
   const reflected = battle.confirm();
   assert.equal(reflected.state, "ENEMY_ACTION");
@@ -89,7 +93,7 @@ test("lethal reflection waits for acknowledgement then wins without another atta
 });
 
 test("boss escape fails and consumes a turn; ordinary enemy escape terminates safely", () => {
-  const battle = new BattleSystem(demas.devPlayer, demas, NO_DAI_HIT);
+  const battle = new BattleSystem(demas.devPlayer, demasMechanics, NO_DAI_HIT);
   assert.match(battle.confirm("flee").message, /にげられない/);
   assert.equal(battle.confirm().player.hp, 156);
   const normal = new BattleSystem(demas.devPlayer, DEV_BATTLE_MONSTERS["003"], NO_DAI_HIT);
@@ -98,7 +102,7 @@ test("boss escape fails and consumes a turn; ordinary enemy escape terminates sa
 });
 
 test("insufficient MP, unknown magic and empty items do not spend a turn; enemy falls back to attack", () => {
-  const battle = new BattleSystem({ ...demas.devPlayer, maxMp: 0 }, { ...demas, maxMp: 0, enemyActions: [DEV_DAIDAIN] }, NO_DAI_HIT);
+  const battle = new BattleSystem({ ...demas.devPlayer, maxMp: 0 }, { ...demasMechanics, maxMp: 0, enemyActions: [DEV_DAIDAIN] }, NO_DAI_HIT);
   assert.match(battle.confirm("magic", DEV_MIRROR.id).message, /MP/);
   assert.equal(battle.getSnapshot().state, "COMMAND");
   assert.match(battle.confirm("magic", "unknown").message, /まほうがない/);
@@ -121,21 +125,21 @@ test("generic reflection is single-use, bypassable, and also applies to player m
   assert.equal(target.status.mirror, 0);
   resolveMagicDamage(caster, target, 20, true);
   assert.equal(target.hp, 320);
-  const battle = new BattleSystem({ ...demas.devPlayer, maxHp: 1, learnedMagic: [DEV_DAIDAIN] }, { ...demas, enemyActions: [DEV_MIRROR] }, NO_DAI_HIT);
+  const battle = new BattleSystem({ ...demas.devPlayer, maxHp: 1, learnedMagic: [DEV_DAIDAIN] }, { ...demasMechanics, enemyActions: [DEV_MIRROR] }, NO_DAI_HIT);
   turn(battle);
   assert.equal(battle.confirm("magic", DEV_DAIDAIN.id).state, "DEFEAT");
 });
 
 test("snapshots, new battles, and fixed data do not leak Mirror or HP state", () => {
-  const battle = new BattleSystem(demas.devPlayer, demas, NO_DAI_HIT);
+  const battle = new BattleSystem(demas.devPlayer, demasMechanics, NO_DAI_HIT);
   const s = battle.confirm("magic", DEV_MIRROR.id);
   s.player.status.mirror = 99;
   s.party[0].status.mirror = 99;
   assert.equal(battle.getSnapshot().player.status.mirror, 1);
-  const fresh = new BattleSystem(demas.devPlayer, demas, NO_DAI_HIT).getSnapshot();
+  const fresh = new BattleSystem(demas.devPlayer, demasMechanics, NO_DAI_HIT).getSnapshot();
   assert.equal(fresh.player.status.mirror, 0);
-  assert.equal(fresh.enemy.hp, demas.maxHp);
-  assert.equal(fresh.enemy.mp, demas.maxMp);
+  assert.equal(fresh.enemy.hp, demasMechanics.maxHp);
+  assert.equal(fresh.enemy.mp, demasMechanics.maxMp);
   assert.equal("status" in demas, false);
 });
 

@@ -61,6 +61,13 @@ test("No.12 Dakoha Port's innkeeper and armory keeper are dedicated shop-front v
   assert.equal(getShop("npc_dakoha_port_lighthouse_widow"), undefined, "the lighthouse widow keeps a plain conversation, not a shop");
 });
 
+test("No.08 Zabon Village's fixed residents double as its inn, weapon shop and item shop", () => {
+  assert.equal(getShop("npc_zabon_village_elder")?.kind, "inn");
+  assert.equal(getShop("npc_zabon_village_roof_mender")?.kind, "weapon");
+  assert.equal(getShop("npc_zabon_village_tanner")?.kind, "item");
+  assert.equal(getShop("npc_zabon_village_mother"), undefined, "the southern householder keeps a plain conversation");
+});
+
 test("every shop belongs to an NPC actually placed on some map, and every stock entry is priced and real", () => {
   const allNpcIds = new Set(Object.values(MAPS).flatMap((map) => map.npcs.map((npc) => npc.id)));
   for (const [npcId, shop] of Object.entries(SHOPS)) {

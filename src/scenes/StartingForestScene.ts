@@ -34,6 +34,7 @@ import type { RandomEncounterState } from "../systems/RandomEncounter.ts";
 import { GameStateRepository } from "../systems/GameStateRepository.ts";
 import { inventory } from "../systems/Inventory.ts";
 import { FieldMenu } from "../ui/FieldMenu.ts";
+import { STORY_FLAGS } from "../config/storyFlags.ts";
 import { DialogueBox } from "../ui/DialogueBox.ts";
 
 const MAP_ID = "map_starting_forest";
@@ -572,6 +573,8 @@ export class StartingForestScene extends Phaser.Scene {
     if (this.transitioning) return;
     this.transitioning = true;
     if (command.type === "world-map") {
+      // No.03を実際に出た時だけNo.04を解放する。出入口は北・南のどちらでも同じ進行になる。
+      this.gameState.setFlag(STORY_FLAGS.bieVillageUnlocked);
       beginMapTransition(this, this.actions, "WorldMapScene", { worldMapEntryId: command.worldMapEntryId }, MAP_TRANSITION_FADE_MS);
       return;
     }

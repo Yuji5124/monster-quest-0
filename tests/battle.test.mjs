@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 import { DEV_BATTLE_PLAYER, readDevBattleMonsterId } from "../src/config/battle.ts";
-import { calculateDamage, BattleSystem, rollBattleReward } from "../src/battle/BattleSystem.ts";
+import { calculateDamage, BattleSystem, JUMP_COIN_DROP_RATE, rollBattleReward } from "../src/battle/BattleSystem.ts";
 import { DEV_BATTLE_MONSTERS, getDevBattleMonster } from "../src/data/monsters.ts";
 import { MAGIC_HEAT } from "../src/data/battleActions.ts";
 
@@ -48,6 +48,18 @@ test("battle rewards sanitize values and make an item drop probabilistic through
   const definition = { experience: 3.9, money: -2, drops: [{ itemId: "kaifukuyaku", chance: 0.25 }] };
   assert.deepEqual(rollBattleReward(definition, () => 0.24), { experience: 3, money: 0, itemId: "kaifukuyaku" });
   assert.deepEqual(rollBattleReward(definition, () => 0.25), { experience: 3, money: 0 });
+});
+
+test("every enemy without an item-drop table has a 3% Jump Coin drop, separate from gold", () => {
+  const definition = { experience: 3, money: 4 };
+  assert.equal(JUMP_COIN_DROP_RATE, 0.03);
+  assert.deepEqual(rollBattleReward(definition, () => 0.029), { experience: 3, money: 4, jumpCoinCount: 1 });
+  assert.deepEqual(rollBattleReward(definition, () => 0.03), { experience: 3, money: 4 });
+  // Enemies with a specified item table retain their authored item-only reward path.
+  assert.deepEqual(
+    rollBattleReward({ ...definition, drops: [{ itemId: "kaifukuyaku", chance: 0 }] }, () => 0),
+    { experience: 3, money: 4 },
+  );
 });
 
 test("a player at zero HP reaches DEFEAT", () => {

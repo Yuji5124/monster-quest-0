@@ -19,19 +19,16 @@ test("Demas battle presentation uses the supplied 4x3 sheet for every required s
   assert.equal(DEMAS_BATTLE_PRESENTATION.animations.weak.repeat, -1);
 });
 
-test("Demas query fixture and authored event order are hero, Tarosa, and Mirei", () => {
+test("Demas query fixture and authored event order are hero and Tarosa", () => {
   const demas = DEV_BATTLE_MONSTERS.demas;
-  assert.deepEqual(DEMAS_BATTLE_PARTY_IDS, ["hero", "tarosa", "mirei"]);
+  assert.deepEqual(DEMAS_BATTLE_PARTY_IDS, ["hero", "tarosa"]);
   assert.deepEqual(demas.devParty?.map((member) => member.id), DEMAS_BATTLE_PARTY_IDS);
-  assert.deepEqual(demas.devParty?.map((member) => member.displayName), ["主人公", "タロサ", "ミレイ"]);
-  assert.deepEqual(demas.devParty?.[2]?.learnedMagic?.map((magic) => magic.id), ["magic_mirror"]);
+  assert.deepEqual(demas.devParty?.map((member) => member.displayName), ["主人公", "タロサ"]);
 
   const battle = new BattleSystem(demas.devParty, demas, () => 1);
   assert.deepEqual(battle.getSnapshot().party.map((member) => member.id), DEMAS_BATTLE_PARTY_IDS);
   battle.confirm("fight");
   assert.equal(battle.confirm().actingIndex, 1, "Tarosa takes the second command");
-  battle.confirm("fight");
-  assert.equal(battle.confirm().actingIndex, 2, "Mirei takes the third command");
 });
 
 test("Demas screen effects are bounded, background-only magic pressure parameters", () => {

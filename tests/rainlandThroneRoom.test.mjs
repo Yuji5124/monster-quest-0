@@ -105,7 +105,7 @@ test("throne room: before the Majin is defeated, the king asks the player to inv
   assert.ok(first);
   assert.deepEqual(first.pages, base.pages);
   assert.equal(isPortraitInterludeDialogueEvent(first.afterDialogue), true);
-  assert.equal(first.afterDialogue.thenFlags, undefined, "the first audience does not unlock anything by itself");
+  assert.deepEqual(first.afterDialogue.thenFlags, [STORY_FLAGS.majinCaveUnlocked], "the first audience unlocks the cave");
   assert.ok(first.afterDialogue.continuationPages.length >= 3);
   assert.match(first.afterDialogue.continuationPages.join(""), /まじんの　どうくつ/);
   assert.match(base.pages.join("") + first.afterDialogue.continuationPages.join(""), /ゆみ|かりゅうど/, "the king brings up the bow-using hunter from Zabon");

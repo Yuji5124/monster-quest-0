@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { FIELD_MENU_ITEMS } from "../config/fieldMenu.ts";
+import { MAX_CHARACTER_LEVEL } from "../data/expTable.ts";
 import { ITEM_DEFINITIONS } from "../data/items.ts";
 import { characterProgression } from "../systems/CharacterProgression.ts";
 import { inventory } from "../systems/Inventory.ts";
@@ -18,18 +19,19 @@ const BODY_FONT_SIZE = 20;
 const FOOTER_FONT_SIZE = 16;
 const BODY_LINE_SPACING = 10;
 
-type FieldMenuView = "closed" | "main" | "status" | "items" | "record";
+type FieldMenuView = "closed" | "main" | "status" | "items" | "record" | "return-title";
 
 export interface FieldMenuOptions {
   /** Scene supplies its current map/position; the shared UI never invents a save location. */
   readonly onRecord?: () => void;
   /** Stops any already-applied field velocity before the menu takes over input. */
   readonly onOpen?: () => void;
+  readonly onReturnToTitle?: () => void;
 }
 
 /**
  * 移動中に開くフィールドメニュー(既存の`menu`action=Cキー)。UI_INPUT_SPEC.md §6の最低項目のうち
- * ステータス・どうぐ・ぼうけんのきろくを持つ。DialogueBox.tsと同じくSceneに1つ生成し、Scene側は
+ * ステータス・どうぐを持つ。旅の記録は僧侶の会話でだけ行う。DialogueBox.tsと同じくSceneに1つ生成し、Scene側は
  * `isOpen`を見て開いている間だけ`handleInput`へ入力を渡し、Player移動を止める(§11 Input lock)。
  */
 export class FieldMenu {
@@ -42,10 +44,13 @@ export class FieldMenu {
   private itemsCursor = 0;
   private readonly onRecord: (() => void) | undefined;
   private readonly onOpen: (() => void) | undefined;
+  private readonly onReturnToTitle: (() => void) | undefined;
+  private returnTitleCursor = 0;
 
   constructor(scene: Phaser.Scene, options: FieldMenuOptions = {}) {
     this.onRecord = options.onRecord;
     this.onOpen = options.onOpen;
+    this.onReturnToTitle = options.onReturnToTitle;
     this.background = scene.add
       .rectangle(PANEL.x + PANEL.width / 2, PANEL.y + PANEL.height / 2, PANEL.width, PANEL.height, BOX_COLOR, 1)
       .setStrokeStyle(BORDER_WIDTH, BORDER_COLOR)
@@ -122,8 +127,10 @@ export class FieldMenu {
 
     if (this.view === "items") {
       this.handleItemsInput(actions);
+      return;
     }
-    // "status" / "record"は一覧・完了表示のみで、cancel以外の入力を消費しない。
+    // "status" / "record" are read-only views; cancel returns to the main menu.
+    if (this.view === "return-title") this.handleReturnTitleInput(actions);
   }
 
   private handleMainInput(actions: InputSystem): void {
@@ -138,6 +145,7 @@ export class FieldMenu {
       const selected = FIELD_MENU_ITEMS[this.mainCursor].id;
       if (selected === "record") this.onRecord?.();
       this.view = selected;
+      if (selected === "return-title") this.returnTitleCursor = 0;
       this.itemsCursor = 0;
       this.render();
     }
@@ -155,6 +163,22 @@ export class FieldMenu {
     }
   }
 
+  private handleReturnTitleInput(actions: InputSystem): void {
+    if (actions.consumePressed("moveUp") || actions.consumePressed("moveDown")) {
+      this.returnTitleCursor = this.returnTitleCursor === 0 ? 1 : 0;
+      this.render();
+    } else if (actions.consumePressed("confirm")) {
+      if (this.returnTitleCursor === 0) {
+        this.close();
+        if (this.onReturnToTitle) this.onReturnToTitle();
+        else this.background.scene.scene.start("TitleScene", { skipToMenu: true });
+      } else {
+        this.view = "main";
+        this.render();
+      }
+    }
+  }
+
   private setVisible(visible: boolean): void {
     this.background.setVisible(visible);
     this.title.setVisible(visible);
@@ -167,6 +191,7 @@ export class FieldMenu {
     else if (this.view === "status") this.renderStatus();
     else if (this.view === "items") this.renderItems();
     else if (this.view === "record") this.renderRecord();
+    else if (this.view === "return-title") this.renderReturnTitle();
   }
 
   private renderMain(): void {
@@ -193,11 +218,21 @@ export class FieldMenu {
             `　ぼうぎょ${String(stats.defense).padStart(3, " ")}` +
             `　すばやさ${String(stats.speed).padStart(3, " ")}`;
           const exp = `EXP ${String(stats.exp).padStart(3, " ")}/${String(stats.expToNextLevel).padStart(3, " ")}`;
-          return `${name} ${level}\n ${hp}　${mp}\n ${exp}\n ${battleStats}`;
+          const nextLevel = stats.level >= MAX_CHARACTER_LEVEL
+            ? "つぎのLvまで　MAX"
+            : "つぎのLvまで　あと" + String(Math.max(0, stats.expToNextLevel - stats.exp)) + " EXP";
+          return `${name} ${level}\n ${hp}　${mp}\n ${exp}\n ${nextLevel}\n ${battleStats}`;
         })
         .join("\n\n"),
     );
     this.footer.setText("※ HP／MP等は仮の確認用数値(TEMP_TEST_VALUE)です\nX：もどる");
+  }
+
+  private renderReturnTitle(): void {
+    this.title.setText("タイトル画面へ");
+    const choices = ["はい", "いいえ"];
+    this.body.setText(`本当にタイトル画面に戻ってもよいですか？\n\n${choices.map((choice, index) => `${index === this.returnTitleCursor ? "> " : "  "}${choice}`).join("\n")}`);
+    this.footer.setText("Z：けってい　X：もどる");
   }
 
   private renderItems(): void {
@@ -230,8 +265,9 @@ export class FieldMenu {
       this.footer.setText("X：もどる");
       return;
     }
-    // FieldMenu is also used by specialized scenes. They remain playable even until they opt into a location serializer.
+    // FieldMenu is also used by specialized scenes. They remain playable until they opt into a location serializer.
     this.body.setText("このばしょでは\nきろくを　つけられない。");
     this.footer.setText("X：もどる");
   }
+
 }

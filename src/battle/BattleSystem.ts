@@ -24,6 +24,9 @@ export const DAI_HIT_MULTIPLIER = 1.5; // TEMP_TEST_VALUE: BATTLE_SPEC.md §5 �
 export const TOKUDAI_HIT_RATE = 1 / 8; // TEMP_TEST_VALUE: BATTLE_SPEC.md §6 発生率TBD
 export const TOKUDAI_HIT_MULTIPLIER = 2.5; // TEMP_TEST_VALUE: BATTLE_SPEC.md §6 倍率TBD (だいヒットより強い)
 
+/** User-confirmed common drop: enemies without an item-drop table award one Jump Coin at 3%. */
+export const JUMP_COIN_DROP_RATE = 0.03;
+
 export interface BattleCombatantDefinition {
   readonly id: string;
   readonly displayName: string;
@@ -66,6 +69,8 @@ export interface BattleReward {
   readonly experience: number;
   readonly money: number;
   readonly itemId?: string;
+  /** Gacha-only currency; never mixed into battle gold. */
+  readonly jumpCoinCount?: number;
 }
 
 export interface BattleStatus {
@@ -119,7 +124,11 @@ export function rollBattleReward(definition: BattleRewardDefinition | undefined,
     && Number.isFinite(drop.chance) && drop.chance > 0
     && random() < Math.min(1, drop.chance),
   )?.itemId;
-  return itemId ? { experience, money, itemId } : { experience, money };
+  if (itemId) return { experience, money, itemId };
+  // 固有アイテムを持つ敵は従来の個別ドロップだけを使う。固有表の無い敵すべてが共通3%対象。
+  const hasItemDropTable = (definition?.drops?.length ?? 0) > 0;
+  const jumpCoinCount = !hasItemDropTable && random() < JUMP_COIN_DROP_RATE ? 1 : undefined;
+  return jumpCoinCount ? { experience, money, jumpCoinCount } : { experience, money };
 }
 
 /** Reflect once; never recursively bounce between two mirrored combatants. */
@@ -364,6 +373,9 @@ export class BattleSystem {
     ];
     if (this.reward.itemId && Object.hasOwn(ITEM_DEFINITIONS, this.reward.itemId)) {
       lines.push(`${ITEM_DEFINITIONS[this.reward.itemId as keyof typeof ITEM_DEFINITIONS].name}を　みつけた！`);
+    }
+    if (this.reward.jumpCoinCount) {
+      lines.push(`ジャンコインを　${this.reward.jumpCoinCount}まい　てにいれた！`);
     }
     this.message = lines.join("\n");
   }
