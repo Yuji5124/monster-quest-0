@@ -76,7 +76,7 @@ test("all stairs and the third-floor centre are reachable with the real player b
   const keySpots = {
     demas_tower_1: [[724, 1008, "world-map entrance"], [724, 700, "ritual hall"], [724, 128, "stairs to 2F"]],
     demas_tower_2: [[724, 1008, "stairs from 1F"], [724, 700, "middle gallery"], [724, 128, "stairs to 3F"]],
-    demas_tower_3: [[724, 1008, "stairs from 2F"], [724, 700, "red carpet"], [724, 400, "Demas dais centre"]],
+    demas_tower_3: [[724, 1008, "stairs from 2F"], [724, 700, "red carpet"], [724, 543, "Demas map centre"]],
   };
   for (const [dir, mapId] of [["demas_tower_1", "map_demas_tower_1"], ["demas_tower_2", "map_demas_tower_2"], ["demas_tower_3", "map_demas_tower_3"]]) {
     const result = analyseBodyReachability(dir, mapId, { margin: 6 });
@@ -87,7 +87,7 @@ test("all stairs and the third-floor centre are reachable with the real player b
   }
 });
 
-test("Demas is a third-floor centre boss using the existing Demas battle id and victory flag", () => {
+test("Demas is a map-centre boss using the existing Demas battle id and victory flag", () => {
   const objects = readImageMapObjects(readJson(path.join(REPO_ROOT, "assets/maps/demas_tower_3/objects.json")));
   const demas = objects.find((object) => object.id === "boss_demas_tower_demas");
   assert.deepEqual(demas, {
@@ -95,7 +95,7 @@ test("Demas is a third-floor centre boss using the existing Demas battle id and 
     type: "boss",
     label: "デーマス",
     x: 650,
-    y: 328,
+    y: 471,
     width: 148,
     height: 144,
     blocking: false,
@@ -103,6 +103,9 @@ test("Demas is a third-floor centre boss using the existing Demas battle id and 
     victoryFlag: "boss.demas_defeated",
     unlockFlag: "story.demas_tower_cleared",
   });
+  const manifest = readImageMapManifest(readJson(path.join(REPO_ROOT, "assets/maps/demas_tower_3/map.json")));
+  assert.equal(demas.x + demas.width / 2, manifest.width / 2, "Demas stays horizontally centred");
+  assert.equal(demas.y + demas.height / 2, manifest.height / 2, "Demas stays vertically centred");
 });
 
 test("world-map entry plays the supplied exterior art unchanged", () => {
