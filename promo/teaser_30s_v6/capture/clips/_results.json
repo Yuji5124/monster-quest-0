@@ -1,0 +1,26 @@
+{
+  "cap_castle3d_pc": {
+    "ok": true,
+    "url": "/?mapTest=rainland-castle-3d",
+    "frames": 245,
+    "fps": 30,
+    "mode": "stepped",
+    "errors": []
+  },
+  "cap_throne3d_pc": {
+    "ok": true,
+    "url": "/?mapTest=rainland-throne-room",
+    "frames": 320,
+    "fps": 30,
+    "mode": "stepped",
+    "errors": []
+  },
+  "cap_majin_boss_pc": {
+    "ok": true,
+    "url": "/?mapTest=majin-cave&seed=8008&majinCaveFloor=10",
+    "frames": 322,
+    "fps": 30,
+    "mode": "stepped",
+    "errors": []
+  }
+}

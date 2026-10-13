@@ -1,0 +1,24 @@
+{
+  "name": "mq0-teaser-30s-v6",
+  "version": "0.1.0",
+  "private": true,
+  "description": "モンスタークエスト0 30秒ティザー v6.0（Remotion）。ゲーム本体・前回プロモとは独立したプロジェクト。",
+  "scripts": {
+    "studio": "remotion studio",
+    "typecheck": "tsc --noEmit",
+    "render:animatic": "remotion render Teaser16x9 out/mq0_teaser_v6_animatic.mp4 --codec=h264 --crf=20 --muted",
+    "render": "remotion render Teaser16x9 out/mq0_teaser_v6.mp4 --codec=h264 --crf=16 --muted"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.529",
+    "@remotion/media": "4.0.529",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.529"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.0",
+    "playwright": "^1.56.1",
+    "typescript": "5.9.3"
+  }
+}
