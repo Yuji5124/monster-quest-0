@@ -1,0 +1,68 @@
+{
+  "library": {
+    "name": "awesome-ai-motion-JP (fork of gongnyang/awesome-ai-motion)",
+    "url": "https://github.com/Yuji5124/awesome-ai-motion-JP",
+    "license": "MIT (effects/ code); GSAP 3.14.2 under GreenSock Standard 'no charge' license",
+    "note": "Parameters below are copied from each card's README parameter table / index.html. 'scaled' notes where values are adapted from the 1280x720 card demo to manga layers."
+  },
+  "presets": {
+    "deep-parallax": {
+      "card": "effects/deep-parallax", "ease": "sine.inOut",
+      "ratios": [0.1, 0.25, 0.45, 0.7, 0.95, 1.3, 1.8],
+      "cameraMovePx": 600, "foregroundBlurPx": 2,
+      "use": "3 image bands (far/mid/near) with ratios 0.25/0.7/1.3 + particle layers 0.1/1.8; move scaled to 1920 output"
+    },
+    "ken-burns": {
+      "card": "effects/ken-burns", "ease": "none",
+      "scale": 1.12, "scaleRange": [1.05, 1.18], "drift": [-28, -18], "minHold": 0.5
+    },
+    "noise-dissolve": {
+      "card": "effects/noise-dissolve", "ease": "power1.inOut",
+      "octavesPx": [190, 95, 48, 16], "rim": 0.022, "rimColor": "#ffb36b", "duration": 1.9,
+      "rule": "fixed noise, only the threshold moves; histogram-equalised"
+    },
+    "anticipation": {
+      "card": "effects/anticipation",
+      "backDistancePx": 54, "backDuration": 0.25, "stretch": 1.3, "launchDuration": 0.65,
+      "ease": ["power2.inOut", "power3.out"]
+    },
+    "shake": {
+      "card": "effects/shake", "ease": "sine.inOut",
+      "amps": [8, -8, 5, -5, 3, -3, 1.5, 0], "step": 0.09,
+      "decay": 0.6, "note": "card caps UI shake at 10px; whole-camera manga impacts use gain 1.5-3 (scaled)"
+    },
+    "overlapping-action": {
+      "card": "effects/overlapping-action", "ease": "power3.inOut",
+      "stagger": 0.07, "durationStep": 0.06, "baseDuration": 1.1
+    },
+    "spring-overshoot": {
+      "card": "effects/spring-overshoot",
+      "curve": "1 + 2.5*(t-1)^3 + 1.5*(t-1)^2", "duration": 1.4, "back": 1.5,
+      "bubbleDuration": 0.55, "note": "bubbles use a shortened 0.55s spring for comic timing (range 0.8-1.6 on card is for UI cards)"
+    },
+    "squash-stretch": {
+      "card": "effects/squash-stretch",
+      "stretch": 1.55, "squash": 0.55, "squashDuration": 0.1, "rule": "scaleX = 1/scaleY",
+      "partGain": 0.18, "note": "metal robot: card warns against big deformation of rigid objects, so values are attenuated (partGain)"
+    },
+    "follow-through": {
+      "card": "effects/follow-through",
+      "angles": [-24, 38, -20, 11, -6, 3, 0], "starts": [0, 0.75, 0.93, 1.15, 1.35, 1.55, 1.73],
+      "ease": ["power2.out", "power2.out", "power1.inOut"], "partGain": 0.12
+    },
+    "mask-reveal": {
+      "card": "effects/mask-reveal", "ease": "power3.out",
+      "fromYPercent": 110, "duration": 1.05, "stagger": 0.35
+    },
+    "light-sweep": {
+      "card": "effects/light-sweep", "ease": "power1.inOut",
+      "angleDeg": 112, "bandPx": 290, "corePx": 144, "duration": 1.5, "once": true
+    }
+  },
+  "extras": {
+    "speed-lines": { "note": "manga focus lines (集中線), canvas, deterministic seed", "count": 90 },
+    "particles": { "note": "dust / debris / sparks / stars; position is a pure function of time so frames can be seeked" },
+    "lip-flap": { "threshold": 0.28, "minHoldFrames": 2 },
+    "robot-eyes": { "glowBase": 0.25, "glowGain": 0.75, "blinkDuration": 0.16 }
+  }
+}

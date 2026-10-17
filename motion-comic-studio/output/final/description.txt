@@ -1,0 +1,17 @@
+銀河はぐれ団 第1話 冒頭 ― モーションコミック（約81秒）
+
+ぼくの星は、なくなった。
+ひとりぼっちの少年が瓦礫の中で出会ったのは、修理ロボ「ロボ太」。
+そして格納庫に眠る、シャチの形の宇宙戦艦「オルカ号」――。
+
+※台本は漫画映像化のための脚色であり、ゲーム本編の確定設定ではありません。
+
+――――――――――――
+クレジット
+音声: VOICEVOX:白上虎太郎 / VOICEVOX:猫使アル / VOICEVOX:青山龍星
+音声合成ソフト: VOICEVOX (https://voicevox.hiroshiba.jp/)
+アニメーション: GSAP (GreenSock Standard "No Charge" License)
+演出技法: Awesome AI Motion JP (https://github.com/Yuji5124/awesome-ai-motion-JP) / 原典 gongnyang/awesome-ai-motion (MIT)
+画像拡大: Real-ESRGAN (BSD-3-Clause, xinntao) via ncnn (BSD-3-Clause, Tencent)
+BGM・効果音: 本制作でプログラム生成したオリジナル
+制作ツール: Playwright / Chromium / FFmpeg / Python / Node.js（すべて無料）

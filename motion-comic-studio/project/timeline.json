@@ -1,0 +1,1901 @@
+{
+ "title": "銀河はぐれ団 第1話 冒頭",
+ "fps": 30,
+ "width": 1920,
+ "height": 1080,
+ "note": "Times are seconds relative to each scene start. Scene starts are cumulative. Camera keys: u,v = frame centre and w = frame width, all normalised to the shot panel. Script is an adaptation for the motion comic, NOT confirmed game canon.",
+ "scenes": [
+  {
+   "id": "s01",
+   "title": "故郷の崩壊",
+   "dur": 13.0,
+   "effects": {
+    "main": "deep-parallax",
+    "sub": [
+     "ken-burns",
+     "noise-dissolve"
+    ]
+   },
+   "lines": [
+    {
+     "id": "s01_n1",
+     "speaker": "narrator",
+     "text": "ぼくの星は、なくなった。",
+     "at": 1.4
+    },
+    {
+     "id": "s01_n2",
+     "speaker": "narrator",
+     "text": "謎の装置が動いて、空も、街も、人も……すべてがバラバラになった。",
+     "tts": "なぞの装置が動いて、空も、街も、人も、、すべてが、バラバラになった。",
+     "at": 4.2
+    }
+   ],
+   "shots": [
+    {
+     "t0": 0,
+     "t1": 13,
+     "panel": "P01",
+     "cam": [
+      {
+       "t": 0,
+       "u": 0.372,
+       "v": 0.42,
+       "w": 0.72
+      },
+      {
+       "t": 13,
+       "u": 0.47,
+       "v": 0.58,
+       "w": 0.64,
+       "ease": "none"
+      }
+     ]
+    }
+   ],
+   "events": [
+    {
+     "t": 0,
+     "type": "dissolve",
+     "dir": "in",
+     "dur": 2.2
+    },
+    {
+     "t": 0,
+     "type": "parallax",
+     "panel": "P01",
+     "dur": 13,
+     "movePx": 295,
+     "ease": "none",
+     "bands": [
+      {
+       "v0": 0.45,
+       "soft": 0.07,
+       "ratio": 1.1
+      },
+      {
+       "v0": 0.72,
+       "soft": 0.06,
+       "ratio": 1.25
+      }
+     ]
+    },
+    {
+     "t": 0,
+     "type": "part",
+     "id": "p01_boy",
+     "anim": "to",
+     "to": {
+      "x": -0.111
+     },
+     "dur": 13,
+     "ease": "none"
+    },
+    {
+     "t": 0,
+     "type": "part",
+     "id": "p01_boy",
+     "anim": "breathe",
+     "dur": 12.5,
+     "period": 3.2
+    },
+    {
+     "t": 0,
+     "type": "part",
+     "id": "p01_planet",
+     "anim": "rotate",
+     "to": 2.5,
+     "dur": 13
+    },
+    {
+     "t": 0,
+     "type": "particles",
+     "preset": "debris-float",
+     "panel": "P01",
+     "area": [
+      0.05,
+      0,
+      0.95,
+      0.5
+     ],
+     "count": 22,
+     "dur": 13,
+     "seed": 5
+    },
+    {
+     "t": 0,
+     "type": "particles",
+     "preset": "dust",
+     "count": 50,
+     "alpha": 0.35,
+     "color": "#d8c8ff",
+     "vx": 6,
+     "vy": -5,
+     "dur": 13,
+     "seed": 8
+    },
+    {
+     "t": 1.3,
+     "type": "bubble",
+     "id": "b01_narr1",
+     "anim": "mask-reveal"
+    },
+    {
+     "t": 12.2,
+     "type": "dissolve",
+     "dir": "out",
+     "dur": 0.8
+    }
+   ],
+   "sfx": [
+    {
+     "t": 0.0,
+     "id": "wind",
+     "gain": 0.5
+    },
+    {
+     "t": 7.0,
+     "id": "debris_far",
+     "gain": 0.35
+    }
+   ],
+   "start": 0
+  },
+  {
+   "id": "s02",
+   "title": "瓦礫を蹴る",
+   "dur": 6.8,
+   "effects": {
+    "main": "anticipation",
+    "sub": [
+     "shake",
+     "overlapping-action"
+    ]
+   },
+   "lines": [
+    {
+     "id": "s02_b1",
+     "speaker": "boy",
+     "text": "もう！ なんにもないじゃん……！",
+     "tts": "もう！なんにもないじゃん！",
+     "style": "angry",
+     "at": 0.35
+    }
+   ],
+   "shots": [
+    {
+     "t0": 0,
+     "t1": 6.8,
+     "panel": "P02",
+     "cam": [
+      {
+       "t": 0,
+       "u": 0.5,
+       "v": 0.45,
+       "w": 0.98
+      },
+      {
+       "t": 2.6,
+       "u": 0.66,
+       "v": 0.5,
+       "w": 0.74,
+       "ease": "sine.inOut"
+      },
+      {
+       "t": 3.25,
+       "u": 0.42,
+       "v": 0.62,
+       "w": 0.74,
+       "ease": "power3.out"
+      },
+      {
+       "t": 6.8,
+       "u": 0.45,
+       "v": 0.6,
+       "w": 0.7,
+       "ease": "none"
+      }
+     ]
+    }
+   ],
+   "events": [
+    {
+     "t": 0.0,
+     "type": "bubble",
+     "id": "b02"
+    },
+    {
+     "t": 0,
+     "type": "part",
+     "id": "p02_boy",
+     "anim": "breathe",
+     "dur": 2.6,
+     "period": 1.3,
+     "amount": 1.6
+    },
+    {
+     "t": 2.7,
+     "type": "part",
+     "id": "p02_boy",
+     "anim": "anticipation",
+     "dir": [
+      -1,
+      0.15
+     ],
+     "dist": 0.05,
+     "rot": -3
+    },
+    {
+     "t": 3.0,
+     "type": "part",
+     "id": "p02_rubble",
+     "anim": "overlap-move",
+     "to": [
+      -0.035,
+      0.01
+     ],
+     "rotTo": -5,
+     "dur": 0.6,
+     "index": 0
+    },
+    {
+     "t": 3.0,
+     "type": "part",
+     "id": "p02_boy",
+     "anim": "overlap-move",
+     "to": [
+      0,
+      0
+     ],
+     "dur": 0.5,
+     "index": 1
+    },
+    {
+     "t": 3.05,
+     "type": "shake",
+     "gain": 1.6
+    },
+    {
+     "t": 3.0,
+     "type": "particles",
+     "preset": "burst",
+     "panel": "P02",
+     "at": [
+      0.3,
+      0.8
+     ],
+     "count": 24,
+     "angle": -110,
+     "cone": 110,
+     "speed": 0.6,
+     "gravity": 1.5,
+     "size": 5,
+     "dur": 1.8,
+     "seed": 21
+    },
+    {
+     "t": 0,
+     "type": "particles",
+     "preset": "dust",
+     "count": 30,
+     "alpha": 0.3,
+     "dur": 6.8,
+     "seed": 9
+    },
+    {
+     "t": 0,
+     "type": "sfxtext",
+     "id": "t02_gara",
+     "anim": "instant"
+    },
+    {
+     "t": 3.05,
+     "type": "sfxtext",
+     "id": "t02_gara",
+     "punch": true
+    }
+   ],
+   "sfx": [
+    {
+     "t": 2.95,
+     "id": "whoosh_small",
+     "gain": 0.5
+    },
+    {
+     "t": 3.02,
+     "id": "rubble_kick",
+     "gain": 0.9
+    },
+    {
+     "t": 3.3,
+     "id": "rubble_roll",
+     "gain": 0.6
+    }
+   ],
+   "start": 13.0
+  },
+  {
+   "id": "s03",
+   "title": "ロボ太登場",
+   "dur": 10.4,
+   "effects": {
+    "main": "spring-overshoot",
+    "sub": [
+     "squash-stretch",
+     "shake"
+    ]
+   },
+   "lines": [
+    {
+     "id": "s03_b1",
+     "speaker": "boy",
+     "text": "うわっ！",
+     "style": "scared",
+     "at": 0.1
+    },
+    {
+     "id": "s03_r1",
+     "speaker": "robo",
+     "text": "イタタ！ オレはガラクタじゃなーい！",
+     "tts": "イタタ！オレは、ガラクタじゃなーい！",
+     "style": "strong",
+     "at": 3.95
+    },
+    {
+     "id": "s03_b2",
+     "speaker": "boy",
+     "text": "ガラクタがしゃべったー!?",
+     "tts": "ガラクタが、しゃべったー？！",
+     "style": "excited",
+     "at": 7.1
+    }
+   ],
+   "shots": [
+    {
+     "t0": 0,
+     "t1": 1.5,
+     "panel": "P03",
+     "cam": [
+      {
+       "t": 0,
+       "u": 0.62,
+       "v": 0.5,
+       "w": 1.85
+      },
+      {
+       "t": 0.14,
+       "u": 0.66,
+       "v": 0.45,
+       "w": 1.3,
+       "ease": "power4.out"
+      },
+      {
+       "t": 1.5,
+       "u": 0.66,
+       "v": 0.46,
+       "w": 1.2,
+       "ease": "none"
+      }
+     ],
+     "fit": true
+    },
+    {
+     "t0": 1.5,
+     "t1": 3.3,
+     "panel": "P04",
+     "also": [
+      "P03"
+     ],
+     "cam": [
+      {
+       "t": 1.5,
+       "u": 0.56,
+       "v": 0.5,
+       "w": 0.82
+      },
+      {
+       "t": 3.3,
+       "u": 0.58,
+       "v": 0.48,
+       "w": 0.74,
+       "ease": "power2.out"
+      }
+     ]
+    },
+    {
+     "t0": 3.3,
+     "t1": 10.4,
+     "panel": "P05",
+     "cam": [
+      {
+       "t": 3.3,
+       "u": 0.5,
+       "v": 0.5,
+       "w": 0.46
+      },
+      {
+       "t": 3.6,
+       "u": 0.49,
+       "v": 0.5,
+       "w": 0.42,
+       "ease": "power3.out"
+      },
+      {
+       "t": 4.4,
+       "u": 0.25,
+       "v": 0.5,
+       "w": 0.46,
+       "ease": "power2.inOut"
+      },
+      {
+       "t": 6.45,
+       "u": 0.27,
+       "v": 0.5,
+       "w": 0.45,
+       "ease": "none"
+      },
+      {
+       "t": 7.0,
+       "u": 0.78,
+       "v": 0.5,
+       "w": 0.46,
+       "ease": "power3.inOut"
+      },
+      {
+       "t": 10.4,
+       "u": 0.78,
+       "v": 0.5,
+       "w": 0.42,
+       "ease": "none"
+      }
+     ]
+    }
+   ],
+   "events": [
+    {
+     "t": 0.0,
+     "type": "speedlines",
+     "dur": 0.8,
+     "focus": [
+      0.5,
+      0.6
+     ],
+     "peak": 0.9
+    },
+    {
+     "t": 0.05,
+     "type": "bubble",
+     "id": "b03",
+     "until": 3.3
+    },
+    {
+     "t": 0.1,
+     "type": "shake",
+     "gain": 1.3
+    },
+    {
+     "t": 0,
+     "type": "lipsync",
+     "mouth": "m03",
+     "line": "s03_b1"
+    },
+    {
+     "t": 1.125,
+     "type": "part",
+     "id": "p04_hand",
+     "anim": "anticipation",
+     "dir": [
+      1,
+      0.12
+     ],
+     "dist": 0.05
+    },
+    {
+     "t": 1.7,
+     "type": "sfxtext",
+     "id": "t04_gashi",
+     "hold": 1.3
+    },
+    {
+     "t": 1.7,
+     "type": "flash",
+     "peak": 0.35,
+     "dur": 0.18
+    },
+    {
+     "t": 1.71,
+     "type": "shake",
+     "gain": 1.8
+    },
+    {
+     "t": 3.3,
+     "type": "flash",
+     "peak": 0.9,
+     "dur": 0.28
+    },
+    {
+     "t": 3.3,
+     "type": "speedlines",
+     "dur": 1.0,
+     "focus": [
+      0.5,
+      0.45
+     ],
+     "peak": 1
+    },
+    {
+     "t": 3.3,
+     "type": "particles",
+     "preset": "burst",
+     "panel": "P05",
+     "at": [
+      0.5,
+      0.85
+     ],
+     "count": 36,
+     "angle": -90,
+     "cone": 160,
+     "speed": 0.32,
+     "gravity": 0.8,
+     "size": 3.5,
+     "dur": 2.2,
+     "seed": 31
+    },
+    {
+     "t": 3.32,
+     "type": "shake",
+     "gain": 2.2
+    },
+    {
+     "t": 3.35,
+     "type": "part",
+     "id": "p05_robo",
+     "anim": "squash-stretch",
+     "hop": 0.05
+    },
+    {
+     "t": 3.3,
+     "type": "eyes",
+     "id": "e05",
+     "glow": 0.35,
+     "dur": 0.2
+    },
+    {
+     "t": 3.9,
+     "type": "bubble",
+     "id": "b05a"
+    },
+    {
+     "t": 0,
+     "type": "eyes-talk",
+     "eyes": "e05",
+     "line": "s03_r1"
+    },
+    {
+     "t": 4.0,
+     "type": "part",
+     "id": "p05_robo",
+     "anim": "breathe",
+     "dur": 6,
+     "period": 1.5,
+     "amount": 1.2
+    },
+    {
+     "t": 6.3,
+     "type": "blink",
+     "id": "e05"
+    },
+    {
+     "t": 6.6,
+     "type": "part",
+     "id": "p05_boy",
+     "anim": "overlap-move",
+     "to": [
+      0.03,
+      -0.01
+     ],
+     "rotTo": 2,
+     "dur": 0.6,
+     "index": 0
+    },
+    {
+     "t": 6.7,
+     "type": "bubble",
+     "id": "b05b"
+    },
+    {
+     "t": 7.05,
+     "type": "speedlines",
+     "dur": 0.55,
+     "focus": [
+      0.62,
+      0.42
+     ],
+     "peak": 0.6
+    },
+    {
+     "t": 0,
+     "type": "lipsync",
+     "mouth": "m05",
+     "line": "s03_b2"
+    },
+    {
+     "t": 9.2,
+     "type": "part",
+     "id": "p05_boy",
+     "anim": "to",
+     "to": {
+      "x": 0.01,
+      "rot": 0.5
+     },
+     "dur": 1.0,
+     "ease": "sine.inOut"
+    },
+    {
+     "t": 9.0,
+     "type": "blink",
+     "id": "e05"
+    }
+   ],
+   "sfx": [
+    {
+     "t": 0.02,
+     "id": "surprise",
+     "gain": 0.7
+    },
+    {
+     "t": 1.66,
+     "id": "metal_clang",
+     "gain": 0.9
+    },
+    {
+     "t": 3.28,
+     "id": "debris_burst",
+     "gain": 0.9
+    },
+    {
+     "t": 3.45,
+     "id": "servo",
+     "gain": 0.6
+    },
+    {
+     "t": 7.0,
+     "id": "boing",
+     "gain": 0.5
+    }
+   ],
+   "start": 19.8
+  },
+  {
+   "id": "s04",
+   "title": "自己紹介",
+   "dur": 12.0,
+   "effects": {
+    "main": "overlapping-action",
+    "sub": [
+     "follow-through",
+     "squash-stretch"
+    ]
+   },
+   "lines": [
+    {
+     "id": "s04_r1",
+     "speaker": "robo",
+     "text": "オレはロボ太！ 修理ロボだ！ 壊れたものを直すのが得意なんだ！",
+     "tts": "オレはロボ太！修理ロボだ！こわれたものを直すのが、得意なんだ！",
+     "at": 0.25
+    },
+    {
+     "id": "s04_b1",
+     "speaker": "boy",
+     "text": "じゃあ、この星も直せる？",
+     "tts": "じゃあ、この星も、なおせる？",
+     "at": 4.95
+    },
+    {
+     "id": "s04_r2",
+     "speaker": "robo",
+     "text": "……それはムリ。",
+     "tts": "それは、ムリ。",
+     "style": "calm",
+     "at": 8.35
+    },
+    {
+     "id": "s04_b2",
+     "speaker": "boy",
+     "text": "ダメじゃん!!",
+     "tts": "ダメじゃん！",
+     "style": "angry",
+     "at": 9.65
+    }
+   ],
+   "shots": [
+    {
+     "t0": 0,
+     "t1": 4.75,
+     "panel": "P06",
+     "cam": [
+      {
+       "t": 0,
+       "u": 0.5,
+       "v": 0.5,
+       "w": 2.05
+      },
+      {
+       "t": 2.0,
+       "u": 0.5,
+       "v": 0.5,
+       "w": 1.95,
+       "ease": "none"
+      },
+      {
+       "t": 4.75,
+       "u": 0.5,
+       "v": 0.6,
+       "w": 0.95,
+       "ease": "sine.inOut"
+      }
+     ],
+     "fit": true
+    },
+    {
+     "t0": 4.75,
+     "t1": 7.85,
+     "panel": "P07",
+     "cam": [
+      {
+       "t": 4.75,
+       "u": 0.5,
+       "v": 0.5,
+       "w": 2.1
+      },
+      {
+       "t": 5.6,
+       "u": 0.5,
+       "v": 0.5,
+       "w": 2.0,
+       "ease": "none"
+      },
+      {
+       "t": 7.0,
+       "u": 0.55,
+       "v": 0.6,
+       "w": 0.95,
+       "ease": "sine.inOut"
+      },
+      {
+       "t": 7.85,
+       "u": 0.55,
+       "v": 0.62,
+       "w": 0.9,
+       "ease": "none"
+      }
+     ],
+     "fit": true
+    },
+    {
+     "t0": 7.85,
+     "t1": 9.6,
+     "panel": "P08",
+     "cam": [
+      {
+       "t": 7.85,
+       "u": 0.5,
+       "v": 0.5,
+       "w": 2.8
+      },
+      {
+       "t": 8.9,
+       "u": 0.5,
+       "v": 0.5,
+       "w": 2.7,
+       "ease": "none"
+      },
+      {
+       "t": 9.6,
+       "u": 0.5,
+       "v": 0.45,
+       "w": 1.5,
+       "ease": "sine.inOut"
+      }
+     ],
+     "fit": true
+    },
+    {
+     "t0": 9.6,
+     "t1": 12.0,
+     "panel": "P09",
+     "cam": [
+      {
+       "t": 9.6,
+       "u": 0.5,
+       "v": 0.5,
+       "w": 2.6
+      },
+      {
+       "t": 9.76,
+       "u": 0.5,
+       "v": 0.5,
+       "w": 2.3,
+       "ease": "power4.out"
+      },
+      {
+       "t": 12.0,
+       "u": 0.5,
+       "v": 0.5,
+       "w": 2.1,
+       "ease": "none"
+      }
+     ],
+     "fit": true
+    }
+   ],
+   "events": [
+    {
+     "t": 0.1,
+     "type": "bubble",
+     "id": "b06"
+    },
+    {
+     "t": 0,
+     "type": "eyes",
+     "id": "e06",
+     "glow": 0.35,
+     "dur": 0.2
+    },
+    {
+     "t": 0,
+     "type": "eyes-talk",
+     "eyes": "e06",
+     "line": "s04_r1"
+    },
+    {
+     "t": 0.3,
+     "type": "part",
+     "id": "p06_robo",
+     "anim": "squash-stretch",
+     "hop": 0.03
+    },
+    {
+     "t": 2.2,
+     "type": "part",
+     "id": "p06_robo",
+     "anim": "follow-through",
+     "amount": 0.45,
+     "speed": 0.9
+    },
+    {
+     "t": 3.3,
+     "type": "blink",
+     "id": "e06"
+    },
+    {
+     "t": 4.8,
+     "type": "bubble",
+     "id": "b07"
+    },
+    {
+     "t": 0,
+     "type": "lipsync",
+     "mouth": "m07",
+     "line": "s04_b1"
+    },
+    {
+     "t": 4.75,
+     "type": "part",
+     "id": "p07_boy",
+     "anim": "breathe",
+     "dur": 3,
+     "period": 1.5
+    },
+    {
+     "t": 7.9,
+     "type": "bubble",
+     "id": "b08"
+    },
+    {
+     "t": 7.85,
+     "type": "eyes",
+     "id": "e08",
+     "glow": 0.1,
+     "dur": 0.6
+    },
+    {
+     "t": 0,
+     "type": "eyes-talk",
+     "eyes": "e08",
+     "line": "s04_r2",
+     "gain": 0.6
+    },
+    {
+     "t": 8.35,
+     "type": "part",
+     "id": "p08_robo",
+     "anim": "follow-through",
+     "amount": 0.35,
+     "sign": -1,
+     "speed": 1.2
+    },
+    {
+     "t": 9.62,
+     "type": "bubble",
+     "id": "b09",
+     "dur": 0.4
+    },
+    {
+     "t": 9.62,
+     "type": "speedlines",
+     "dur": 0.7,
+     "focus": [
+      0.5,
+      0.45
+     ],
+     "peak": 1
+    },
+    {
+     "t": 9.66,
+     "type": "shake",
+     "gain": 3.0
+    },
+    {
+     "t": 9.62,
+     "type": "part",
+     "id": "p09_boy",
+     "anim": "squash-stretch",
+     "amount": 1.2,
+     "seq": [
+      [
+       0.6,
+       0.08,
+       "power2.out"
+      ],
+      [
+       1.3,
+       0.14,
+       "power2.out"
+      ],
+      [
+       1,
+       0.25,
+       "power2.out"
+      ]
+     ]
+    },
+    {
+     "t": 0,
+     "type": "lipsync",
+     "mouth": "m09",
+     "line": "s04_b2"
+    },
+    {
+     "t": 11.2,
+     "type": "dissolve",
+     "dir": "out",
+     "dur": 0.8
+    }
+   ],
+   "sfx": [
+    {
+     "t": 0.3,
+     "id": "servo",
+     "gain": 0.5
+    },
+    {
+     "t": 2.2,
+     "id": "boing",
+     "gain": 0.35
+    },
+    {
+     "t": 8.0,
+     "id": "robot_droop",
+     "gain": 0.5
+    },
+    {
+     "t": 9.63,
+     "id": "tsukkomi",
+     "gain": 1.0
+    }
+   ],
+   "start": 30.2
+  },
+  {
+   "id": "s05",
+   "title": "オルカ号登場",
+   "dur": 12.0,
+   "effects": {
+    "main": "mask-reveal",
+    "sub": [
+     "light-sweep",
+     "deep-parallax"
+    ]
+   },
+   "lines": [
+    {
+     "id": "s05_b1",
+     "speaker": "boy",
+     "text": "でっっかい……シャチーー!?",
+     "tts": "でっかい、、シャチー？！",
+     "style": "excited",
+     "at": 4.75
+    },
+    {
+     "id": "s05_r1",
+     "speaker": "robo",
+     "text": "これがオルカ号！ シャチの形をした宇宙戦艦だ！",
+     "tts": "これが、オルカ号！シャチの形をした、宇宙戦艦だ！",
+     "at": 7.3
+    }
+   ],
+   "shots": [
+    {
+     "t0": 0,
+     "t1": 12,
+     "panel": "P10",
+     "cam": [
+      {
+       "t": 0,
+       "u": 0.46,
+       "v": 0.84,
+       "w": 0.3
+      },
+      {
+       "t": 2.2,
+       "u": 0.46,
+       "v": 0.82,
+       "w": 0.28,
+       "ease": "none"
+      },
+      {
+       "t": 3.4,
+       "u": 0.46,
+       "v": 0.52,
+       "w": 0.3,
+       "ease": "power2.inOut"
+      },
+      {
+       "t": 4.7,
+       "u": 0.45,
+       "v": 0.4,
+       "w": 0.7,
+       "ease": "power3.inOut"
+      },
+      {
+       "t": 6.2,
+       "u": 0.5,
+       "v": 0.5,
+       "w": 0.97,
+       "ease": "sine.inOut"
+      },
+      {
+       "t": 12,
+       "u": 0.5,
+       "v": 0.48,
+       "w": 0.9,
+       "ease": "none"
+      }
+     ]
+    }
+   ],
+   "events": [
+    {
+     "t": 0,
+     "type": "dissolve",
+     "dir": "in",
+     "dur": 1.0
+    },
+    {
+     "t": 0,
+     "type": "darkness",
+     "panel": "P10",
+     "value": 0.78
+    },
+    {
+     "t": 0,
+     "type": "eyes",
+     "id": "e10_orca",
+     "glow": 0,
+     "dur": 0.01
+    },
+    {
+     "t": 1.9,
+     "type": "lights-on",
+     "panel": "P10",
+     "dur": 1.8
+    },
+    {
+     "t": 3.6,
+     "type": "eyes",
+     "id": "e10_orca",
+     "glow": 1.0,
+     "dur": 0.6
+    },
+    {
+     "t": 4.6,
+     "type": "light-sweep",
+     "panel": "P10",
+     "dur": 1.5,
+     "rect": [
+      0,
+      0,
+      1,
+      0.76
+     ],
+     "peak": 0.45
+    },
+    {
+     "t": 4.6,
+     "type": "particles",
+     "preset": "sparkle",
+     "panel": "P10",
+     "area": [
+      0.08,
+      0.08,
+      0.88,
+      0.6
+     ],
+     "count": 16,
+     "dur": 3.0,
+     "size": 16,
+     "seed": 41
+    },
+    {
+     "t": 0,
+     "type": "particles",
+     "preset": "embers",
+     "panel": "P10",
+     "area": [
+      0,
+      0.1,
+      1,
+      0.98
+     ],
+     "count": 40,
+     "dur": 12,
+     "seed": 42
+    },
+    {
+     "t": 4.65,
+     "type": "bubble",
+     "id": "b10a"
+    },
+    {
+     "t": 4.7,
+     "type": "parallax",
+     "panel": "P10",
+     "dur": 1.5,
+     "movePx": 151,
+     "ease": "sine.inOut",
+     "bands": [
+      {
+       "v0": 0.8,
+       "soft": 0.05,
+       "ratio": 1.25
+      }
+     ]
+    },
+    {
+     "t": 4.7,
+     "type": "part",
+     "id": "p10_kids",
+     "anim": "to",
+     "to": {
+      "x": -0.037
+     },
+     "dur": 1.5,
+     "ease": "sine.inOut"
+    },
+    {
+     "t": 4.75,
+     "type": "bubble",
+     "id": "b10b"
+    }
+   ],
+   "sfx": [
+    {
+     "t": 0.2,
+     "id": "hangar_door",
+     "gain": 0.9
+    },
+    {
+     "t": 1.9,
+     "id": "lights_on",
+     "gain": 0.9
+    },
+    {
+     "t": 3.6,
+     "id": "power_hum",
+     "gain": 0.6
+    },
+    {
+     "t": 4.6,
+     "id": "shimmer",
+     "gain": 0.5
+    }
+   ],
+   "start": 42.2
+  },
+  {
+   "id": "s06",
+   "title": "エンジン故障",
+   "dur": 11.6,
+   "effects": {
+    "main": "shake",
+    "sub": [
+     "light-sweep",
+     "overlapping-action"
+    ]
+   },
+   "lines": [
+    {
+     "id": "s06_b1",
+     "speaker": "boy",
+     "text": "こんな船で宇宙を旅できるの!?",
+     "tts": "こんな船で、宇宙を旅できるの？！",
+     "style": "excited",
+     "at": 0.2
+    },
+    {
+     "id": "s06_r1",
+     "speaker": "robo",
+     "text": "……ただし、今はエンジンが壊れてて動かない。",
+     "tts": "ただし、今は、エンジンが壊れてて、動かない。",
+     "style": "weak",
+     "at": 3.7
+    },
+    {
+     "id": "s06_b2",
+     "speaker": "boy",
+     "text": "じゃあ、一緒に直そうぜ！",
+     "tts": "じゃあ、いっしょに直そうぜ！",
+     "style": "excited",
+     "at": 8.95
+    }
+   ],
+   "shots": [
+    {
+     "t0": 0,
+     "t1": 3.2,
+     "panel": "P11",
+     "cam": [
+      {
+       "t": 0,
+       "u": 0.5,
+       "v": 0.5,
+       "w": 2.5
+      },
+      {
+       "t": 1.2,
+       "u": 0.5,
+       "v": 0.5,
+       "w": 2.4,
+       "ease": "none"
+      },
+      {
+       "t": 2.4,
+       "u": 0.55,
+       "v": 0.62,
+       "w": 1.0,
+       "ease": "sine.inOut"
+      },
+      {
+       "t": 3.2,
+       "u": 0.55,
+       "v": 0.63,
+       "w": 0.95,
+       "ease": "none"
+      }
+     ],
+     "fit": true
+    },
+    {
+     "t0": 3.2,
+     "t1": 8.8,
+     "panel": "P12",
+     "cam": [
+      {
+       "t": 3.2,
+       "u": 0.5,
+       "v": 0.5,
+       "w": 2.3
+      },
+      {
+       "t": 5.6,
+       "u": 0.5,
+       "v": 0.5,
+       "w": 2.2,
+       "ease": "none"
+      },
+      {
+       "t": 7.0,
+       "u": 0.5,
+       "v": 0.55,
+       "w": 1.0,
+       "ease": "sine.inOut"
+      },
+      {
+       "t": 8.8,
+       "u": 0.48,
+       "v": 0.56,
+       "w": 0.92,
+       "ease": "none"
+      }
+     ],
+     "fit": true
+    },
+    {
+     "t0": 8.8,
+     "t1": 11.6,
+     "panel": "P15",
+     "cam": [
+      {
+       "t": 8.8,
+       "u": 0.28,
+       "v": 0.45,
+       "w": 0.55
+      },
+      {
+       "t": 11.6,
+       "u": 0.3,
+       "v": 0.47,
+       "w": 0.5,
+       "ease": "none"
+      }
+     ]
+    }
+   ],
+   "events": [
+    {
+     "t": 0.05,
+     "type": "bubble",
+     "id": "b11"
+    },
+    {
+     "t": 0,
+     "type": "lipsync",
+     "mouth": "m11",
+     "line": "s06_b1"
+    },
+    {
+     "t": 0.3,
+     "type": "particles",
+     "preset": "sparkle",
+     "panel": "P11",
+     "area": [
+      0.2,
+      0.45,
+      0.95,
+      0.72
+     ],
+     "count": 10,
+     "dur": 2.8,
+     "size": 20,
+     "seed": 51
+    },
+    {
+     "t": 3.25,
+     "type": "bubble",
+     "id": "b12"
+    },
+    {
+     "t": 3.2,
+     "type": "eyes",
+     "id": "e12",
+     "glow": 0.15,
+     "dur": 0.3
+    },
+    {
+     "t": 0,
+     "type": "eyes-talk",
+     "eyes": "e12",
+     "line": "s06_r1",
+     "gain": 0.7
+    },
+    {
+     "t": 3.3,
+     "type": "particles",
+     "preset": "sparks",
+     "panel": "P12",
+     "points": [
+      [
+       0.96,
+       0.3
+      ],
+      [
+       0.9,
+       0.52
+      ],
+      [
+       0.04,
+       0.4
+      ]
+     ],
+     "count": 14,
+     "period": 0.55,
+     "angle": -70,
+     "cone": 120,
+     "speed": 0.35,
+     "dur": 5.5,
+     "seed": 52
+    },
+    {
+     "t": 3.3,
+     "type": "flicker",
+     "panel": "P12",
+     "dur": 5.3,
+     "color": "255,150,60",
+     "peak": 0.28
+    },
+    {
+     "t": 3.35,
+     "type": "shake",
+     "gain": 1.0
+    },
+    {
+     "t": 3.45,
+     "type": "part",
+     "id": "p12_robo",
+     "anim": "overlap-move",
+     "to": [
+      0,
+      0.01
+     ],
+     "rotTo": -1.5,
+     "dur": 0.8,
+     "index": 0
+    },
+    {
+     "t": 5.4,
+     "type": "blink",
+     "id": "e12"
+    },
+    {
+     "t": 6.2,
+     "type": "part",
+     "id": "p12_robo",
+     "anim": "follow-through",
+     "amount": 0.4,
+     "sign": -1,
+     "speed": 1.3
+    },
+    {
+     "t": 8.85,
+     "type": "bubble",
+     "id": "b15a"
+    },
+    {
+     "t": 8.85,
+     "type": "bubble",
+     "id": "b15b"
+    },
+    {
+     "t": 0,
+     "type": "lipsync",
+     "mouth": "m15",
+     "line": "s06_b2"
+    },
+    {
+     "t": 8.8,
+     "type": "part",
+     "id": "p15_boy",
+     "anim": "breathe",
+     "dur": 2.8,
+     "period": 1.4
+    },
+    {
+     "t": 9.1,
+     "type": "part",
+     "id": "p15_fist",
+     "anim": "anticipation",
+     "dir": [
+      0,
+      -1
+     ],
+     "dist": 0.08
+    }
+   ],
+   "sfx": [
+    {
+     "t": 3.25,
+     "id": "engine_fail",
+     "gain": 0.9
+    },
+    {
+     "t": 3.4,
+     "id": "sparks",
+     "gain": 0.7
+    },
+    {
+     "t": 5.6,
+     "id": "sparks",
+     "gain": 0.5
+    },
+    {
+     "t": 7.3,
+     "id": "sparks",
+     "gain": 0.4
+    }
+   ],
+   "start": 54.2
+  },
+  {
+   "id": "s07",
+   "title": "仲間の約束",
+   "dur": 15.0,
+   "effects": {
+    "main": "ken-burns",
+    "sub": [
+     "light-sweep"
+    ]
+   },
+   "lines": [
+    {
+     "id": "s07_r1",
+     "speaker": "robo",
+     "text": "えっ……乗ってくれるの？",
+     "tts": "えっ、、乗ってくれるの？",
+     "style": "normal",
+     "at": 0.25
+    },
+    {
+     "id": "s07_b1",
+     "speaker": "boy",
+     "text": "だって、行く場所がないなら、探しに行けばいいだろ！",
+     "tts": "だって、行く場所がないなら、探しに行けばいいだろ！",
+     "at": 2.45
+    },
+    {
+     "id": "s07_r2",
+     "speaker": "robo",
+     "text": "おう！ オレの相棒！",
+     "tts": "おう！オレの、相棒！",
+     "style": "strong",
+     "at": 6.65
+    }
+   ],
+   "shots": [
+    {
+     "t0": 0,
+     "t1": 2.3,
+     "panel": "P14",
+     "cam": [
+      {
+       "t": 0,
+       "u": 0.47,
+       "v": 0.74,
+       "w": 1.0
+      },
+      {
+       "t": 2.3,
+       "u": 0.47,
+       "v": 0.72,
+       "w": 0.88,
+       "ease": "none"
+      }
+     ]
+    },
+    {
+     "t0": 2.3,
+     "t1": 9.4,
+     "panel": "P15",
+     "cam": [
+      {
+       "t": 2.3,
+       "u": 0.3,
+       "v": 0.47,
+       "w": 0.55
+      },
+      {
+       "t": 5.9,
+       "u": 0.32,
+       "v": 0.48,
+       "w": 0.52,
+       "ease": "none"
+      },
+      {
+       "t": 6.5,
+       "u": 0.74,
+       "v": 0.45,
+       "w": 0.5,
+       "ease": "power3.inOut"
+      },
+      {
+       "t": 9.4,
+       "u": 0.74,
+       "v": 0.44,
+       "w": 0.47,
+       "ease": "none"
+      }
+     ]
+    },
+    {
+     "t0": 9.4,
+     "t1": 15,
+     "panel": "P10",
+     "cam": [
+      {
+       "t": 9.4,
+       "u": 0.46,
+       "v": 0.83,
+       "w": 0.28
+      },
+      {
+       "t": 11.0,
+       "u": 0.46,
+       "v": 0.8,
+       "w": 0.27,
+       "ease": "none"
+      },
+      {
+       "t": 12.6,
+       "u": 0.46,
+       "v": 0.47,
+       "w": 0.3,
+       "ease": "power2.inOut"
+      },
+      {
+       "t": 15,
+       "u": 0.5,
+       "v": 0.33,
+       "w": 0.72,
+       "ease": "power2.inOut"
+      }
+     ]
+    }
+   ],
+   "events": [
+    {
+     "t": 0.1,
+     "type": "part",
+     "id": "p14_robo",
+     "anim": "spring-pop",
+     "from": 1.0,
+     "peak": 0.02,
+     "dur": 0.8
+    },
+    {
+     "t": 0.15,
+     "type": "eyes",
+     "id": "e14",
+     "glow": 0.7,
+     "scale": 1.15,
+     "dur": 0.4,
+     "ease": "back.out(3)"
+    },
+    {
+     "t": 0,
+     "type": "eyes-talk",
+     "eyes": "e14",
+     "line": "s07_r1"
+    },
+    {
+     "t": 1.95,
+     "type": "blink",
+     "id": "e14"
+    },
+    {
+     "t": 2.3,
+     "type": "bubble",
+     "id": "b15a",
+     "anim": "instant",
+     "until": 9.4
+    },
+    {
+     "t": 2.3,
+     "type": "bubble",
+     "id": "b15b",
+     "anim": "instant",
+     "until": 9.4
+    },
+    {
+     "t": 0,
+     "type": "lipsync",
+     "mouth": "m15",
+     "line": "s07_b1"
+    },
+    {
+     "t": 2.3,
+     "type": "part",
+     "id": "p15_boy",
+     "anim": "breathe",
+     "dur": 4,
+     "period": 1.3
+    },
+    {
+     "t": 6.55,
+     "type": "bubble",
+     "id": "b15c",
+     "until": 9.4
+    },
+    {
+     "t": 6.4,
+     "type": "eyes",
+     "id": "e15",
+     "glow": 0.5,
+     "dur": 0.3
+    },
+    {
+     "t": 0,
+     "type": "eyes-talk",
+     "eyes": "e15",
+     "line": "s07_r2"
+    },
+    {
+     "t": 6.6,
+     "type": "part",
+     "id": "p15_arm",
+     "anim": "follow-through",
+     "amount": 0.5,
+     "speed": 0.9
+    },
+    {
+     "t": 6.67,
+     "type": "part",
+     "id": "p15_robo",
+     "anim": "squash-stretch",
+     "hop": 0.02,
+     "amount": 0.8
+    },
+    {
+     "t": 7.0,
+     "type": "particles",
+     "preset": "sparkle",
+     "panel": "P15",
+     "area": [
+      0.45,
+      0.05,
+      0.92,
+      0.5
+     ],
+     "count": 12,
+     "dur": 2.4,
+     "size": 18,
+     "seed": 71
+    },
+    {
+     "t": 9.4,
+     "type": "flash",
+     "peak": 0.6,
+     "dur": 0.6
+    },
+    {
+     "t": 9.4,
+     "type": "eyes",
+     "id": "e10_orca",
+     "glow": 1.0,
+     "dur": 0.01
+    },
+    {
+     "t": 9.4,
+     "type": "particles",
+     "preset": "embers",
+     "panel": "P10",
+     "area": [
+      0,
+      0.1,
+      1,
+      0.98
+     ],
+     "count": 46,
+     "dur": 5.6,
+     "seed": 72
+    },
+    {
+     "t": 12.4,
+     "type": "light-sweep",
+     "panel": "P10",
+     "dur": 1.8,
+     "rect": [
+      0,
+      0,
+      1,
+      0.76
+     ],
+     "peak": 0.5
+    },
+    {
+     "t": 12.5,
+     "type": "particles",
+     "preset": "sparkle",
+     "panel": "P10",
+     "area": [
+      0.08,
+      0.08,
+      0.88,
+      0.6
+     ],
+     "count": 18,
+     "dur": 2.5,
+     "size": 18,
+     "seed": 73
+    },
+    {
+     "t": 13.8,
+     "type": "fade",
+     "to": 1,
+     "dur": 1.2
+    }
+   ],
+   "sfx": [
+    {
+     "t": 0.1,
+     "id": "blip",
+     "gain": 0.5
+    },
+    {
+     "t": 6.6,
+     "id": "servo",
+     "gain": 0.5
+    },
+    {
+     "t": 6.75,
+     "id": "fist_pump",
+     "gain": 0.6
+    },
+    {
+     "t": 12.4,
+     "id": "shimmer",
+     "gain": 0.6
+    }
+   ],
+   "start": 65.8
+  }
+ ],
+ "music": [
+  {
+   "track": "A",
+   "t0": 0.0,
+   "t1": 20.6,
+   "fadeIn": 2.0,
+   "fadeOut": 1.2,
+   "gain": 0.55
+  },
+  {
+   "track": "B",
+   "t0": 19.6,
+   "t1": 42.4,
+   "fadeIn": 0.4,
+   "fadeOut": 1.0,
+   "gain": 0.45
+  },
+  {
+   "track": "C",
+   "t0": 42.2,
+   "t1": 80.8,
+   "fadeIn": 0.5,
+   "fadeOut": 1.6,
+   "gain": 0.5,
+   "markers": {
+    "hit": 1.9,
+    "theme": 4.6,
+    "calm": 12.0,
+    "finale": 33.2
+   }
+  }
+ ],
+ "mix": {
+  "duckDb": -9,
+  "voiceGain": 1.0,
+  "sfxGain": 0.8,
+  "masterLufs": -16
+ }
+}

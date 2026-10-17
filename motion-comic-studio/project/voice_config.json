@@ -1,0 +1,45 @@
+{
+  "engine": "voicevox",
+  "engineVersion": "0.25.2",
+  "url": "http://127.0.0.1:50021",
+  "note": "Free local TTS only. Never switch to a paid API. Speaker IDs are from VOICEVOX 0.25.2 /speakers.",
+  "speakers": {
+    "boy": {
+      "label": "少年",
+      "voicevox": "白上虎太郎",
+      "style": "ふつう",
+      "id": 12,
+      "speedScale": 1.08,
+      "pitchScale": 0.0,
+      "intonationScale": 1.35,
+      "volumeScale": 1.0,
+      "credit": "VOICEVOX:白上虎太郎",
+      "styles": { "excited": 32, "scared": 33, "angry": 34, "cry": 35 }
+    },
+    "robo": {
+      "label": "ロボ太",
+      "voicevox": "猫使アル",
+      "style": "うきうき",
+      "id": 57,
+      "speedScale": 1.06,
+      "pitchScale": 0.02,
+      "intonationScale": 1.3,
+      "volumeScale": 1.0,
+      "credit": "VOICEVOX:猫使アル",
+      "styles": { "calm": 56, "normal": 55, "strong": 110, "weak": 111 },
+      "fx": { "robot": { "ringHz": 55, "ringDepth": 0.12, "combMs": 4.5, "combGain": 0.22 } }
+    },
+    "narrator": {
+      "label": "ナレーター",
+      "voicevox": "青山龍星",
+      "style": "しっとり",
+      "id": 84,
+      "speedScale": 0.9,
+      "pitchScale": 0.0,
+      "intonationScale": 1.0,
+      "volumeScale": 1.0,
+      "credit": "VOICEVOX:青山龍星",
+      "styles": { "sad": 85, "normal": 13 }
+    }
+  }
+}

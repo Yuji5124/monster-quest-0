@@ -1,0 +1,6 @@
+# all free / open-source; CPU only
+numpy>=2.0          # BSD-3-Clause
+opencv-python-headless>=4.9   # Apache-2.0
+pillow>=10          # MIT-CMU (HPND)
+scipy>=1.12         # BSD-3-Clause
+ncnn>=1.0.20240410  # BSD-3-Clause (optional: Real-ESRGAN upscale; falls back to Lanczos)

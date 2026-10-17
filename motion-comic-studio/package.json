@@ -1,0 +1,20 @@
+{
+  "name": "motion-comic-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Free (0 yen) motion-comic production system: manga image + script -> voiced 1080p MP4",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "upscale": "python scripts/upscale.py assets/source/ginga_ep01_spread.webp assets/work/spread_x4.png",
+    "bake": "python scripts/bake.py",
+    "voices": "python src/audio/synth_voices.py",
+    "music": "python src/audio/make_music.py",
+    "sfx": "python src/audio/make_sfx.py",
+    "mix": "python src/audio/mix.py",
+    "render": "node src/rendering/render.mjs",
+    "preview": "node src/rendering/serve.mjs",
+    "test": "python tests/test_pipeline.py"
+  },
+  "dependencies": { "playwright-core": "1.56.1" }
+}

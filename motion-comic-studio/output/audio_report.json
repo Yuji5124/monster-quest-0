@@ -1,0 +1,108 @@
+{
+ "lines": [
+  {
+   "id": "s01_n1",
+   "start": 1.4,
+   "end": 3.522
+  },
+  {
+   "id": "s01_n2",
+   "start": 4.2,
+   "end": 11.174
+  },
+  {
+   "id": "s02_b1",
+   "start": 13.35,
+   "end": 15.063
+  },
+  {
+   "id": "s03_b1",
+   "start": 19.9,
+   "end": 20.265
+  },
+  {
+   "id": "s03_r1",
+   "start": 23.75,
+   "end": 25.972
+  },
+  {
+   "id": "s03_b2",
+   "start": 26.9,
+   "end": 28.696
+  },
+  {
+   "id": "s04_r1",
+   "start": 30.45,
+   "end": 34.427
+  },
+  {
+   "id": "s04_b1",
+   "start": 35.15,
+   "end": 37.583
+  },
+  {
+   "id": "s04_r2",
+   "start": 38.55,
+   "end": 39.534
+  },
+  {
+   "id": "s04_b2",
+   "start": 39.85,
+   "end": 40.451
+  },
+  {
+   "id": "s05_b1",
+   "start": 46.95,
+   "end": 48.555
+  },
+  {
+   "id": "s05_r1",
+   "start": 49.5,
+   "end": 53.133
+  },
+  {
+   "id": "s06_b1",
+   "start": 54.4,
+   "end": 57.034
+  },
+  {
+   "id": "s06_r1",
+   "start": 57.9,
+   "end": 62.727
+  },
+  {
+   "id": "s06_b2",
+   "start": 63.15,
+   "end": 65.106
+  },
+  {
+   "id": "s07_r1",
+   "start": 66.05,
+   "end": 67.604
+  },
+  {
+   "id": "s07_b1",
+   "start": 68.25,
+   "end": 71.909
+  },
+  {
+   "id": "s07_r2",
+   "start": 72.45,
+   "end": 74.447
+  }
+ ],
+ "duration": 80.8,
+ "loudnorm_input": {
+  "input_i": "-17.68",
+  "input_tp": "0.01",
+  "input_lra": "4.00",
+  "input_thresh": "-28.23",
+  "output_i": "-16.20",
+  "output_tp": "-1.50",
+  "output_lra": "3.50",
+  "output_thresh": "-26.69",
+  "normalization_type": "dynamic",
+  "target_offset": "0.20"
+ },
+ "voice_over_music_db_during_lines": 15.1
+}

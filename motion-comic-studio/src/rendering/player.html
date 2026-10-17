@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>Motion Comic Player</title>
+<style>
+  html, body { margin: 0; background: #000; overflow: hidden; }
+  .stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: #05060c; }
+  .backdrop { position: absolute; left: -5%; top: -5%; width: 110%; height: 110%; object-fit: cover; filter: blur(28px) brightness(.42) saturate(1.1); display: none; }
+  .world { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
+  .panel { position: absolute; overflow: hidden; background: #05060c; }
+  .panel > img.base, .panel > img.layer { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+  .part, .mouth { position: absolute; }
+  .eyeglow { position: absolute; border-radius: 50%; mix-blend-mode: screen; pointer-events: none; }
+  .eyelid { position: absolute; border-radius: 50%; background: radial-gradient(circle, #1d1813 60%, #2b241c 100%); transform-origin: 50% 0; opacity: 0; }
+  .dark { position: absolute; inset: 0; background: #02030a; opacity: 0; pointer-events: none; }
+  .lamp { position: absolute; border-radius: 50%; mix-blend-mode: screen; opacity: 0; background: radial-gradient(circle, rgba(255,214,150,.95) 0%, rgba(255,170,80,.45) 25%, rgba(255,140,40,.12) 50%, transparent 70%); }
+  /* effects/light-sweep: 112deg band, 250% background, centre moves 96.4% -> 3.6% */
+  .sweep { position: absolute; display: none; mix-blend-mode: screen; pointer-events: none; background-size: 250% 100%;
+    background-image: linear-gradient(112deg, transparent 0%, transparent 44.2%, rgba(255,246,225,.55) 47.2%, rgba(255,255,255,.95) 50%, rgba(255,246,225,.55) 52.8%, transparent 55.8%, transparent 100%); }
+  .flick { position: absolute; inset: 0; mix-blend-mode: screen; pointer-events: none; }
+  .bubble, .sfxtext { position: absolute; transform-origin: 50% 70%; display: none; }
+  .fx { position: absolute; inset: 0; pointer-events: none; }
+  .tint { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 40%, rgba(255,190,120,.0), rgba(30,10,60,.55)); opacity: 0; pointer-events: none; }
+  .vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 50%, transparent 58%, rgba(0,0,0,.42) 100%); }
+  .flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+  .black { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+<script src="gsap.min.js"></script>
+<script src="../animation/engine.js"></script>
+</body>
+</html>

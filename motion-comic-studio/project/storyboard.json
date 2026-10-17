@@ -1,0 +1,804 @@
+{
+  "title": "銀河はぐれ団 第1話 冒頭",
+  "note": "Visual analysis of the source spread. Panel/bubble rects are source pixels [x,y,w,h]. Part/mouth/eye coordinates are normalised to their panel (u,v in 0..1). Generated first by scripts/detect_panels.py + bubble detection, then corrected by hand. Reading order: right page (p.1) then left page (p.2); inside each page this comic reads left-to-right, so panel order follows the dialogue.",
+  "source": "assets/source/ginga_ep01_spread.webp",
+  "upscale": 4,
+  "panels": {
+    "P01": {
+      "rect": [
+        776,
+        0,
+        753,
+        360
+      ],
+      "page": 1,
+      "desc": "崩壊した故郷・少年の後ろ姿・ナレーション"
+    },
+    "P02": {
+      "rect": [
+        777,
+        363,
+        262,
+        178
+      ],
+      "page": 1,
+      "desc": "瓦礫を蹴る少年「もう！」ガラッ"
+    },
+    "P03": {
+      "rect": [
+        1045,
+        363,
+        181,
+        178
+      ],
+      "page": 1,
+      "desc": "少年の驚き顔「うわっ」"
+    },
+    "P04": {
+      "rect": [
+        1232,
+        364,
+        296,
+        177
+      ],
+      "page": 1,
+      "desc": "ロボ太の手 ガシッ"
+    },
+    "P05": {
+      "rect": [
+        777,
+        545,
+        751,
+        209
+      ],
+      "page": 1,
+      "desc": "ロボ太飛び出す「イタタ」/「ガラクタがしゃべった」"
+    },
+    "P06": {
+      "rect": [
+        777,
+        759,
+        212,
+        239
+      ],
+      "page": 1,
+      "desc": "ロボ太自己紹介"
+    },
+    "P07": {
+      "rect": [
+        995,
+        759,
+        178,
+        239
+      ],
+      "page": 1,
+      "desc": "少年「この星も直せる？」"
+    },
+    "P08": {
+      "rect": [
+        1178,
+        759,
+        155,
+        240
+      ],
+      "page": 1,
+      "desc": "ロボ太「それはムリ」"
+    },
+    "P09": {
+      "rect": [
+        1338,
+        759,
+        190,
+        239
+      ],
+      "page": 1,
+      "desc": "少年「ダメじゃん!!」"
+    },
+    "P10": {
+      "rect": [
+        6,
+        0,
+        757,
+        470
+      ],
+      "page": 2,
+      "desc": "格納庫のオルカ号"
+    },
+    "P11": {
+      "rect": [
+        8,
+        475,
+        189,
+        257
+      ],
+      "page": 2,
+      "desc": "少年「宇宙船…！」"
+    },
+    "P12": {
+      "rect": [
+        202,
+        475,
+        207,
+        256
+      ],
+      "page": 2,
+      "desc": "ロボ太「エンジンが壊れてて」"
+    },
+    "P13": {
+      "rect": [
+        413,
+        476,
+        158,
+        255
+      ],
+      "page": 2,
+      "desc": "少年 考える（未使用）"
+    },
+    "P14": {
+      "rect": [
+        576,
+        475,
+        186,
+        256
+      ],
+      "page": 2,
+      "desc": "ロボ太アップ（吹き出し外を使用）"
+    },
+    "P15": {
+      "rect": [
+        8,
+        736,
+        753,
+        262
+      ],
+      "page": 2,
+      "desc": "仲間の約束"
+    }
+  },
+  "bubbles": {
+    "b01_narr1": {
+      "panel": "P01",
+      "rect": [
+        794,
+        34,
+        236,
+        171
+      ],
+      "kind": "caption"
+    },
+    "b02": {
+      "panel": "P02",
+      "rect": [
+        789,
+        367,
+        134,
+        97
+      ]
+    },
+    "b03": {
+      "panel": "P03",
+      "rect": [
+        1168,
+        364,
+        120,
+        74
+      ]
+    },
+    "b05a": {
+      "panel": "P05",
+      "rect": [
+        781,
+        549,
+        189,
+        138
+      ]
+    },
+    "b05b": {
+      "panel": "P05",
+      "rect": [
+        1370,
+        644,
+        157,
+        102
+      ]
+    },
+    "b06": {
+      "panel": "P06",
+      "rect": [
+        778,
+        760,
+        199,
+        125
+      ]
+    },
+    "b07": {
+      "panel": "P07",
+      "rect": [
+        996,
+        760,
+        143,
+        83
+      ]
+    },
+    "b08": {
+      "panel": "P08",
+      "rect": [
+        1199,
+        760,
+        122,
+        71
+      ]
+    },
+    "b09": {
+      "panel": "P09",
+      "rect": [
+        1365,
+        760,
+        156,
+        63
+      ]
+    },
+    "b10a": {
+      "panel": "P10",
+      "rect": [
+        29,
+        312,
+        215,
+        123
+      ]
+    },
+    "b10b": {
+      "panel": "P10",
+      "rect": [
+        533,
+        320,
+        214,
+        146
+      ]
+    },
+    "b11": {
+      "panel": "P11",
+      "rect": [
+        9,
+        476,
+        171,
+        102
+      ]
+    },
+    "b12": {
+      "panel": "P12",
+      "rect": [
+        204,
+        476,
+        185,
+        98
+      ]
+    },
+    "b15a": {
+      "panel": "P15",
+      "rect": [
+        10,
+        745,
+        220,
+        100
+      ]
+    },
+    "b15b": {
+      "panel": "P15",
+      "rect": [
+        10,
+        846,
+        220,
+        129
+      ]
+    },
+    "b15c": {
+      "panel": "P15",
+      "rect": [
+        597,
+        829,
+        162,
+        140
+      ]
+    }
+  },
+  "sfxText": {
+    "t02_gara": {
+      "panel": "P02",
+      "rect": [
+        812,
+        472,
+        96,
+        64
+      ],
+      "label": "ガラッ"
+    },
+    "t04_gashi": {
+      "panel": "P04",
+      "rect": [
+        1378,
+        382,
+        152,
+        90
+      ],
+      "label": "ガシッ!"
+    }
+  },
+  "parts": {
+    "p01_planet": {
+      "panel": "P01",
+      "shape": "ellipse",
+      "rect": [
+        0.555,
+        -0.07,
+        0.905,
+        0.56
+      ],
+      "feather": 0.06,
+      "pivot": [
+        0.73,
+        0.245
+      ]
+    },
+    "p01_boy": {
+      "panel": "P01",
+      "shape": "ellipse",
+      "rect": [
+        0.5,
+        0.58,
+        0.72,
+        1.04
+      ],
+      "feather": 0.3,
+      "pivot": [
+        0.61,
+        1.0
+      ]
+    },
+    "p02_boy": {
+      "panel": "P02",
+      "shape": "ellipse",
+      "rect": [
+        0.5,
+        0.12,
+        1.1,
+        1.1
+      ],
+      "feather": 0.22,
+      "pivot": [
+        0.8,
+        1.0
+      ]
+    },
+    "p02_rubble": {
+      "panel": "P02",
+      "shape": "ellipse",
+      "rect": [
+        0.0,
+        0.6,
+        0.62,
+        1.1
+      ],
+      "feather": 0.3,
+      "pivot": [
+        0.3,
+        0.9
+      ]
+    },
+    "p04_hand": {
+      "panel": "P04",
+      "shape": "ellipse",
+      "rect": [
+        0.02,
+        -0.05,
+        0.6,
+        1.08
+      ],
+      "feather": 0.2,
+      "pivot": [
+        0.1,
+        0.5
+      ]
+    },
+    "p05_robo": {
+      "panel": "P05",
+      "shape": "ellipse",
+      "rect": [
+        0.25,
+        -0.06,
+        0.75,
+        1.08
+      ],
+      "feather": 0.14,
+      "pivot": [
+        0.5,
+        1.0
+      ]
+    },
+    "p05_boy": {
+      "panel": "P05",
+      "shape": "ellipse",
+      "rect": [
+        0.66,
+        0.0,
+        1.04,
+        0.82
+      ],
+      "feather": 0.22,
+      "pivot": [
+        0.85,
+        0.8
+      ]
+    },
+    "p06_robo": {
+      "panel": "P06",
+      "shape": "ellipse",
+      "rect": [
+        0.18,
+        0.38,
+        1.08,
+        1.12
+      ],
+      "feather": 0.15,
+      "pivot": [
+        0.62,
+        1.0
+      ]
+    },
+    "p07_boy": {
+      "panel": "P07",
+      "shape": "ellipse",
+      "rect": [
+        -0.08,
+        0.3,
+        1.08,
+        1.12
+      ],
+      "feather": 0.15,
+      "pivot": [
+        0.6,
+        1.0
+      ]
+    },
+    "p08_robo": {
+      "panel": "P08",
+      "shape": "ellipse",
+      "rect": [
+        0.0,
+        0.3,
+        1.05,
+        1.08
+      ],
+      "feather": 0.15,
+      "pivot": [
+        0.5,
+        1.0
+      ]
+    },
+    "p09_boy": {
+      "panel": "P09",
+      "shape": "ellipse",
+      "rect": [
+        -0.05,
+        0.28,
+        1.05,
+        1.08
+      ],
+      "feather": 0.18,
+      "pivot": [
+        0.75,
+        1.0
+      ]
+    },
+    "p10_orca": {
+      "panel": "P10",
+      "shape": "ellipse",
+      "rect": [
+        0.0,
+        0.02,
+        0.98,
+        0.8
+      ],
+      "feather": 0.12,
+      "pivot": [
+        0.5,
+        0.45
+      ]
+    },
+    "p10_kids": {
+      "panel": "P10",
+      "shape": "ellipse",
+      "rect": [
+        0.28,
+        0.64,
+        0.62,
+        1.04
+      ],
+      "feather": 0.25,
+      "pivot": [
+        0.45,
+        1.0
+      ]
+    },
+    "p11_boy": {
+      "panel": "P11",
+      "shape": "ellipse",
+      "rect": [
+        -0.08,
+        0.36,
+        1.08,
+        1.12
+      ],
+      "feather": 0.15,
+      "pivot": [
+        0.5,
+        1.0
+      ]
+    },
+    "p12_robo": {
+      "panel": "P12",
+      "shape": "ellipse",
+      "rect": [
+        -0.05,
+        0.38,
+        1.05,
+        1.1
+      ],
+      "feather": 0.15,
+      "pivot": [
+        0.55,
+        1.0
+      ]
+    },
+    "p14_robo": {
+      "panel": "P14",
+      "shape": "ellipse",
+      "rect": [
+        -0.05,
+        0.42,
+        1.08,
+        1.12
+      ],
+      "feather": 0.15,
+      "pivot": [
+        0.5,
+        1.0
+      ]
+    },
+    "p15_boy": {
+      "panel": "P15",
+      "shape": "ellipse",
+      "rect": [
+        0.2,
+        -0.04,
+        0.54,
+        1.06
+      ],
+      "feather": 0.2,
+      "pivot": [
+        0.38,
+        1.0
+      ]
+    },
+    "p15_robo": {
+      "panel": "P15",
+      "shape": "ellipse",
+      "rect": [
+        0.47,
+        0.1,
+        0.76,
+        1.06
+      ],
+      "feather": 0.16,
+      "pivot": [
+        0.6,
+        1.0
+      ]
+    },
+    "p15_arm": {
+      "panel": "P15",
+      "shape": "ellipse",
+      "rect": [
+        0.7,
+        -0.04,
+        0.85,
+        0.64
+      ],
+      "feather": 0.25,
+      "pivot": [
+        0.74,
+        0.58
+      ]
+    },
+    "p15_fist": {
+      "panel": "P15",
+      "shape": "ellipse",
+      "rect": [
+        0.52,
+        0.62,
+        0.66,
+        1.05
+      ],
+      "feather": 0.25,
+      "pivot": [
+        0.58,
+        1.0
+      ]
+    }
+  },
+  "mouths": {
+    "m03": {
+      "panel": "P03",
+      "center": [
+        0.555,
+        0.735
+      ],
+      "size": [
+        0.17,
+        0.14
+      ]
+    },
+    "m05": {
+      "panel": "P05",
+      "center": [
+        0.754,
+        0.6
+      ],
+      "size": [
+        0.036,
+        0.075
+      ]
+    },
+    "m07": {
+      "panel": "P07",
+      "center": [
+        0.654,
+        0.71
+      ],
+      "size": [
+        0.12,
+        0.09
+      ]
+    },
+    "m09": {
+      "panel": "P09",
+      "center": [
+        0.4,
+        0.548
+      ],
+      "size": [
+        0.12,
+        0.07
+      ]
+    },
+    "m11": {
+      "panel": "P11",
+      "center": [
+        0.667,
+        0.735
+      ],
+      "size": [
+        0.2,
+        0.12
+      ]
+    },
+    "m15": {
+      "panel": "P15",
+      "center": [
+        0.42,
+        0.465
+      ],
+      "size": [
+        0.05,
+        0.1
+      ]
+    }
+  },
+  "eyes": {
+    "e05": {
+      "panel": "P05",
+      "points": [
+        [
+          0.471,
+          0.474
+        ],
+        [
+          0.571,
+          0.538
+        ]
+      ],
+      "r": 0.022,
+      "color": "#ffcf5a"
+    },
+    "e06": {
+      "panel": "P06",
+      "points": [
+        [
+          0.5,
+          0.625
+        ],
+        [
+          0.8,
+          0.62
+        ]
+      ],
+      "r": 0.075,
+      "color": "#ffcf5a"
+    },
+    "e08": {
+      "panel": "P08",
+      "points": [
+        [
+          0.49,
+          0.46
+        ]
+      ],
+      "r": 0.09,
+      "color": "#ffcf5a"
+    },
+    "e12": {
+      "panel": "P12",
+      "points": [
+        [
+          0.41,
+          0.6
+        ],
+        [
+          0.73,
+          0.596
+        ]
+      ],
+      "r": 0.07,
+      "color": "#ffcf5a"
+    },
+    "e14": {
+      "panel": "P14",
+      "points": [
+        [
+          0.316,
+          0.67
+        ],
+        [
+          0.62,
+          0.625
+        ]
+      ],
+      "r": 0.085,
+      "color": "#ffcf5a"
+    },
+    "e15": {
+      "panel": "P15",
+      "points": [
+        [
+          0.55,
+          0.42
+        ],
+        [
+          0.65,
+          0.37
+        ]
+      ],
+      "r": 0.03,
+      "color": "#ffcf5a"
+    },
+    "e10_orca": {
+      "panel": "P10",
+      "points": [
+        [
+          0.264,
+          0.245
+        ]
+      ],
+      "r": 0.03,
+      "color": "#7fb2ff"
+    }
+  },
+  "lamps": {
+    "auto": {
+      "panel": "P10",
+      "minArea": 6,
+      "max": 40
+    }
+  },
+  "staticNote": "b01_narr2 (それから、ぼくは…) and the P13/P14 bubbles are left in the artwork (not popped)."
+}

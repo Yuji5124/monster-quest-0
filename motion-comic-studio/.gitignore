@@ -1,0 +1,10 @@
+node_modules/
+assets/work/
+assets/build/
+assets/audio/bgm/
+assets/audio/sfx/
+tools/
+output/mix.wav
+output/previews/test_sheet.png
+output/**/.chunks-*/
+__pycache__/
